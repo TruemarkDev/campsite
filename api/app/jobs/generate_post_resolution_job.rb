@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class GeneratePostResolutionJob < BaseJob
+  include LlmObservability
+
   sidekiq_options queue: "critical", retry: 2
 
   sidekiq_retries_exhausted do |msg|
@@ -17,6 +19,14 @@ class GeneratePostResolutionJob < BaseJob
     post = Post.eager_load_llm_content.find_by!(public_id: post_public_id)
     comment = comment_public_id.present? ? post.kept_comments.eager_load_user.find_by(public_id: comment_public_id) : nil
 
+    # Add business context for observability
+    add_llm_context(
+      operation_type: "resolution_generation",
+      subject_type: "Post",
+      subject_id: post.id,
+      comment_id: comment_public_id,
+    )
+
     prompt = post.generate_resolution_prompt(comment)
     response = Llm.new.chat(messages: prompt)
 
@@ -29,6 +39,9 @@ class GeneratePostResolutionJob < BaseJob
       prompt: prompt,
       response: html,
     )
+
+    # Track cache hit/miss
+    track_cache_hit(response.previously_new_record? == false)
 
     send_pusher_event(
       post_public_id: post_public_id,

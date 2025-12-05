@@ -1,6 +1,11 @@
 # frozen_string_literal: true
 
+require_relative "llm_instrumentation"
+require_relative "llm_response"
+
 class Llm
+  prepend LlmInstrumentation
+
   DEFAULT_MODELS = {
     openai: "gpt-4o-mini",
     gemini: "gemini-2.5-flash",
@@ -30,7 +35,9 @@ class Llm
       chat_client.ask(messages, &block)
     else
       response = chat_client.ask(messages)
-      response.content
+
+      # Return a wrapper that acts like a string but has usage metadata
+      LlmResponse.new(response)
     end
   rescue StandardError => e
     Rails.logger.error("LLM Error [#{@provider}/#{@model}]: #{e.message}")
