@@ -27,7 +27,7 @@ class GeneratePostTldrJob < BaseJob
     )
 
     html = StyledText.new(Rails.application.credentials.dig(:styled_text_api, :authtoken))
-      .markdown_to_html(markdown: chat_response, editor: "markdown")
+      .markdown_to_html(markdown: chat_response.to_s, editor: "markdown")
 
     # prevent inserting duplicate responses without a unique index
     llm_response = LlmResponse.find_or_create_by_prompt!(

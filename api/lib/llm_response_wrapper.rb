@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-class LlmResponse
+class LlmResponseWrapper
   TokenUsage = Struct.new(:prompt_tokens, :completion_tokens, :total_tokens, :cached_tokens, keyword_init: true)
 
   def initialize(response)

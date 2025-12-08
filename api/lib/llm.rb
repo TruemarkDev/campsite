@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require_relative "llm_instrumentation"
-require_relative "llm_response"
+require_relative "llm_response_wrapper"
 
 class Llm
   prepend LlmInstrumentation
@@ -35,9 +35,7 @@ class Llm
       chat_client.ask(messages, &block)
     else
       response = chat_client.ask(messages)
-
-      # Return a wrapper that acts like a string but has usage metadata
-      LlmResponse.new(response)
+      LlmResponseWrapper.new(response)
     end
   rescue StandardError => e
     Rails.logger.error("LLM Error [#{@provider}/#{@model}]: #{e.message}")
