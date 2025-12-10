@@ -623,6 +623,8 @@ Rails.application.routes.draw do
       resources :messages, only: [:index, :create], module: :threads
     end
 
+    resources :signoz_notifications, only: :create
+
     match "*path", to: "base#not_found", via: :all
   end
 end
