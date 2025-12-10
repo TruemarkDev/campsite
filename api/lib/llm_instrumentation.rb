@@ -10,8 +10,6 @@ module LlmInstrumentation
     subject_type ||= context[:subject_type]
     subject_id ||= context[:subject_id]
 
-    # Force sampling for LLM operations if configured
-    force_sampling = ENV["OTEL_LLM_FORCE_SAMPLING"] == "true"
     attributes = {
       "llm.provider" => provider.to_s,
       "llm.model" => model.to_s,
@@ -29,11 +27,6 @@ module LlmInstrumentation
       attributes: attributes,
       kind: :client,
     }
-
-    # Force this trace to be sampled if LLM force sampling is enabled
-    if force_sampling
-      OpenTelemetry::Trace.current_span.context.trace_flags.sampled!
-    end
 
     tracer.in_span("llm.chat", **span_options) do |span|
       result = super(messages: messages, **options, &block)
