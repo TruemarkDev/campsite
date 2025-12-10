@@ -11,7 +11,7 @@ ENV["OTEL_SERVICE_VERSION"] ||= ENV["RELEASE_SHA"] || "development"
 ENV["OTEL_RESOURCE_ATTRIBUTES"] ||= "deployment.environment=#{Rails.env},service.namespace=campsite"
 
 sample_ratio = case Rails.env
-when "production" then "0.2"
+when "production" then ENV.fetch("OTEL_TRACE_SAMPLE_RATIO", "0.2")
 when "test" then "0.0"
 else "1.0"
 end

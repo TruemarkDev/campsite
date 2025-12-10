@@ -8,8 +8,8 @@ class LlmResponseWrapper
     @content = response.content
 
     # Extract token counts from response
-    @input_tokens = response.input_tokens if response.respond_to?(:input_tokens)
-    @output_tokens = response.output_tokens if response.respond_to?(:output_tokens)
+    @input_tokens = extract_input_tokens(response)
+    @output_tokens = extract_output_tokens(response)
     @cached_tokens = response.cached_tokens if response.respond_to?(:cached_tokens)
   end
 
@@ -36,15 +36,27 @@ class LlmResponseWrapper
     usage
   end
 
-  def method_missing(method, *args, &block)
-    if @content.respond_to?(method)
-      @content.send(method, *args, &block)
-    else
-      super
+  private
+
+  def extract_input_tokens(response)
+    return response.input_tokens if response.respond_to?(:input_tokens) && response.input_tokens
+
+    if response.respond_to?(:raw) && response.raw.is_a?(Hash)
+      metadata = response.raw["usageMetadata"] || response.raw[:usageMetadata]
+      return metadata["promptTokenCount"] || metadata[:promptTokenCount] if metadata
     end
+
+    nil
   end
 
-  def respond_to_missing?(method, include_private = false)
-    @content.respond_to?(method, include_private) || super
+  def extract_output_tokens(response)
+    return response.output_tokens if response.respond_to?(:output_tokens) && response.output_tokens
+
+    if response.respond_to?(:raw) && response.raw.is_a?(Hash)
+      metadata = response.raw["usageMetadata"] || response.raw[:usageMetadata]
+      return metadata["candidatesTokenCount"] || metadata[:candidatesTokenCount] if metadata
+    end
+
+    nil
   end
 end

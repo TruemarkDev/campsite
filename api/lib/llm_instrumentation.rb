@@ -5,6 +5,13 @@ module LlmInstrumentation
     start_time = Time.current
     streaming = block_given?
 
+    context = Thread.current[:llm_context] || {}
+    operation_type ||= context[:operation_type]
+    subject_type ||= context[:subject_type]
+    subject_id ||= context[:subject_id]
+
+    # Force sampling for LLM operations if configured
+    force_sampling = ENV["OTEL_LLM_FORCE_SAMPLING"] == "true"
     attributes = {
       "llm.provider" => provider.to_s,
       "llm.model" => model.to_s,
@@ -15,12 +22,20 @@ module LlmInstrumentation
     attributes["llm.business.operation_type"] = operation_type if operation_type
     attributes["llm.business.subject_type"] = subject_type if subject_type
     attributes["llm.business.subject_id"] = subject_id if subject_id
+    attributes["llm.business.comment_id"] = context[:comment_id] if context[:comment_id]
+    attributes["llm.business.call_id"] = context[:call_id] if context[:call_id]
 
-    tracer.in_span(
-      "llm.chat",
+    span_options = {
       attributes: attributes,
       kind: :client,
-    ) do |span|
+    }
+
+    # Force this trace to be sampled if LLM force sampling is enabled
+    if force_sampling
+      OpenTelemetry::Trace.current_span.context.trace_flags.sampled!
+    end
+
+    tracer.in_span("llm.chat", **span_options) do |span|
       result = super(messages: messages, **options, &block)
 
       # Calculate duration
@@ -47,6 +62,8 @@ module LlmInstrumentation
       span.status = OpenTelemetry::Trace::Status.error("LLM request failed: #{e.message}")
 
       raise
+    ensure
+      Thread.current[:llm_context] = nil if context.present?
     end
   end
 
@@ -71,16 +88,19 @@ module LlmInstrumentation
       output = usage.completion_tokens.to_i
       total = (usage.total_tokens || (usage.prompt_tokens + usage.completion_tokens)).to_i
 
-      Rails.logger.info("Setting token attributes: input=#{input}, output=#{output}, total=#{total}")
       span.set_attribute("llm.token_usage.input", input)
       span.set_attribute("llm.token_usage.output", output)
       span.set_attribute("llm.token_usage.total", total)
       span.set_attribute("llm.token_usage.estimated", false)
     # Anthropic format (input_tokens, output_tokens)
     elsif usage.respond_to?(:input_tokens) && usage.respond_to?(:output_tokens)
-      span.set_attribute("llm.token_usage.input", usage.input_tokens.to_i)
-      span.set_attribute("llm.token_usage.output", usage.output_tokens.to_i)
-      span.set_attribute("llm.token_usage.total", (usage.input_tokens + usage.output_tokens).to_i)
+      input = usage.input_tokens.to_i
+      output = usage.output_tokens.to_i
+      total = (usage.input_tokens + usage.output_tokens).to_i
+
+      span.set_attribute("llm.token_usage.input", input)
+      span.set_attribute("llm.token_usage.output", output)
+      span.set_attribute("llm.token_usage.total", total)
       span.set_attribute("llm.token_usage.estimated", false)
     # Gemini format (promptTokenCount, candidatesTokenCount, totalTokenCount)
     elsif usage.respond_to?(:prompt_token_count) || usage.respond_to?(:promptTokenCount)
