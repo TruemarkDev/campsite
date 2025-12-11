@@ -133,3 +133,9 @@ PlanetScale will not pick up changes made to your PR after opening it. If you ma
 ## Profiling
 
 We use [rack-mini-profiler](https://github.com/MiniProfiler/rack-mini-profiler) to profile staff user API requests in development and production. Add `?pp=flamegraph` to the end of a URL to view a flamegraph of a request. In development, you can also make an API request and then visit http://localhost:3001/rack-mini-profiler/requests for additional profiling data. (This page isn't accessible in production yet due to https://github.com/MiniProfiler/rack-mini-profiler/issues/462#issuecomment-909141515.)
+
+## Creating comments to a post for notifications received from Signoz via webhooks
+1. First, create a custom integration named `Signoz` and generate its API key in the campsite.
+2. Add the post's public_id to env SIGNOZ_ALERT_POST_ID
+3. Add the route `:api_url/v2/signoz_notifications` to the webhook url for notifications in Signoz and use the API key 
+generated in the 1st step in the password field, keeping the username empty.

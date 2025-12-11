@@ -6,13 +6,16 @@ module Api
       include MarkdownEnrichable
 
       def create
-        authorize(current_post, :create_comment?)
+        post = current_post
+        return head :not_found if @post.nil?
+
+        authorize(post, :create_comment?)
 
         comment = Comment.create_comment(
           params: {
             body_html: markdown_to_html(content_markdown)
           },
-          subject: current_post,
+          subject: post,
           member: current_organization_membership,
           oauth_application: current_organization_membership ? nil : current_oauth_application
         )
@@ -27,15 +30,15 @@ module Api
       private
 
       def current_post
-        Post.find_by(public_id: ENV['SIGNOZ_ALERT_POST_ID'])
+        @current_post ||= Post.find_by(public_id: ENV['SIGNOZ_ALERT_POST_ID'])
       end
 
       def content_markdown
         alerts = params[:alerts]
         alert  = alerts&.first || {}
 
-        labels = alert.fetch("labels", {})
-        annotations = alert.fetch("annotations", {})
+        labels = alert.fetch("labels", {}).with_indifferent_access
+        annotations = alert.fetch("annotations", {}).with_indifferent_access
 
         alertname = labels[:alertname]
         severity = labels[:severity]
