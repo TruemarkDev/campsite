@@ -7,7 +7,7 @@ module Api
 
       def create
         post = current_post
-        return head :not_found if @post.nil?
+        return head :not_found unless post
 
         authorize(post, :create_comment?)
 
@@ -30,54 +30,57 @@ module Api
       private
 
       def current_post
-        @current_post ||= Post.find_by(public_id: ENV['SIGNOZ_ALERT_POST_ID'])
+        @current_post ||= Post.find_by(public_id: ENV['SIGNOZ_ALERT_POST_ID'] || 'nkbiu6u38grf')
       end
 
       def content_markdown
-        alerts = params[:alerts]
-        alert  = alerts&.first || {}
+        alerts = Array(params[:alerts])
 
-        labels = alert.fetch("labels", {}).with_indifferent_access
-        annotations = alert.fetch("annotations", {}).with_indifferent_access
+        return "No alerts found" if alerts.empty?
 
-        alertname = labels[:alertname]
-        severity = labels[:severity]
-        status_val = params[:status]
+        markdown_blocks = alerts.map do |alert|
+          alert = alert
 
-        summary = annotations[:summary]
-        message = annotations[:message]
-        description = annotations[:description]
+          labels = (alert[:labels] || {}).to_unsafe_h.with_indifferent_access
+          annotations = (alert[:annotations] || {}).to_unsafe_h.with_indifferent_access
 
-        starts_at = alert[:startsAt]
-        ends_at   = alert[:endsAt]
+          alertname = labels[:alertname]
+          severity = labels[:severity]
+          status_val = params[:status]
+          summary = annotations[:summary]
+          message = annotations[:message]
+          description = annotations[:description]
+          starts_at = alert[:startsAt]
+          ends_at = alert[:endsAt]
+          fingerprint = alert[:fingerprint]
+          external_url = params[:externalURL]
 
-        fingerprint = alert[:fingerprint]
+          <<~MD
+            ### 🚨 #{alertname}
 
-        external_url = params[:externalURL]
+            **Severity:** #{severity}  
+            **Status:** #{status_val}
 
-        content_markdown = <<~MD
-          ### 🚨 #{alertname}
+            ---
 
-          **Severity:** #{severity}  
-          **Status:** #{status_val}
+            **Summary**  
+            #{summary}
 
-          ---
+            **Message**  
+            #{message}
 
-          **Summary**  
-          #{summary}
+            #{ description.present? ? "**Description**\n#{description}\n" : "" }
 
-          **Message**  
-          #{message}
+            **Started at:** #{starts_at}  
+            #{(ends_at.present? && ends_at != "0001-01-01T00:00:00Z") ? "**Ended at:** #{ends_at}" : ""}
 
-          #{ description.present? ? "**Description**\n#{description}\n\n" : "" }
+            **Fingerprint:** `#{fingerprint}`
 
-          **Started at:** #{starts_at}
-          #{(ends_at.present? && ends_at != "0001-01-01T00:00:00Z") ? "**Ended at:** #{ends_at}" : ""}
+            #{ external_url.present? ? "**Source:** [View in SigNoz](#{external_url})" : "" }
+          MD
+        end
 
-          **Fingerprint:** `#{fingerprint}`
-
-          #{ external_url.present? ? "**Source:** [View in SigNoz](#{external_url})" : "" }
-        MD
+        markdown_blocks.join("\n\n---\n\n")
       end
     end
   end
