@@ -33,7 +33,7 @@ module MediaUrlBuilder
     color = FALLBACK_AVATAR_COLORS[name.each_byte.sum % FALLBACK_AVATAR_COLORS.length]
     build_media_url(
       "static/avatars/#{name[0] ? name[0].upcase : "blank"}.png",
-      append_params.merge("blend-color": color)
+      append_params.merge("blend-color": color),
     )
   end
 
@@ -110,12 +110,14 @@ module MediaUrlBuilder
   # === Cloudflare-specific methods ===
   
   def build_cloudflare_cdn_url(path, append_params = {}, url_key: :cdn_url)
+    return if path.nil?
+
     cdn_url = Rails.application.credentials.dig(:cloudflare, url_key)
     # Fallback to main cdn_url if specific URL is not configured
     cdn_url ||= Rails.application.credentials.dig(:cloudflare, :cdn_url)
     
     uri = Addressable::URI.parse(cdn_url)
-    uri.path = "/cdn/#{path}"
+    uri.path = "/cdn/#{path.sub(%r{^/}, "")}"
     
     if append_params.present?
       uri.query_values = append_params.compact.merge(uri.query_values || {})
