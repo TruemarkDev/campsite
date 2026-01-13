@@ -9,8 +9,3 @@ registry:
   username: myuser
   password:
     - KAMAL_REGISTRY_PASSWORD
-
-env:
-  secret:
-    - RAILS_MASTER_KEY
-    - SERVER_IP
