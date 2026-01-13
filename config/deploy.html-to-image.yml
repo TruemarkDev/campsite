@@ -1,0 +1,28 @@
+service: campsite-html-to-image
+
+image: truemarkdev/campsite
+
+servers:
+  web:
+    - 51.91.240.88
+
+proxy:
+  ssl: true
+  hosts:
+    - camp-html-to-image.polo-apps.com
+  app_port: 9222
+
+registry:
+  server: ghcr.io
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://deploy@51.91.240.88
+  context: html-to-image
+  dockerfile: html-to-image/Dockerfile
+
+ssh:
+  user: deploy

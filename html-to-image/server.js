@@ -68,6 +68,12 @@ import { Cluster } from 'puppeteer-cluster'
   app.use(bodyParser.json({ limit: '5mb' }))
   app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }))
 
+  // Health check endpoint
+  app.get('/up', (req, res) => {
+  res.send('OK')
+  })
+
+
   app.post('/image', bodyParser.json(), async (req, res) => {
     if (!req.is('*/json')) {
       return res.status(415).json({ message: 'request must be application/json' })
