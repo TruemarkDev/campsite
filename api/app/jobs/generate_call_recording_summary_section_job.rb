@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class GenerateCallRecordingSummarySectionJob < BaseJob
+  include LlmObservability
+
   sidekiq_options queue: "background", retry: 5
 
   sidekiq_retries_exhausted do |msg|
@@ -11,6 +13,14 @@ class GenerateCallRecordingSummarySectionJob < BaseJob
 
   def perform(id)
     section = CallRecordingSummarySection.eager_load(call_recording: [:call, speakers: :call_peer]).find(id)
+
+    # Add business context for observability
+    add_llm_context(
+      operation_type: "call_summary_section",
+      subject_type: "CallRecordingSummarySection",
+      subject_id: section.id,
+      call_id: section.call_recording.call.public_id,
+    )
 
     system_prompt = section.system_prompt
     user_prompt = section.call_recording.formatted_transcript

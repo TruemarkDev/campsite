@@ -8,6 +8,7 @@ class Call < ApplicationRecord
   include FollowUpable
   include Eventable
   include ActionView::Helpers::TagHelper
+  include LlmObservability
 
   belongs_to :room, class_name: "CallRoom", foreign_key: "call_room_id", inverse_of: :calls
   belongs_to :project, optional: true
@@ -294,6 +295,14 @@ class Call < ApplicationRecord
 
   def generate_title
     return if formatted_transcript.blank?
+
+    # Add business context for observability
+    add_llm_context(
+      operation_type: "call_title_generation",
+      subject_type: "Call",
+      subject_id: id,
+      call_id: public_id,
+    )
 
     system = <<~PROMPT.squish
       Create a brief, professional title based on a transcript of a video call.

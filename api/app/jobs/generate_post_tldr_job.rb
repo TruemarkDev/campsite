@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class GeneratePostTldrJob < BaseJob
+  include LlmObservability
+
   sidekiq_options queue: "critical", retry: 2
 
   sidekiq_retries_exhausted do |msg|
@@ -15,11 +17,17 @@ class GeneratePostTldrJob < BaseJob
   def perform(post_public_id, member_id)
     post = Post.eager_load_llm_content.find_by!(public_id: post_public_id)
     member = OrganizationMembership.eager_load(:user).find(member_id)
+
     prompt = post.generate_tldr_prompt
-    chat_response = Llm.new.chat(messages: prompt)
+    chat_response = Llm.new.chat(
+      messages: prompt,
+      operation_type: "tldr_generation",
+      subject_type: "Post",
+      subject_id: post.id,
+    )
 
     html = StyledText.new(Rails.application.credentials.dig(:styled_text_api, :authtoken))
-      .markdown_to_html(markdown: chat_response, editor: "markdown")
+      .markdown_to_html(markdown: chat_response.to_s, editor: "markdown")
 
     # prevent inserting duplicate responses without a unique index
     llm_response = LlmResponse.find_or_create_by_prompt!(
@@ -27,6 +35,9 @@ class GeneratePostTldrJob < BaseJob
       prompt: prompt,
       response: html,
     )
+
+    # Track cache hit/miss
+    track_cache_hit(llm_response.previously_new_record? == false)
 
     GeneratePostTldrJob.send_pusher_event(
       post_public_id: post_public_id,

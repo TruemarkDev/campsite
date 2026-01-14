@@ -31,7 +31,7 @@ class OauthApplication < ApplicationRecord
     cal_dot_com: 4,
   }
 
-  CAMPSITE_NOTIFICATION_POST_ID = "xbsbn74r4u9d"
+  CAMPSITE_NOTIFICATION_POST_ID = ENV["CAMPSITE_NOTIFICATION_POST_ID"] || '1su0bd0f2ojy'
 
   def application?
     true
