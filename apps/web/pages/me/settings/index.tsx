@@ -5,11 +5,15 @@ import { TwoFactorAuthentication } from 'components/UserSettings/TwoFactorAuthen
 import Head from 'next/head'
 
 import { CopyCurrentUrl } from '@/components/CopyCurrentUrl'
+import { DesktopAppUpsell } from '@/components/DesktopAppUpsell'
 import AuthAppProviders from '@/components/Providers/AuthAppProviders'
+import { PWAUpsell } from '@/components/PWAUpsell'
 import { ThemePicker } from '@/components/ThemePicker'
+import { Behaviors } from '@/components/UserSettings/Behaviors'
 import { FigmaIntegration } from '@/components/UserSettings/FigmaIntegration'
 import { NotificationSettings } from '@/components/UserSettings/Notifications/NotificationSettings'
 import { NotificationSchedule } from '@/components/UserSettings/NotificationSchedule'
+import { PushNotificationSettings } from '@/components/UserSettings/Notifications/PushNotificationSettings'
 import { UserSettingsPageWrapper } from '@/components/UserSettings/PageWrapper'
 import { PersonalCallLinks } from '@/components/UserSettings/PersonalCallLinks'
 import { SlackNotificationSettings } from '@/components/UserSettings/SlackNotificationSettings'
@@ -40,14 +44,14 @@ const UserSettingsPage: PageWithProviders<any> = () => {
       <UserSettingsPageWrapper>
         <ProfileDisplay />
         <Timezone />
-        {/* <DesktopAppUpsell /> */}
-        {/* <PWAUpsell /> */}
+        <DesktopAppUpsell />
+        <PWAUpsell />
         <FigmaIntegration />
         {/* <CalDotComIntegration /> */}
         <PersonalCallLinks />
         <ThemePicker />
-        {/* <Behaviors /> */}
-        {/* <PushNotificationSettings /> */}
+        <Behaviors />
+        <PushNotificationSettings />
         <NotificationSettings />
         <NotificationSchedule />
         <SlackNotificationSettings />

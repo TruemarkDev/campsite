@@ -5,7 +5,7 @@ import { LinearIntegration } from '@/components/OrgSettings/LinearIntegration'
 import { OrganizationOauthApplications } from '@/components/OrgSettings/OauthApplications'
 import { OrgSettingsPageWrapper } from '@/components/OrgSettings/PageWrapper'
 import { SlackIntegration } from '@/components/OrgSettings/SlackIntegration'
-import { ZapierIntegration } from '@/components/OrgSettings/ZapierIntegration'
+// import { ZapierIntegration } from '@/components/OrgSettings/ZapierIntegration'
 import AuthAppProviders from '@/components/Providers/AuthAppProviders'
 import { useGetCurrentOrganization } from '@/hooks/useGetCurrentOrganization'
 import { useGetOauthApplications } from '@/hooks/useGetOauthApplications'
@@ -29,7 +29,7 @@ const OrganizationIntegrationsPage: PageWithLayout<any> = () => {
       <OrgSettingsPageWrapper>
         {isAdmin && <LinearIntegration />}
         {isAdmin && <SlackIntegration />}
-        {isAdmin && <ZapierIntegration />}
+        {/* {isAdmin && <ZapierIntegration />} */}
         <OrganizationOauthApplications />
       </OrgSettingsPageWrapper>
     </>

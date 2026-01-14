@@ -89,26 +89,26 @@ export function ProfileDropdown({
     },
     pauseNotificationsMenuItem,
     { type: 'separator' },
-    {
-      type: 'item',
-      label: 'Support',
-      leftSlot: <HelpIcon />,
-      url: `mailto:support@campsite.com`
-    },
-    {
-      type: 'item',
-      label: 'Changelog',
-      leftSlot: <ShipIcon />,
-      external: true,
-      url: `${SITE_URL}/changelog`
-    },
-    {
-      type: 'item',
-      label: 'Share feedback',
-      leftSlot: <QuestionMarkCircleIcon />,
-      onSelect: () => setFeedbackDialogOpen(true)
-    },
-    { type: 'separator' },
+    // {
+    //   type: 'item',
+    //   label: 'Support',
+    //   leftSlot: <HelpIcon />,
+    //   url: `mailto:support@campsite.com`
+    // },
+    // {
+    //   type: 'item',
+    //   label: 'Changelog',
+    //   leftSlot: <ShipIcon />,
+    //   external: true,
+    //   url: `${SITE_URL}/changelog`
+    // },
+    // {
+    //   type: 'item',
+    //   label: 'Share feedback',
+    //   leftSlot: <QuestionMarkCircleIcon />,
+    //   onSelect: () => setFeedbackDialogOpen(true)
+    // },
+    // { type: 'separator' },
     !isMobile && {
       type: 'sub',
       label: 'Apps & integrations',
