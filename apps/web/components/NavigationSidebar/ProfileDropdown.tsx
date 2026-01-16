@@ -1,10 +1,10 @@
 import React, { forwardRef, useState } from 'react'
 import { useSignoutUser } from 'hooks/useSignoutUser'
-import { useSetAtom } from 'jotai'
+// import { useSetAtom } from 'jotai'
 import { isMobile } from 'react-device-detect'
 import * as R from 'remeda'
 
-import { FIGMA_PLUGIN_URL, LINEAR_APP_URL, SITE_URL } from '@campsite/config'
+import { FIGMA_PLUGIN_URL, LINEAR_APP_URL } from '@campsite/config'
 import {
   AccessIcon,
   AppsIcon,
@@ -12,18 +12,15 @@ import {
   DotsHorizontal,
   FigmaOutlineIcon,
   GearIcon,
-  HelpIcon,
   LinearIcon,
   Link,
   LogOutIcon,
-  QuestionMarkCircleIcon,
-  ShipIcon,
   UserCircleIcon
 } from '@campsite/ui'
 import { DropdownMenu } from '@campsite/ui/DropdownMenu'
 import { buildMenuItems } from '@campsite/ui/Menu'
 
-import { setFeedbackDialogOpenAtom } from '@/components/Feedback/FeedbackDialog'
+// import { setFeedbackDialogOpenAtom } from '@/components/Feedback/FeedbackDialog'
 import { NotificationPauseCalendarDialog } from '@/components/NotificationPause/NotificationPauseCalendarDialog'
 import { NotificationScheduleDialog } from '@/components/NotificationPause/NotificationScheduleDialog'
 import { useScope } from '@/contexts/scope'
@@ -62,7 +59,7 @@ export function ProfileDropdown({
   const { data: currentUser } = useGetCurrentUser()
   const signout = useSignoutUser()
   const isStaff = useCurrentUserIsStaff()
-  const setFeedbackDialogOpen = useSetAtom(setFeedbackDialogOpenAtom)
+  // const setFeedbackDialogOpen = useSetAtom(setFeedbackDialogOpenAtom)
   const [open, setOpen] = useState(false)
   const [notificationPauseCalendarDialogOpen, setNotificationPauseCalendarDialogOpen] = useState(false)
   const [notificationScheduleDialogOpen, setNotificationScheduleDialogOpen] = useState(false)
