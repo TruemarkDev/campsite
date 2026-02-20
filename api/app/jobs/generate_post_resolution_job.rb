@@ -30,8 +30,12 @@ class GeneratePostResolutionJob < BaseJob
     prompt = post.generate_resolution_prompt(comment)
     response = Llm.new.chat(messages: prompt)
 
+    markdown = response.to_s.strip
+    markdown = markdown.gsub(/^\*\s{2,}/m, "* ")
+    markdown = markdown.gsub(/^-\s{2,}/m, "- ")
+
     html = StyledText.new(Rails.application.credentials.dig(:styled_text_api, :authtoken))
-      .markdown_to_html(markdown: response, editor: "markdown")
+      .markdown_to_html(markdown: markdown, editor: "markdown")
 
     # prevent inserting duplicate responses without a unique index
     response = LlmResponse.find_or_create_by_prompt!(
