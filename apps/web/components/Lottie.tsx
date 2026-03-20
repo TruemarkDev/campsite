@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import LottieLight from 'react-lottie-player/dist/LottiePlayerLight'
+import { useEffect, useRef, useState, lazy, Suspense } from 'react'
+
+// Lazy load the Lottie player to prevent SSR issues
+const LottieLightLazy = lazy(() => import('react-lottie-player/dist/LottiePlayerLight').then(module => ({ default: module.default })))
 
 interface Props {
   url: string
@@ -7,6 +9,10 @@ interface Props {
   onError?: () => void
   onFrame?: (frame: number) => void
   className?: string
+}
+
+function LottieLoader() {
+  return <div className="w-full h-full animate-pulse bg-gray-100" />
 }
 
 export function Lottie(props: Props) {
@@ -37,15 +43,17 @@ export function Lottie(props: Props) {
   }
 
   return (
-    <LottieLight
-      ref={ref}
-      path={url}
-      play
-      loop
-      onEnterFrame={handleEnterFrame}
-      onLoad={handleLoad}
-      onError={onError}
-      className={className}
-    />
+    <Suspense fallback={<LottieLoader />}>
+      <LottieLightLazy
+        ref={ref}
+        path={url}
+        play
+        loop
+        onEnterFrame={handleEnterFrame}
+        onLoad={handleLoad}
+        onError={onError}
+        className={className}
+      />
+    </Suspense>
   )
 }

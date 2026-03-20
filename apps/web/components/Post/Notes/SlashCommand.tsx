@@ -150,6 +150,7 @@ const COMMANDS: CommandItemProps[] = [
     searchTerms: ['toggle', 'section', 'collapse', 'expand', 'details'],
     icon: <PlayIcon />,
     command: ({ editor, range }: CommandProps) => {
+      // @ts-ignore - setDetails is provided by the Details extension
       editor.chain().focus().deleteRange(range).setDetails().run()
 
       // open the toggle section after creating it

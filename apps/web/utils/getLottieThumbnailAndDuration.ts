@@ -1,8 +1,27 @@
-import lottie from 'lottie-web/build/player/lottie_light'
+// Dynamic import of lottie-web to avoid SSR issues
+// Using require with process.browser check to prevent SSR bundling
+const loadLottie = () => {
+  if (typeof window === 'undefined') {
+    // Return a noop on server
+    return Promise.resolve({
+      loadAnimation: () => ({
+        destroy: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        goToAndStop: () => {},
+        totalFrames: 0,
+        currentFrame: 0
+      })
+    })
+  }
+  return import(/* webpackIgnore: true */ 'lottie-web/build/player/lottie_light').then(m => m.default)
+}
 
 export async function getLottieThumbnailAndDuration(
   file: File
 ): Promise<{ preview: File; duration: number; width: number; height: number }> {
+  const lottie = await loadLottie()
+
   return new Promise<any>((resolve, reject) => {
     const src = URL.createObjectURL(file)
 

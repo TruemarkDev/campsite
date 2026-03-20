@@ -3,6 +3,9 @@ import { Editor } from '@tiptap/core'
 import { EditorContent, ReactNodeViewRenderer, useEditor } from '@tiptap/react'
 import { useDebouncedCallback } from 'use-debounce'
 
+// Force resolution of @radix-ui/react-popover types
+import type {} from '@radix-ui/react-popover'
+
 import {
   BlurAtTopOptions,
   focusAtStartWithNewline,
@@ -105,7 +108,7 @@ export interface MarkdownEditorRef {
   isFocused(): boolean
 }
 
-const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
+export const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref): JSX.Element => {
   const {
     id = '',
     content,
