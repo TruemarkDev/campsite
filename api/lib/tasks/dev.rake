@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "json"
-require "readline"
 
 namespace :dev do
   task change_plan: [:environment] do

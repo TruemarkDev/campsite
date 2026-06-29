@@ -65,10 +65,18 @@ module Mentionable
   end
 
   def render_html(string)
-    CommonMarker.render_html(
+    Commonmarker.to_html(
       string,
-      [:LIBERAL_HTML_TAG, :STRIKETHROUGH_DOUBLE_TILDE, :FULL_INFO_STRING, :UNSAFE],
-      [:table, :tasklist, :strikethrough, :autolink, :tagfilter],
+      options: {
+        # github_pre_lang: false keeps the language on `<code class="language-x">`
+        # (rather than `<pre lang="x">`); full_info_string preserves the info
+        # string after the language as `data-meta`; unsafe passes raw HTML through.
+        render: { unsafe: true, full_info_string: true, github_pre_lang: false },
+        extension: { table: true, tasklist: true, strikethrough: true, autolink: true, tagfilter: true },
+      },
+      # Disable comrak's built-in syntax highlighting so code blocks render as
+      # plain `<pre><code>` (highlighting is handled client-side).
+      plugins: { syntax_highlighter: nil },
     ).strip
   end
 
