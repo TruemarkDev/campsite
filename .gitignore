@@ -98,3 +98,9 @@ dump.rdb
 # PostHog migrations and backups
 posthog_migration
 posthog_migration_batches
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/
