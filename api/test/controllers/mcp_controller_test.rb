@@ -6,7 +6,7 @@ require "test_helpers/oauth_test_helper"
 class McpControllerTest < ActionDispatch::IntegrationTest
   include OauthTestHelper
 
-  ALL_SCOPES = "mcp read_organization read_user read_post read_project write_post write_message write_note"
+  ALL_SCOPES = "mcp read_organization read_user read_post read_project write_post write_message write_note write_project"
 
   setup do
     @org = create(:organization)
@@ -463,6 +463,283 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert tool_error?(@result)
       assert_match(/write_note/, tool_text(@result))
       assert_equal "Untouched", note.reload.title
+    end
+  end
+
+  describe "resolve_post" do
+    it "resolves a post" do
+      post = create(:post, organization: @org, member: @member)
+
+      result = call_tool("resolve_post", { org_slug: @org.slug, post_id: post.public_id })
+
+      assert_not tool_error?(result)
+      assert_predicate post.reload, :resolved?
+      assert_not_nil structured_content(result)
+    end
+
+    it "records an optional resolve_html note" do
+      post = create(:post, organization: @org, member: @member)
+
+      result = call_tool("resolve_post", {
+        org_slug: @org.slug,
+        post_id: post.public_id,
+        resolve_html: "<p>shipped</p>",
+      })
+
+      assert_not tool_error?(result)
+      post.reload
+      assert_predicate post, :resolved?
+      assert_equal "<p>shipped</p>", post.resolved_html
+    end
+
+    it "unresolves a post when resolved is false" do
+      post = create(:post, organization: @org, member: @member)
+      post.resolve!(actor: @member, html: nil, comment_id: nil)
+      assert_predicate post.reload, :resolved?
+
+      result = call_tool("resolve_post", {
+        org_slug: @org.slug,
+        post_id: post.public_id,
+        resolved: false,
+      })
+
+      assert_not tool_error?(result)
+      assert_not_predicate post.reload, :resolved?
+    end
+
+    it "errors without the write_post scope" do
+      post = create(:post, organization: @org, member: @member)
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_post")
+
+      result = call_tool(
+        "resolve_post",
+        { org_slug: @org.slug, post_id: post.public_id },
+        token: token.plaintext_token,
+      )
+
+      assert tool_error?(result)
+      assert_match(/write_post/, tool_text(result))
+    end
+  end
+
+  describe "update_post" do
+    it "updates the post title" do
+      post = create(:post, project: @project, organization: @org, member: @member, title: "Old title")
+
+      @result = call_tool("update_post", { org_slug: @org.slug, post_id: post.public_id, title: "New title" })
+
+      assert_not tool_error?(@result)
+      assert_equal "New title", post.reload.title
+    end
+
+    it "updates the post body via description_html" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+
+      @result = call_tool("update_post", { org_slug: @org.slug, post_id: post.public_id, description_html: "<p>updated body</p>" })
+
+      assert_not tool_error?(@result)
+      assert_includes post.reload.description_html, "updated body"
+    end
+
+    it "moves the post to another project" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      other_project = create(:project, organization: @org)
+
+      @result = call_tool("update_post", { org_slug: @org.slug, post_id: post.public_id, project_id: other_project.public_id })
+
+      assert_not tool_error?(@result)
+      assert_equal other_project.id, post.reload.project_id
+    end
+
+    it "returns an error when the post does not exist" do
+      @result = call_tool("update_post", { org_slug: @org.slug, post_id: "nonexistent", title: "x" })
+
+      assert tool_error?(@result)
+    end
+
+    it "does not edit a draft (unpublished) post, matching the REST published-post scope" do
+      draft = create(:post, :draft, project: @project, organization: @org, member: @member, title: "Draft")
+
+      @result = call_tool("update_post", { org_slug: @org.slug, post_id: draft.public_id, title: "Hijacked" })
+
+      assert tool_error?(@result)
+      assert_equal "Draft", draft.reload.title
+    end
+
+    it "requires the write_post scope" do
+      post = create(:post, project: @project, organization: @org, member: @member, title: "Untouched")
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_organization read_post")
+
+      @result = call_tool("update_post", { org_slug: @org.slug, post_id: post.public_id, title: "Nope" }, token: token.plaintext_token)
+
+      assert tool_error?(@result)
+      assert_equal "Untouched", post.reload.title
+    end
+  end
+
+  describe "reply_to_comment" do
+    it "creates a threaded reply to a comment" do
+      post = create(:post, project: @project, organization: @org)
+      parent = create(:comment, subject: post, member: @member)
+
+      result = call_tool("reply_to_comment", {
+        org_slug: @org.slug,
+        comment_id: parent.public_id,
+        body_html: "<p>thanks for the feedback</p>",
+      })
+
+      assert_not tool_error?(result), tool_text(result)
+
+      reply = Comment.find_by(public_id: structured_content(result)["id"])
+      assert_equal parent.id, reply.parent_id
+      assert_equal post.id, reply.subject_id
+      assert_equal parent.public_id, structured_content(result)["parent_id"]
+    end
+
+    it "returns a tool error without the write_post scope" do
+      post = create(:post, project: @project, organization: @org)
+      parent = create(:comment, subject: post, member: @member)
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_post")
+
+      result = call_tool(
+        "reply_to_comment",
+        { org_slug: @org.slug, comment_id: parent.public_id, body_html: "<p>nope</p>" },
+        token: token.plaintext_token,
+      )
+
+      assert tool_error?(result)
+    end
+
+    it "does not reply to a comment in another organization" do
+      other_org = create(:organization)
+      other_member = create(:organization_membership, :member, organization: other_org)
+      other_post = create(:post, organization: other_org, member: other_member)
+      other_parent = create(:comment, subject: other_post, member: other_member)
+
+      result = call_tool("reply_to_comment", {
+        org_slug: @org.slug,
+        comment_id: other_parent.public_id,
+        body_html: "<p>cross org</p>",
+      })
+
+      assert tool_error?(result)
+    end
+  end
+
+  describe "create_project" do
+    test "create_project creates a project with the connected member as creator" do
+      assert_difference -> { @org.projects.count }, 1 do
+        @result = call_tool("create_project", { org_slug: @org.slug, name: "Launch Plan", description: "Q3 launch" })
+      end
+
+      assert_not tool_error?(@result)
+      project = @org.projects.order(:id).last
+      assert_equal "Launch Plan", project.name
+      assert_equal @member.id, project.creator_id
+      assert_equal "Launch Plan", structured_content(@result)["name"]
+    end
+
+    test "create_project honors the private flag" do
+      @result = call_tool("create_project", { org_slug: @org.slug, name: "Secret", private: true })
+
+      assert_not tool_error?(@result)
+      assert @org.projects.order(:id).last.private?
+    end
+
+    test "create_project is blocked when the token lacks the write_project scope" do
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_organization")
+
+      assert_no_difference -> { Project.count } do
+        @result = call_tool("create_project", { org_slug: @org.slug, name: "Nope" }, token: token.plaintext_token)
+      end
+
+      assert tool_error?(@result)
+      assert_match(/write_project/, tool_text(@result))
+    end
+  end
+
+  describe "create_follow_up" do
+    test "creates a follow-up on a post for the connected member" do
+      post = create(:post, organization: @org, member: @member)
+
+      result = call_tool("create_follow_up", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        show_at: 1.hour.from_now.iso8601,
+      })
+
+      assert_not tool_error?(result)
+      assert_equal 1, post.follow_ups.count
+      follow_up = post.follow_ups.first
+      assert_equal @member, follow_up.organization_membership
+      assert_equal follow_up.public_id, structured_content(result)["id"]
+    end
+
+    test "creates a follow-up on a note for the connected member" do
+      note = create(:note, member: @member)
+
+      result = call_tool("create_follow_up", {
+        org_slug: @org.slug,
+        subject_type: "note",
+        subject_id: note.public_id,
+        show_at: 1.hour.from_now.iso8601,
+      })
+
+      assert_not tool_error?(result)
+      assert_equal 1, note.follow_ups.count
+      assert_equal @member, note.follow_ups.first.organization_membership
+    end
+
+    test "creates a follow-up on a comment for the connected member" do
+      post = create(:post, organization: @org, member: @member)
+      comment = create(:comment, subject: post, member: @member)
+
+      result = call_tool("create_follow_up", {
+        org_slug: @org.slug,
+        subject_type: "comment",
+        subject_id: comment.public_id,
+        show_at: 1.hour.from_now.iso8601,
+      })
+
+      assert_not tool_error?(result)
+      assert_equal 1, comment.follow_ups.count
+      assert_equal @member, comment.follow_ups.first.organization_membership
+    end
+
+    test "is denied when the user is not a member of the org" do
+      other_org = create(:organization)
+      other_member = create(:organization_membership, :member, organization: other_org)
+      other_post = create(:post, organization: other_org, member: other_member)
+
+      result = call_tool("create_follow_up", {
+        org_slug: other_org.slug,
+        subject_type: "post",
+        subject_id: other_post.public_id,
+        show_at: 1.hour.from_now.iso8601,
+      })
+
+      assert tool_error?(result)
+      assert_match(/not a member/i, tool_text(result))
+    end
+
+    test "does not require a write scope (mcp scope only)" do
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_post")
+      post = create(:post, organization: @org, member: @member)
+
+      result = call_tool(
+        "create_follow_up",
+        {
+          org_slug: @org.slug,
+          subject_type: "post",
+          subject_id: post.public_id,
+          show_at: 1.hour.from_now.iso8601,
+        },
+        token: token.plaintext_token,
+      )
+
+      assert_not tool_error?(result)
+      assert_equal 1, post.follow_ups.count
     end
   end
 

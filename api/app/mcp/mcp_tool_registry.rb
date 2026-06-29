@@ -22,6 +22,9 @@ module McpToolRegistry
     # MarkNotificationRead writes `read_at` but is a deliberate, self-only,
     # `mcp`-scope-only exemption grouped with reads — see the class comment.
     McpTools::MarkNotificationRead,
+    # CreateFollowUp writes a `follow_up` row but is a deliberate, self-only,
+    # `mcp`-scope-only exemption grouped with reads — see the class comment.
+    McpTools::CreateFollowUp,
   ].freeze
 
   WRITE_TOOLS = [
@@ -32,6 +35,10 @@ module McpToolRegistry
     McpTools::CreateMessageThread,
     McpTools::CreateNote,
     McpTools::UpdateNote,
+    McpTools::ResolvePost,
+    McpTools::UpdatePost,
+    McpTools::ReplyToComment,
+    McpTools::CreateProject,
   ].freeze
 
   def tools
