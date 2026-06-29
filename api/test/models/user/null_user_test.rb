@@ -41,14 +41,14 @@ class User
     context "#avatar_urls" do
       test "creates fallback avatar URLs from display name" do
         null_user = User::NullUser.new(display_name: "Alice")
-        assert_equal "http://campsite-test.imgix.net/static/avatars/A.png?blend-color=6366f1&fit=crop&h=40&w=40", null_user.avatar_urls[:xs]
-        assert_equal "http://campsite-test.imgix.net/static/avatars/A.png?blend-color=6366f1&fit=crop&h=128&w=128", null_user.avatar_urls[:xl]
+        assert_equal "https://camp-cdn.polo-apps.test/cdn/static/avatars/A.png?blend-color=6366f1&fit=crop&h=40&w=40", null_user.avatar_urls[:xs]
+        assert_equal "https://camp-cdn.polo-apps.test/cdn/static/avatars/A.png?blend-color=6366f1&fit=crop&h=128&w=128", null_user.avatar_urls[:xl]
       end
 
       test "works null users with no display name" do
         null_user = User::NullUser.new
-        assert_equal "http://campsite-test.imgix.net/static/avatars/blank.png?blend-color=3b82f6&fit=crop&h=40&w=40", null_user.avatar_urls[:xs]
-        assert_equal "http://campsite-test.imgix.net/static/avatars/blank.png?blend-color=3b82f6&fit=crop&h=128&w=128", null_user.avatar_urls[:xl]
+        assert_equal "https://camp-cdn.polo-apps.test/cdn/static/avatars/blank.png?blend-color=3b82f6&fit=crop&h=40&w=40", null_user.avatar_urls[:xs]
+        assert_equal "https://camp-cdn.polo-apps.test/cdn/static/avatars/blank.png?blend-color=3b82f6&fit=crop&h=128&w=128", null_user.avatar_urls[:xl]
       end
     end
   end

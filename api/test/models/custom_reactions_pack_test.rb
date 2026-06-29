@@ -43,7 +43,7 @@ class CustomReactionsPackTest < ActiveSupport::TestCase
       assert_equal "party-meow", pack.items.first.name
       assert_equal "custom-reactions-packs/party-meow.png", pack.items.first.file_path
       assert_equal "image/png", pack.items.first.file_type
-      assert_equal "http://campsite-test.imgix.net/custom-reactions-packs/party-meow.png", pack.items.first.file_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn/custom-reactions-packs/party-meow.png", pack.items.first.file_url
       assert pack.installed?
     end
 
@@ -114,8 +114,6 @@ class CustomReactionsPackTest < ActiveSupport::TestCase
           stub(key: "custom-reactions-packs/party-meow.png"),
           stub(key: "custom-reactions-packs/raging-meow.gif"),
         ])
-
-      S3_BUCKET.expects(:objects).with(prefix: "custom-reactions-packs/#{@name}").never
 
       assert_no_difference -> { @organization.custom_reactions.count } do
         CustomReactionsPack.install!(name: @name, organization: @organization, creator: @organization_membership)

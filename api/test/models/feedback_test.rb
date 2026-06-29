@@ -21,7 +21,7 @@ class FeedbackTest < ActiveSupport::TestCase
         { componentSpacer: { spacerSize: "M" } },
         {
           componentLinkButton: {
-            linkButtonLabel: "Screenshot", linkButtonUrl: "http://campsite-test.imgix.net#{feedback.screenshot_path}",
+            linkButtonLabel: "Screenshot", linkButtonUrl: "https://camp-cdn.polo-apps.test/cdn#{feedback.screenshot_path}",
           },
         },
         { componentSpacer: { spacerSize: "M" } },

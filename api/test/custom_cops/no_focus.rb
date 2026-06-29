@@ -3,7 +3,7 @@
 module RuboCop
   module Cop
     module Ally
-      class NoFocus < RuboCop::Cop::Cop
+      class NoFocus < RuboCop::Cop::Base
         MSG = "Remove `focus` from tests."
 
         def_node_matcher :focused?, <<-MATCHER

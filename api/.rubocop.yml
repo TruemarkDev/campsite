@@ -1,12 +1,19 @@
+inherit_from: .rubocop_todo.yml
+
 inherit_gem:
   rubocop-shopify: rubocop.yml
 
-require:
+plugins:
   - 'rubocop-rails'
+  - 'rubocop-performance'
+
+require:
   - './test/custom_cops/no_focus.rb'
 
 AllCops:
   NewCops: enable
+  TargetRubyVersion: 4.0
+  SuggestExtensions: false
   Exclude:
     - './bin/**/*'
     - './config/initializers/email_provider_domains.rb'

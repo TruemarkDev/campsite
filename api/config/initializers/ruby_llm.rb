@@ -4,6 +4,11 @@
 # https://rubyllm.com/configuration/
 
 RubyLLM.configure do |config|
+  # Opt into the new acts_as API (the legacy one is deprecated and removed in RubyLLM 2.0).
+  # We don't use the ActiveRecord integration (acts_as_chat/message/...), so this only
+  # silences the deprecation warning with no behavioral change.
+  config.use_new_acts_as = true
+
   config.gemini_api_key = ENV.fetch("GEMINI_API_KEY", Rails.application.credentials.dig(:gemini, :api_key))
   config.openai_api_key = ENV.fetch("OPENAI_API_KEY", Rails.application.credentials.dig(:openai, :api_key))
   config.anthropic_api_key = ENV.fetch("ANTHROPIC_API_KEY", Rails.application.credentials.dig(:anthropic, :api_key))

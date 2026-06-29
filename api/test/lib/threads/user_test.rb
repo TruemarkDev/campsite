@@ -24,7 +24,7 @@ module Threads
       end
 
       test "returns a fallback when no primary email exists" do
-        assert_equal "linear-34431974988@campsite.com", @linear_user.primary_email_or_fallback
+        assert_equal "linear-34431974988@truemark.dev", @linear_user.primary_email_or_fallback
       end
     end
 

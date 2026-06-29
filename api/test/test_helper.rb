@@ -6,11 +6,29 @@ require_relative "support/assertions"
 require_relative "support/action_mailer_test_helper"
 
 require "rails/test_help"
+
+# Rails 8.1 loads routes lazily on the first request. Devise populates
+# `Devise.mappings` while drawing routes, but `sign_in` talks to Warden without
+# issuing a request, so tests that authenticate before making any request would
+# otherwise hit empty mappings ("Could not find a valid mapping for #<User ...>").
+# Load routes once here, before parallel workers fork, so every worker inherits them.
+Rails.application.reload_routes_unless_loaded
+
 require "mocha/minitest"
-require "sidekiq/testing"
 require "vcr"
 
-Sidekiq::Testing.fake!
+# `require "sidekiq/testing"` is deprecated (removed in Sidekiq 9). The new API is
+# `Sidekiq.testing!(:fake)`, which loads the same Sidekiq::Testing helpers used below.
+Sidekiq.testing!(:fake)
+
+# flipper/test_help (auto-loaded in test env) reconfigures the default Flipper
+# instance without an instrumenter, so it falls back to Noop and never emits the
+# `feature_operation.flipper` notifications our FlipperAuditLog subscriber needs.
+# Re-add the ActiveSupport::Notifications instrumenter; this persists across the
+# per-test `flipper_reset` since that only nils the memoized instance.
+Flipper.configure do |config|
+  config.default { Flipper.new(config.adapter, instrumenter: ActiveSupport::Notifications) }
+end
 
 VCR.configure do |config|
   config.cassette_library_dir = "fixtures/vcr_cassettes"

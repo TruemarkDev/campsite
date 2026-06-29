@@ -11,11 +11,11 @@ module Api
 
           assert_response :ok
           assert_response_gen_schema
-          assert_equal "http://campsite-test.imgix.net/test.jpg", json_response["original_url"]
-          assert_equal "http://campsite-test.imgix.net/test.jpg?auto=compress%2Cformat&dpr=2&q=60&w=112", json_response["thumbnail_url"]
-          assert_equal "http://campsite-test.imgix.net/test.jpg?auto=compress%2Cformat&dpr=2&q=80&w=800", json_response["feed_url"]
-          assert_equal "http://campsite-test.imgix.net/test.jpg?auto=compress%2Cformat&dpr=2&q=75&w=1200", json_response["slack_url"]
-          assert_equal "http://campsite-test.imgix.net/test.jpg?auto=compress%2Cformat&dpr=2&q=90&w=1440", json_response["large_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.jpg", json_response["original_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.jpg?auto=compress%2Cformat&dpr=2&q=60&w=112", json_response["thumbnail_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.jpg?auto=compress%2Cformat&dpr=2&q=80&w=800", json_response["feed_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.jpg?auto=compress%2Cformat&dpr=2&q=75&w=1200", json_response["slack_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.jpg?auto=compress%2Cformat&dpr=2&q=90&w=1440", json_response["large_url"]
         end
 
         test "returns input for blob URLs" do
@@ -47,11 +47,11 @@ module Api
 
           assert_response :ok
           assert_response_gen_schema
-          assert_equal "http://campsite-test.imgix.net/test.svg", json_response["original_url"]
-          assert_equal "http://campsite-test.imgix.net/test.svg?auto=compress%2Cformat&dpr=2&q=60&w=112", json_response["thumbnail_url"]
-          assert_equal "http://campsite-test.imgix.net/test.svg?auto=compress%2Cformat&dpr=2&q=80&w=800", json_response["feed_url"]
-          assert_equal "http://campsite-test.imgix.net/test.svg?auto=compress%2Cformat&dpr=2&q=75&w=1200", json_response["slack_url"]
-          assert_equal "http://campsite-test.imgix.net/test.svg?auto=compress%2Cformat&dpr=2&q=90&w=1440", json_response["large_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.svg", json_response["original_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.svg?auto=compress%2Cformat&dpr=2&q=60&w=112", json_response["thumbnail_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.svg?auto=compress%2Cformat&dpr=2&q=80&w=800", json_response["feed_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.svg?auto=compress%2Cformat&dpr=2&q=75&w=1200", json_response["slack_url"]
+          assert_equal "https://camp-cdn.polo-apps.test/cdn/test.svg?auto=compress%2Cformat&dpr=2&q=90&w=1440", json_response["large_url"]
         end
 
         test "gracefully handles missing file path" do

@@ -990,14 +990,14 @@ class PostTest < ActiveSupport::TestCase
       post = create(:post)
       attachment = create(:attachment, :video, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
     end
 
     test "for a post with a Figma file with a preview_file_path" do
       post = create(:post)
       attachment = create(:attachment, :figma_link, subject: post, preview_file_path: "/o/foo/bar")
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
     end
 
     test "for a post with a Figma file without a preview_file_path" do
@@ -1011,21 +1011,21 @@ class PostTest < ActiveSupport::TestCase
       post = create(:post)
       attachment = create(:attachment, :gif, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.file_path}?auto=compress&dpr=2&frame=1&h=48&w=48", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.file_path}?auto=compress&dpr=2&frame=1&h=48&w=48", post.thumbnail_url
     end
 
     test "for a post with a png" do
       post = create(:post)
       attachment = create(:attachment, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
     end
 
     test "for a post with an svg" do
       post = create(:post)
       attachment = create(:attachment, :svg, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
     end
   end
 

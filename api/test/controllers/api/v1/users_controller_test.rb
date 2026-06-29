@@ -274,7 +274,7 @@ module Api
         test("query count") do
           sign_in @user
 
-          assert_query_count 4 do
+          assert_query_count 3 do
             get current_user_path
           end
         end

@@ -99,7 +99,7 @@ module Api
             assert_equal "<p>my reply</p>", json_response["reply"]["body_html"]
             assert_equal 1, json_response["reply"]["attachments"].length
             assert_equal "image/png", json_response["reply"]["attachments"][0]["file_type"]
-            assert_equal "http://campsite-test.imgix.net/path/to/image.png", json_response["reply"]["attachments"][0]["url"]
+            assert_equal "https://camp-cdn.polo-apps.test/cdn/path/to/image.png", json_response["reply"]["attachments"][0]["url"]
             assert_equal attachment_name, json_response["reply"]["attachments"][0]["name"]
             assert_equal attachment_size, json_response["reply"]["attachments"][0]["size"]
           end
@@ -119,7 +119,7 @@ module Api
             assert_equal "", json_response["reply"]["body_html"]
             assert_equal 1, json_response["reply"]["attachments"].length
             assert_equal "image/png", json_response["reply"]["attachments"][0]["file_type"]
-            assert_equal "http://campsite-test.imgix.net/path/to/image.png", json_response["reply"]["attachments"][0]["url"]
+            assert_equal "https://camp-cdn.polo-apps.test/cdn/path/to/image.png", json_response["reply"]["attachments"][0]["url"]
           end
 
           test "can't create a comment reply without body and attachments" do

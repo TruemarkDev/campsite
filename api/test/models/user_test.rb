@@ -277,7 +277,7 @@ class UserTest < ActiveSupport::TestCase
 
     test "returns an imgix formed url if avatar_path is a path" do
       user = build(:user, avatar_path: "/path/to/image.png")
-      assert_includes user.avatar_url, "http://campsite-test.imgix.net/path/to/image.png"
+      assert_includes user.avatar_url, "https://camp-cdn.polo-apps.test/cdn/path/to/image.png"
     end
 
     test "returns fallback if avatar_path is blank" do

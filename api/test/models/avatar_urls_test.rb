@@ -24,7 +24,7 @@ class AvatarUrlsTest < ActiveSupport::TestCase
   test "returns a fallback avatar url for a blank path" do
     url = AvatarUrls.new(display_name: "Frontier Forest").url(size: 40)
 
-    assert_match(%r{http://campsite-test.imgix.net/static/avatars/F.png\?blend-color=\h{6}&fit=crop&h=80&w=80}, url)
+    assert_match(%r{https://camp-cdn.polo-apps.test/cdn/static/avatars/F.png\?blend-color=\h{6}&fit=crop&h=80&w=80}, url)
   end
 
   private
@@ -32,6 +32,6 @@ class AvatarUrlsTest < ActiveSupport::TestCase
   def dev_avatar_path(size)
     retina_size = size * 2
 
-    "http://campsite-test.imgix.net/o/dev-seed-files/forest_org_icon.png?fit=crop&h=#{retina_size}&w=#{retina_size}"
+    "https://camp-cdn.polo-apps.test/cdn/o/dev-seed-files/forest_org_icon.png?fit=crop&h=#{retina_size}&w=#{retina_size}"
   end
 end

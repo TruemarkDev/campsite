@@ -83,6 +83,7 @@ group :development do
   gem "debug", require: false
 
   gem "planetscale_rails"
+  gem "rubocop-performance"
   gem "rubocop-rails"
   gem "rubocop-shopify"
 end

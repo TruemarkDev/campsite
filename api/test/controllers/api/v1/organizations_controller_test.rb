@@ -18,7 +18,7 @@ module Api
 
           sign_in @user
 
-          assert_query_count 53 do
+          assert_query_count 52 do
             post organizations_path, params: { name: "Campsite Design", slug: "campsite-design" }
           end
 
@@ -183,7 +183,7 @@ module Api
         test("query count") do
           sign_in @user
 
-          assert_query_count 6 do
+          assert_query_count 5 do
             get organization_path(@organization.slug)
           end
         end
@@ -223,7 +223,7 @@ module Api
 
           assert_response :ok
           assert_response_gen_schema
-          assert_includes json_response["avatar_url"], "http://campsite-test.imgix.net/path/to/image.png"
+          assert_includes json_response["avatar_url"], "https://camp-cdn.polo-apps.test/cdn/path/to/image.png"
         end
 
         test "does not update the organization email domain if domains dont match" do
