@@ -90,6 +90,15 @@ class McpTool < MCP::Tool
 
     organization = membership.organization
 
+    # Mirror the REST API's `require_org_two_factor_authentication` before_action
+    # (Api::V1::BaseController): if the org enforces 2FA, a user without it enabled
+    # is blocked from every action there, and MCP must not be a bypass.
+    if organization.enforce_two_factor_authentication? && !user.otp_enabled?
+      raise ToolError,
+        "This organization enforces two-factor authentication, which your account hasn't enabled. " \
+          "Enable 2FA in Campsite to use this connection here."
+    end
+
     Current.user = user
     Current.organization = organization
     Current.organization_membership = membership

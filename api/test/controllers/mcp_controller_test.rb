@@ -743,6 +743,26 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  describe "two-factor enforcement" do
+    test "blocks an org-scoped tool when the org enforces 2FA and the user has not enabled it" do
+      @org.update_setting(:enforce_two_factor_authentication, true)
+
+      result = call_tool("list_projects", { org_slug: @org.slug })
+
+      assert tool_error?(result)
+      assert_match(/two-factor/i, tool_text(result))
+    end
+
+    test "allows the tool when the user has 2FA enabled" do
+      @org.update_setting(:enforce_two_factor_authentication, true)
+      @user.update!(otp_enabled: true, otp_secret: User.generate_otp_secret)
+
+      result = call_tool("list_projects", { org_slug: @org.slug })
+
+      assert_not tool_error?(result)
+    end
+  end
+
   private
 
   def mcp_request(method:, params: nil, id: 1, token: nil)
