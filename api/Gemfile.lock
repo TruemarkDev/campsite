@@ -286,7 +286,8 @@ GEM
     multi_xml (0.6.0)
     multipart-post (2.4.1)
     mutex_m (0.3.0)
-    mysql2 (0.5.6)
+    mysql2 (0.5.7)
+      bigdecimal
     nanoid (2.0.0)
     net-http (0.4.1)
       uri
@@ -795,7 +796,7 @@ DEPENDENCIES
   minitest-stub-const
   mocha (~> 3.1)
   mock_redis
-  mysql2 (~> 0.5.6)
+  mysql2 (~> 0.5.7)
   nanoid
   omniauth
   omniauth-google-oauth2
