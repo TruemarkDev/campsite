@@ -60,6 +60,12 @@ Rack::Attack.throttle("limit sign ups per email", limit: 6, period: 60) do |req|
   end
 end
 
+# Throttle MCP dynamic client registration to cap OauthApplication row spam from
+# anonymous clients (RFC 7591 registration is open by design — see Decision 6).
+Rack::Attack.throttle("limit mcp dynamic client registration per ip", limit: 5, period: 60) do |req|
+  "ip:#{req.env["HTTP_FLY_CLIENT_IP"]}" if req.path == "/oauth/register" && req.post?
+end
+
 ActiveSupport::Notifications.subscribe(/rack_attack/) do |_name, _start, _finish, _request_id, payload|
   req = payload[:request]
 

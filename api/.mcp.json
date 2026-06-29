@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "campsite": {
+      "type": "http",
+      "url": "http://api.campsite.test:3001/mcp",
+      "headers": {
+        "Authorization": "Bearer sEuOgCpjN4DoRAqoaROjNFigezTUJ3jL1uVdeWvME2c"
+      }
+    }
+  }
+}

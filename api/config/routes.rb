@@ -599,6 +599,16 @@ Rails.application.routes.draw do
     get "*path", to: "cdn#show", as: :cdn_file, format: false
   end
 
+  # Remote MCP server + the OAuth discovery/registration endpoints that remote MCP
+  # connectors (e.g. Claude) require. Served same-origin on the API host so a client
+  # can self-discover and self-register on top of the existing Doorkeeper provider.
+  get "/.well-known/oauth-protected-resource", to: "well_known#oauth_protected_resource"
+  get "/.well-known/oauth-protected-resource/mcp", to: "well_known#oauth_protected_resource"
+  get "/.well-known/oauth-authorization-server", to: "well_known#oauth_authorization_server"
+  get "/.well-known/oauth-authorization-server/mcp", to: "well_known#oauth_authorization_server"
+  post "/oauth/register", to: "oauth/registrations#create"
+  match "/mcp", to: "mcp#handle", via: [:get, :post, :delete]
+
   # Adds OAuth routes to the V2 API.
   # This errors if used in a `scope` block so we use the `scope` option on `use_doorkeeper` instead.
   use_doorkeeper scope: "v2/oauth" do

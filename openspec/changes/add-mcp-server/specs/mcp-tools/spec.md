@@ -17,6 +17,25 @@ equivalent tool call SHALL also be denied.
 - **WHEN** a read tool returns a resource
 - **THEN** the resource is shaped by the same serializer (or an equivalent subset) the REST API uses, scoped to the acting user
 
+### Requirement: Tools are multi-org and scoped to the user's memberships
+
+A single `mcp` connection SHALL act across all organizations the authenticated
+user belongs to, matching the existing frontend integration. Tools that operate
+within an organization SHALL accept an organization argument (slug/public id),
+and the server SHALL verify the user has a kept membership in that organization
+before performing any read or write. A `list_organizations` tool SHALL let the
+client discover the organizations the user can act in.
+
+#### Scenario: User acts across multiple organizations with one connection
+
+- **WHEN** a user who belongs to several organizations calls an org-scoped tool with a given organization argument
+- **THEN** the server operates within that organization using the user's membership there, without requiring a separate connection per organization
+
+#### Scenario: Org the user does not belong to is rejected
+
+- **WHEN** a user calls an org-scoped tool with an organization they have no kept membership in
+- **THEN** the server returns an authorization error and performs no read or write
+
 ### Requirement: Read tools
 
 The system SHALL provide read tools covering the core Campsite domain: listing

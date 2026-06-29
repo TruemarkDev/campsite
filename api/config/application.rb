@@ -19,7 +19,7 @@ Bundler.require(*Rails.groups)
 module CampsiteApi
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
-    config.load_defaults(7.1)
+    config.load_defaults(8.1)
 
     # redirect to app after login without raising an error
     config.action_controller.action_on_open_redirect = :log

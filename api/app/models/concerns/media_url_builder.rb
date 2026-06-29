@@ -70,7 +70,7 @@ module MediaUrlBuilder
   # === Imgix-specific methods ===
 
   def build_imgix_cdn_url(path, append_params = {})
-    uri = Addressable::URI.parse(Rails.application.credentials.dig(:imgix, :url))
+    uri = Addressable::URI.parse(Rails.application.credentials.dig(:imgix, :url).presence || "")
     uri.path = path
 
     if append_params.present?
@@ -83,7 +83,7 @@ module MediaUrlBuilder
   def build_imgix_cdn_folder_url(path, append_params = {})
     folder_url = Rails.application.credentials.dig(:imgix_folder, :url) || Rails.application.credentials.dig(:imgix, :url)
 
-    uri = Addressable::URI.parse(folder_url)
+    uri = Addressable::URI.parse(folder_url.presence || "")
     uri.path = path
 
     if append_params.present?
@@ -96,7 +96,7 @@ module MediaUrlBuilder
   def build_imgix_cdn_video_url(path, append_params = {})
     video_url = Rails.application.credentials.dig(:imgix_video, :url) || Rails.application.credentials.dig(:imgix, :url)
 
-    uri = Addressable::URI.parse(video_url)
+    uri = Addressable::URI.parse(video_url.presence || "")
     uri.path = path
 
     if append_params.present?
@@ -115,7 +115,9 @@ module MediaUrlBuilder
     # Fallback to main cdn_url if specific URL is not configured
     cdn_url ||= Rails.application.credentials.dig(:cloudflare, :cdn_url)
 
-    uri = Addressable::URI.parse(cdn_url)
+    # When no CDN is configured (e.g. local dev), degrade to a host-relative URL
+    # instead of crashing on a nil host.
+    uri = Addressable::URI.parse(cdn_url.presence || "")
     uri.path = "/cdn/#{path.sub(%r{^/}, "")}"
 
     if append_params.present?

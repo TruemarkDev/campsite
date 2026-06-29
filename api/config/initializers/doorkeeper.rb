@@ -289,7 +289,7 @@ Doorkeeper.configure do
   # https://doorkeeper.gitbook.io/guides/ruby-on-rails/scopes
   #
   default_scopes  :read_organization, :read_user
-  optional_scopes :write_organization, :write_user, :read_post, :write_post, :read_project, :write_project, :read_call_room, :write_call_room
+  optional_scopes :write_organization, :write_user, :read_post, :write_post, :read_project, :write_project, :read_call_room, :write_call_room, :write_message, :write_note, :mcp
 
   # Allows to restrict only certain scopes for grant_type.
   # By default, all the scopes will be available for all the grant types.

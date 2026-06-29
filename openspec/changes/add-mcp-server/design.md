@@ -90,7 +90,31 @@ Doorkeeper's custom authorizations controller.
   user a client id. Rejected: not the Notion/PostHog UX, and per-client
   registration is what MCP clients expect.
 
-### Decision 5 — Tools wrap controllers/services, not duplicate them
+### Decision 5 — Multi-org: a user-scoped token; tools take an organization argument
+The REST API already resolves the active org from an `org_slug` **request param**
+against the user's kept memberships (`base_controller.rb` `current_organization_
+membership`), and the Doorkeeper token's resource owner is the **user**, not an
+org. So a single `mcp` connection is naturally multi-org — matching the current
+frontend integration. Each tool that operates within an org accepts an
+organization argument (slug/public id); `list_organizations` lets the client
+discover which orgs the user can act in. The server validates that the user has a
+kept membership in the requested org before doing any work (no cross-org leakage).
+- *Alternative considered:* binding one connection to one org at connect time.
+  Rejected: the user asked for multi-org parity with the frontend, and the token
+  is already user-scoped, so per-org binding would add friction for no benefit.
+
+### Decision 6 — DCR is open but throttled
+Registration is unauthenticated (open) so the connector flow needs no manual
+credential provisioning, but guarded by: a redirect-URI scheme/host constraint
+and a rate limit on the registration endpoint. Registering a client grants no
+access by itself — a human still logs in and consents before any token issues, so
+the only residual risk is `OauthApplication` row spam, which throttling caps.
+Tighten to a redirect-URI allowlist or approval queue later only if abused.
+- *Alternative considered:* gated DCR (initial access token / approval queue) from
+  day one. Rejected: adds a manual step that breaks the Notion/PostHog-style UX;
+  not warranted before observing real abuse.
+
+### Decision 7 — Tools wrap controllers/services, not duplicate them
 Each tool is a small class (name, description, JSON-Schema input) that builds the
 same params and calls the same model/service path the matching controller uses,
 authorizing with the same Pundit policy and serializing with the same Blueprinter
@@ -144,7 +168,9 @@ last (revoking issued connector tokens).
 
 - Which MCP gem wins on Rack-mount + Streamable HTTP + maintenance (resolve at
   task start by spiking both)?
-- Should DCR be open or gated behind an allowlist / approval for production?
-- Multi-org users: does a single `mcp` token act across all the user's orgs, or do
-  we scope a connection to one organization at connect time?
 - Do we want a Flipper flag gating availability for the initial rollout?
+
+**Resolved:**
+- *DCR open vs gated* → open but throttled (Decision 6).
+- *Multi-org* → user-scoped token, tools take an org argument; parity with the
+  frontend (Decision 5).
