@@ -1,0 +1,6 @@
+# Standalone project (not part of the root pnpm workspace).
+# pnpm 10+ only runs a dependency's build script if it is allowlisted here.
+# esbuild installs its platform binary via a postinstall — required for
+# `pnpm build` (the Rails jsbundling step) to work.
+onlyBuiltDependencies:
+  - esbuild

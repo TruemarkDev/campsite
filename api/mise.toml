@@ -1,0 +1,9 @@
+# Canonical toolchain for the Rails API.
+# Source of truth for local dev (mise) and mirrored by:
+#   - api/.ruby-version  (consumed literally by api/Dockerfile + api/script/bootstrap)
+#   - api/fly.toml       [build.args] RUBY_VERSION / NODE_VERSION (deploy)
+# When bumping a version here, update those too (see MAINTENANCE.md).
+[tools]
+ruby = "3.4.9"
+node = "22.21.0"
+pnpm = "11.9.0"

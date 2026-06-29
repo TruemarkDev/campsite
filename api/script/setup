@@ -11,7 +11,7 @@ bundle install --local
 echo "\033[1;32mGem files installed.\033[0m"
 
 echo "\nInstalling javascript dependencies...\n============================================================"
-yarn install
+corepack enable && pnpm install
 echo "\033[1;32mJavascript dependencies installed.\033[0m"
 
 if [ -n "$SETUP_PRISTINE" ]; then

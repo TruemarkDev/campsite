@@ -29,7 +29,7 @@ ENV BASH_ENV ~/.bashrc
 ENV VOLTA_HOME /root/.volta
 ENV PATH $VOLTA_HOME/bin:/usr/local/bin:$PATH
 
-RUN volta install node@${NODE_VERSION} && volta install yarn
+RUN volta install node@${NODE_VERSION} && corepack enable
 
 FROM base as build_deps
 
@@ -52,13 +52,10 @@ RUN bundle install &&  rm -rf vendor/bundle/ruby/*/cache
 
 FROM build_deps as node_modules
 
-COPY package*json ./
-COPY yarn.* ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
-RUN if [ -f "yarn.lock" ]; then \
-    yarn install; \
-    elif [ -f "package-lock.json" ]; then \
-    npm install; \
+RUN if [ -f "pnpm-lock.yaml" ]; then \
+    pnpm install --frozen-lockfile; \
     else \
     mkdir node_modules; \
     fi

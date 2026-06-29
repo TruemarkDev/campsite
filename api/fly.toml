@@ -12,10 +12,12 @@ kill_timeout = 60
   auto_rollback = true
 
 [build]
+  # Keep in sync with api/mise.toml (RUBY_VERSION, NODE_VERSION) and
+  # api/Gemfile.lock "BUNDLED WITH" (BUNDLER_VERSION). See MAINTENANCE.md.
   [build.args]
-    BUNDLER_VERSION = "2.3.14"
-    NODE_VERSION = "18.16.1"
-    RUBY_VERSION = "3.3.4"
+    BUNDLER_VERSION = "2.7.2"
+    NODE_VERSION = "22.21.0"
+    RUBY_VERSION = "3.4.9"
 
 [deploy]
 
