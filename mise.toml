@@ -1,0 +1,8 @@
+# Canonical toolchain for the JS monorepo (pnpm workspace).
+# This is the single source of truth for runtime versions — mise reads it,
+# and CI installs from it via `jdx/mise-action`. The Ruby API has its own
+# `api/mise.toml` (it is a separate Rails project).
+[tools]
+node = "22.21.0"
+ruby = "3.4.9"
+pnpm = "11.9.0"

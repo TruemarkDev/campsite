@@ -1,5 +1,8 @@
 version: 2
 updates:
+  # JavaScript monorepo. `npm` is Dependabot's label for the JS ecosystem; it
+  # detects and updates the pnpm workspace via pnpm-lock.yaml (this repo uses
+  # pnpm only — not npm or yarn). Dependency updates are scoped to JS only.
   - package-ecosystem: 'npm'
     directory: '/'
     versioning-strategy: increase
@@ -15,6 +18,12 @@ updates:
     # This option has no impact on security updates which have a separate internal limit of 10 PRs
     # https://docs.github.com/en/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file#open-pull-requests-limit
     open-pull-requests-limit: 2
+    groups:
+      # Batch all security-driven bumps into a single PR to keep review load low.
+      npm-security:
+        applies-to: security-updates
+        patterns:
+          - '*'
     commit-message:
       # Prefix all commit messages with "chore: "
       prefix: 'chore'

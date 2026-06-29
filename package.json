@@ -20,16 +20,8 @@
     "turbo": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@9.7.1",
+  "packageManager": "pnpm@11.9.0",
   "engines": {
-    "node": ">=20.0.0 <21"
-  },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "^18.0.0"
-    },
-    "patchedDependencies": {
-      "@radix-ui/react-popper": "patches/@radix-ui__react-popper.patch"
-    }
+    "node": ">=22.0.0 <23"
   }
 }

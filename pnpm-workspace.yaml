@@ -1,6 +1,26 @@
 packages:
   - apps/*
   - packages/*
+
+# Migrated from package.json "pnpm" field (pnpm 10+ reads these here, not there).
+overrides:
+  '@types/react': ^18.0.0
+patchedDependencies:
+  '@radix-ui/react-popper': patches/@radix-ui__react-popper.patch
+
+# pnpm 11 errors on un-acknowledged dependency build scripts. Each entry is an
+# explicit decision: true = run the build (native binaries), false = skip it
+# (funding/no-op postinstalls). Derived from the lockfile — confirm against
+# pnpm's "Ignored build scripts" output on the next CI `pnpm install` (with the
+# Tiptap registry token) and add any packages it still reports.
+allowBuilds:
+  esbuild: true
+  '@sentry/cli': true
+  sharp: true
+  fsevents: true
+  core-js: false
+  core-js-pure: false
+
 catalog:
   '@100mslive/hms-noise-cancellation': ^0.0.1
   '@100mslive/hms-video-store': ^0.12.21

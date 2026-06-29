@@ -37,9 +37,11 @@ jobs:
         with:
           token: ${{ steps.gen-token.outputs.token }}
 
-      - uses: actions/setup-node@v4
+      - name: Install Node from mise.toml
+        uses: jdx/mise-action@v2
         with:
-          node-version: '20'
+          install: true
+          cache: true
       - name: Setup pnpm
         uses: pnpm/action-setup@v4.0.0
 
