@@ -17,7 +17,7 @@ module Api
         result = ResourceMentionCollection.resource_mention_from_url(params[:url])
 
         if result.blank?
-          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_entity)
+          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_content)
         end
 
         resource = case result[:type]
@@ -34,7 +34,7 @@ module Api
           authorize(note, :show?)
           { note: note }
         else
-          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_entity)
+          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_content)
         end
 
         render_json(ResourceMentionSerializer, resource.merge(url: params[:url]))

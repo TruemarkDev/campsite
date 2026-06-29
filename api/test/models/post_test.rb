@@ -743,7 +743,7 @@ class PostTest < ActiveSupport::TestCase
 
     test "truncates the description when it would exceed the Slack message block limit" do
       post = create(:post)
-      blocks = Array.new((Post::BuildSlackBlocks::MAX_DESCRIPTION_BLOCKS + 1)) { { type: "section", text: { type: "mrkdwn", text: "a" } }.dup }
+      blocks = Array.new(Post::BuildSlackBlocks::MAX_DESCRIPTION_BLOCKS + 1) { { type: "section", text: { type: "mrkdwn", text: "a" } }.dup }
       StyledText.any_instance.expects(:html_to_slack_blocks).returns(blocks)
 
       expected = {

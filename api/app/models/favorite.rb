@@ -2,6 +2,7 @@
 
 class Favorite < ApplicationRecord
   include PublicIdGenerator
+
   FAVORITABLE_TYPES = ["Project", "MessageThread", "Note", "Post", "Call"].freeze
 
   belongs_to :organization_membership, class_name: "OrganizationMembership"

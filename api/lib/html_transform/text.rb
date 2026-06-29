@@ -16,7 +16,7 @@ class HtmlTransform
 
       text
         # remove all newlines from text content
-        .gsub("\n", "")
+        .delete("\n")
         # replace extra whitespace with a single space
         .gsub(/\s+/, " ")
     end

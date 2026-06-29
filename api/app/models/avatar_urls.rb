@@ -3,7 +3,7 @@
 class AvatarUrls
   include MediaUrlBuilder
 
-  AVATAR_MAX_FILE_SIZE = 5.megabyte
+  AVATAR_MAX_FILE_SIZE = 5.megabytes
 
   def initialize(avatar_path: nil, display_name: nil)
     @avatar_path = avatar_path

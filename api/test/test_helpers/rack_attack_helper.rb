@@ -5,7 +5,7 @@ module RackAttackHelper
     Rack::Attack.enabled = true
     Rack::Attack.cache.store = ActiveSupport::Cache::MemoryStore.new
 
-    block.call
+    yield
 
     Rack::Attack.reset!
     Rack::Attack.enabled = false

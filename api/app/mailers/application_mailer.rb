@@ -40,6 +40,7 @@ class ApplicationMailer < ActionMailer::Base
   end
 
   include ApplicationHelper
+
   helper ApplicationHelper
 
   protected

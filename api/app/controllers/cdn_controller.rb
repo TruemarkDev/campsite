@@ -20,7 +20,7 @@ class CdnController < ApplicationController
     # Cloudflare Image Resizing will handle transformations based on query params
     s3_object.body.each { |chunk| response.stream.write(chunk) }
   rescue Aws::S3::Errors::NoSuchKey
-    render plain: "File not found", status: :not_found
+    render(plain: "File not found", status: :not_found)
   ensure
     response.stream.close if response.stream
   end
@@ -33,8 +33,7 @@ class CdnController < ApplicationController
       secret_access_key: Rails.application.credentials.dig(:aws, :secret_access_key),
       region:            Rails.application.credentials.dig(:aws, :region),
       endpoint:          Rails.application.credentials.dig(:aws, :endpoint),
-      force_path_style:  true
+      force_path_style:  true,
     )
   end
 end
-

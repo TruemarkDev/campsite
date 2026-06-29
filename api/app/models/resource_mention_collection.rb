@@ -58,7 +58,7 @@ class ResourceMentionCollection
   end
 
   def href_title_map
-    @mentions.values.map do |hash|
+    @mentions.values.flat_map do |hash|
       hash.values.map do |mention|
         title = mention[:post]&.display_title ||
           mention[:call]&.title ||
@@ -66,7 +66,7 @@ class ResourceMentionCollection
 
         [mention[:url], title]
       end
-    end.flatten(1).to_h
+    end.to_h
   end
 
   def self.resource_mention_from_url(url)

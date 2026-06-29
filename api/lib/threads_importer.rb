@@ -33,7 +33,7 @@ class ThreadsImporter
 
       case choice_prompt({
         "1" => "Create posts in a new #{channel.private? ? "private" : "public"} space.",
-        "2" => "Create posts in an existing space. #{channel.private? ? "WARNING: Everyone with access will have access to these posts." : ""}",
+        "2" => "Create posts in an existing space. #{"WARNING: Everyone with access will have access to these posts." if channel.private?}",
         "3" => "Skip creating posts for this channel.",
       })
       when "1"

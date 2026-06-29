@@ -141,6 +141,6 @@ class HtmlTruncator
 
     file_type = file_type_attr.value
 
-    file_type.start_with?("image") || file_type.start_with?("video")
+    file_type.start_with?("image", "video")
   end
 end

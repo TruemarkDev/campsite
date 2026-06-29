@@ -9,7 +9,7 @@ class Organization < ApplicationRecord
   include MediaUrlBuilder
   include Tokenable
 
-  COVER_PHOTO_MAX_FILE_SIZE = 5.megabyte
+  COVER_PHOTO_MAX_FILE_SIZE = 5.megabytes
   SLUG_MAX_LENGTH = 32
   TRIAL_DURATION = 14.days
 

@@ -57,7 +57,7 @@ module Backfills
           next
         end
 
-        tempfile = Down.download(reaction.url, max_size: 5.megabyte)
+        tempfile = Down.download(reaction.url, max_size: 5.megabytes)
         file_type = tempfile.content_type
         key = organization.generate_avatar_s3_key(file_type)
         object = S3_BUCKET.object(key)

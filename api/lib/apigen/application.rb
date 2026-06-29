@@ -45,7 +45,7 @@ module Apigen
     end
 
     def base_schema_name
-      @base_schema_name ||= ((@name || @path.delete_prefix("/v1/").gsub(":", "")).split("/") + [@verb]).join("_").downcase
+      @base_schema_name ||= ((@name || @path.delete_prefix("/v1/").delete(":")).split("/") + [@verb]).join("_").downcase
     end
   end
 
@@ -542,7 +542,7 @@ module Apigen
         options
       elsif !block.nil?
         # if no model key, make sure type defaults to :object
-        { type: :object, properties: block.call }.merge(options)
+        { type: :object, properties: yield }.merge(options)
       else
         { type: :object }.merge(options)
       end

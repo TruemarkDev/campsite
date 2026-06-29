@@ -6,78 +6,6 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 5
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle, IndentationWidth.
-# SupportedStyles: with_first_argument, with_fixed_indentation
-Layout/ArgumentAlignment:
-  Exclude:
-    - 'lib/tasks/daily_standup.rake'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EmptyLineBetweenMethodDefs, EmptyLineBetweenClassDefs, EmptyLineBetweenModuleDefs, DefLikeMacros, AllowAdjacentOneLineDefs, NumberOfEmptyLines.
-Layout/EmptyLineBetweenDefs:
-  Exclude:
-    - 'app/models/concerns/media_url_builder.rb'
-
-# Offense count: 3
-# This cop supports safe autocorrection (--autocorrect).
-Layout/EmptyLinesAfterModuleInclusion:
-  Exclude:
-    - 'app/controllers/api/v1/users/suggested_organizations_controller.rb'
-    - 'app/mailers/application_mailer.rb'
-    - 'app/models/favorite.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle, IndentationWidth.
-# SupportedStyles: consistent, consistent_relative_to_receiver, special_for_inner_method_call, special_for_inner_method_call_in_parentheses
-Layout/FirstArgumentIndentation:
-  Exclude:
-    - 'lib/tasks/daily_standup.rake'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: normal, indented_internal_methods
-Layout/IndentationConsistency:
-  Exclude:
-    - 'app/models/custom_reactions_pack.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: Width, EnforcedStyleAlignWith, AllowedPatterns.
-# SupportedStylesAlignWith: start_of_line, relative_to_receiver
-Layout/IndentationWidth:
-  Exclude:
-    - 'app/models/custom_reactions_pack.rb'
-
-# Offense count: 4
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: space, no_space
-Layout/SpaceInsideStringInterpolation:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: final_newline, final_blank_line
-Layout/TrailingEmptyLines:
-  Exclude:
-    - 'app/controllers/cdn_controller.rb'
-
-# Offense count: 32
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: AllowInHeredoc.
-Layout/TrailingWhitespace:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-    - 'app/models/concerns/media_url_builder.rb'
-    - 'test/models/concerns/media_url_builder_test.rb'
-
 # Offense count: 1
 Lint/DuplicateMethods:
   Exclude:
@@ -121,13 +49,6 @@ Performance/CollectionLiteralInLoop:
   Exclude:
     - 'lib/backfills/post_note_revert_backfill.rb'
 
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-Performance/ConstantRegexp:
-  Exclude:
-    - 'app/models/attachment.rb'
-    - 'lib/mentions_formatter.rb'
-
 # Offense count: 5
 # This cop supports unsafe autocorrection (--autocorrect-all).
 Performance/Detect:
@@ -137,20 +58,6 @@ Performance/Detect:
     - 'lib/demo_orgs/generator.rb'
     - 'test/controllers/api/v1/sync/members_controller_test.rb'
     - 'test/controllers/api/v1/sync/projects_controller_test.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: IncludeActiveSupportAliases.
-Performance/DoubleStartEndWith:
-  Exclude:
-    - 'lib/html_truncator.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnabledForFlattenWithoutParams.
-Performance/FlatMap:
-  Exclude:
-    - 'app/models/resource_mention_collection.rb'
 
 # Offense count: 1
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -175,14 +82,6 @@ Performance/MapCompact:
     - 'test/controllers/api/v1/projects/pins_controller_test.rb'
 
 # Offense count: 3
-# This cop supports safe autocorrection (--autocorrect).
-Performance/RedundantBlockCall:
-  Exclude:
-    - 'lib/apigen/application.rb'
-    - 'test/support/action_mailer_test_helper.rb'
-    - 'test/test_helpers/rack_attack_helper.rb'
-
-# Offense count: 3
 # This cop supports unsafe autocorrection (--autocorrect-all).
 # Configuration parameters: AllowRegexpMatch.
 Performance/RedundantEqualityComparisonBlock:
@@ -197,28 +96,6 @@ Performance/RedundantMerge:
   Exclude:
     - 'test/controllers/api/v1/integrations/linear/webhooks_controller_test.rb'
 
-# Offense count: 5
-# This cop supports safe autocorrection (--autocorrect).
-Performance/ReverseEach:
-  Exclude:
-    - 'lib/demo_orgs/generator.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-Performance/StringIdentifierArgument:
-  Exclude:
-    - 'test/lib/linear_client_test.rb'
-
-# Offense count: 11
-# This cop supports safe autocorrection (--autocorrect).
-Performance/StringReplacement:
-  Exclude:
-    - 'app/models/post_link.rb'
-    - 'lib/apigen/application.rb'
-    - 'lib/demo_orgs/generator.rb'
-    - 'lib/html_transform/text.rb'
-    - 'test/lib/html_truncator_test.rb'
-
 # Offense count: 4
 # This cop supports unsafe autocorrection (--autocorrect-all).
 # Configuration parameters: OnlySumOrWithInitialValue.
@@ -232,13 +109,6 @@ Rails/CompactBlank:
   Exclude:
     - 'lib/threads/user.rb'
 
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforceForPrefixed.
-Rails/Delegate:
-  Exclude:
-    - 'lib/rich_text.rb'
-
 # Offense count: 5
 # This cop supports unsafe autocorrection (--autocorrect-all).
 Rails/FindByOrAssignmentMemoization:
@@ -249,39 +119,11 @@ Rails/FindByOrAssignmentMemoization:
     - 'app/policies/oauth_application_policy.rb'
     - 'lib/cursor_pagination.rb'
 
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-Rails/HttpStatusNameConsistency:
-  Exclude:
-    - 'app/controllers/api/v1/resource_mentions_controller.rb'
-
 # Offense count: 1
 # This cop supports unsafe autocorrection (--autocorrect-all).
 Rails/OrderArguments:
   Exclude:
     - 'app/models/attachment.rb'
-
-# Offense count: 3
-# This cop supports safe autocorrection (--autocorrect).
-Rails/PluralizationGrammar:
-  Exclude:
-    - 'app/models/avatar_urls.rb'
-    - 'app/models/organization.rb'
-    - 'lib/backfills/custom_reactions_cal_threads_backfill.rb'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-Rails/Presence:
-  Exclude:
-    - 'app/controllers/concerns/markdown_enrichable.rb'
-
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: assert_not, refute
-Rails/RefuteMethods:
-  Exclude:
-    - 'test/models/concerns/mentionable_test.rb'
 
 # Offense count: 158
 # This cop supports unsafe autocorrection (--autocorrect-all).
@@ -311,45 +153,11 @@ Style/CollectionQuerying:
     - 'app/models/post/build_slack_blocks.rb'
     - 'app/models/project/build_slack_blocks.rb'
 
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle, AllowedParentClasses.
-# SupportedStyles: class_keyword, class_new, class_definition
-Style/EmptyClassDefinition:
-  Exclude:
-    - 'app/models/organization_membership.rb'
-
-# Offense count: 4
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: trailing_conditional, ternary
-Style/EmptyStringInsideInterpolation:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-    - 'lib/threads_importer.rb'
-
 # Offense count: 2
 Style/FileOpen:
   Exclude:
     - 'lib/backfills/custom_reactions_cal_threads_backfill.rb'
     - 'lib/emoji_mart.rb'
-
-# Offense count: 1
-# This cop supports unsafe autocorrection (--autocorrect-all).
-# Configuration parameters: EnforcedStyle.
-# SupportedStyles: always, always_true, never
-Style/FrozenStringLiteralComment:
-  Exclude:
-    - 'lib/tasks/daily_standup.rake'
-
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: IgnoreMacros, AllowedMethods, AllowedPatterns, IncludedMacros, IncludedMacroPatterns, AllowParenthesesInMultilineCall, AllowParenthesesInChaining, AllowParenthesesInCamelCaseMethod, AllowParenthesesInStringInterpolation, EnforcedStyle.
-# SupportedStyles: require_parentheses, omit_parentheses
-Style/MethodCallWithArgsParentheses:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-    - 'app/controllers/cdn_controller.rb'
 
 # Offense count: 3
 # Configuration parameters: AllowedClasses.
@@ -375,20 +183,6 @@ Style/ReduceToHash:
     - 'app/serializers/current_user_serializer.rb'
 
 # Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-Style/RedundantParentheses:
-  Exclude:
-    - 'test/models/post_test.rb'
-
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle, AllowInnerSlashes.
-# SupportedStyles: slashes, percent_r, mixed
-Style/RegexpLiteral:
-  Exclude:
-    - 'test/models/concerns/media_url_builder_test.rb'
-
-# Offense count: 1
 # This cop supports unsafe autocorrection (--autocorrect-all).
 # Configuration parameters: ConvertCodeThatCanStartToReturnNil, AllowedMethods, MaxChainLength.
 # AllowedMethods: present?, blank?, presence, try, try!
@@ -401,41 +195,3 @@ Style/SafeNavigation:
 Style/SelectByKind:
   Exclude:
     - 'app/controllers/admin/features/features_controller.rb'
-
-# Offense count: 10
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle, ConsistentQuotesInMultiline.
-# SupportedStyles: single_quotes, double_quotes
-Style/StringLiterals:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-    - 'app/models/oauth_application.rb'
-    - 'lib/tasks/daily_standup.rake'
-
-# Offense count: 1
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyle, AllowSafeAssignment.
-# SupportedStyles: require_parentheses, require_no_parentheses, require_parentheses_when_complex
-Style/TernaryParentheses:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-
-# Offense count: 5
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyleForMultiline.
-# SupportedStylesForMultiline: comma, consistent_comma, diff_comma, no_comma
-Style/TrailingCommaInArguments:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-    - 'app/controllers/cdn_controller.rb'
-    - 'config/initializers/aws.rb'
-    - 'test/controllers/cdn_controller_test.rb'
-
-# Offense count: 2
-# This cop supports safe autocorrection (--autocorrect).
-# Configuration parameters: EnforcedStyleForMultiline.
-# SupportedStylesForMultiline: comma, consistent_comma, diff_comma, no_comma
-Style/TrailingCommaInHashLiteral:
-  Exclude:
-    - 'app/controllers/api/v2/signoz_notifications_controller.rb'
-    - 'config/environments/production.rb'

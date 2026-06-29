@@ -7,17 +7,17 @@ module Api
 
       def create
         post = current_post
-        return head :not_found unless post
+        return head(:not_found) unless post
 
         authorize(post, :create_comment?)
 
         comment = Comment.create_comment(
           params: {
-            body_html: markdown_to_html(content_markdown)
+            body_html: markdown_to_html(content_markdown),
           },
           subject: post,
           member: current_organization_membership,
-          oauth_application: current_organization_membership ? nil : current_oauth_application
+          oauth_application: current_organization_membership ? nil : current_oauth_application,
         )
 
         if comment.errors.empty?
@@ -30,7 +30,7 @@ module Api
       private
 
       def current_post
-        @current_post ||= Post.find_by(public_id: ENV['SIGNOZ_ALERT_POST_ID'] || 'nkbiu6u38grf')
+        @current_post ||= Post.find_by(public_id: ENV["SIGNOZ_ALERT_POST_ID"] || "nkbiu6u38grf")
       end
 
       def content_markdown
@@ -58,25 +58,25 @@ module Api
           <<~MD
             ### 🚨 #{alertname}
 
-            **Severity:** #{severity}  
+            **Severity:** #{severity}#{"  "}
             **Status:** #{status_val}
 
             ---
 
-            **Summary**  
+            **Summary**#{"  "}
             #{summary}
 
-            **Message**  
+            **Message**#{"  "}
             #{message}
 
-            #{ description.present? ? "**Description**\n#{description}\n" : "" }
+            #{"**Description**\n#{description}\n" if description.present?}
 
-            **Started at:** #{starts_at}  
-            #{(ends_at.present? && ends_at != "0001-01-01T00:00:00Z") ? "**Ended at:** #{ends_at}" : ""}
+            **Started at:** #{starts_at}#{"  "}
+            #{"**Ended at:** #{ends_at}" if ends_at.present? && ends_at != "0001-01-01T00:00:00Z"}
 
             **Fingerprint:** `#{fingerprint}`
 
-            #{ external_url.present? ? "**Source:** [View in SigNoz](#{external_url})" : "" }
+            #{"**Source:** [View in SigNoz](#{external_url})" if external_url.present?}
           MD
         end
 

@@ -17,7 +17,7 @@ class MentionsFormatter
   end
 
   def replace
-    re = /<@([a-zA-Z0-9]{#{PublicIdGenerator::PUBLIC_ID_LENGTH}})>/
+    re = /<@([a-zA-Z0-9]{#{PublicIdGenerator::PUBLIC_ID_LENGTH}})>/o
     member_public_ids = @text.scan(re).flatten.uniq
     members = OrganizationMembership.where(public_id: member_public_ids).eager_load(:user).index_by(&:public_id)
     members.each do |public_id, member|

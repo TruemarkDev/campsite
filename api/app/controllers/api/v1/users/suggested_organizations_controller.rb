@@ -7,6 +7,7 @@ module Api
         skip_before_action :require_authenticated_organization_membership, only: :index
 
         extend Apigen::Controller
+
         response model: SuggestedOrganizationSerializer, code: 200, is_array: true
         def index
           render_json(

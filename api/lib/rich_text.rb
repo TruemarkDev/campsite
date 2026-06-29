@@ -10,13 +10,9 @@ class RichText
 
   attr_reader :members_base_url, :image_size
 
-  def to_s
-    @parsed.to_s
-  end
+  delegate :to_s, to: :@parsed
 
-  def text
-    @parsed.text
-  end
+  delegate :text, to: :@parsed
 
   def replace_mentions_with_links(members_base_url:)
     mentions = @parsed.css("span[data-type='mention']")

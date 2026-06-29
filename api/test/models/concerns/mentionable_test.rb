@@ -25,8 +25,8 @@ class MentionableTest < ActiveSupport::TestCase
       assert_includes html, 'class="language-ruby"'
       assert_includes html, 'data-meta="info string"'
       # comrak's syntax highlighter must stay disabled (no inline style spans).
-      refute_includes html, "style=\"color"
-      refute_includes html, "background-color"
+      assert_not_includes html, "style=\"color"
+      assert_not_includes html, "background-color"
     end
 
     test "renders strikethrough via the extension" do

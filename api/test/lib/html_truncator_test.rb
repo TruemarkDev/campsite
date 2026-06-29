@@ -172,14 +172,14 @@ class HtmlTruncatorTest < ActiveSupport::TestCase
 
   describe "#truncate_before_attachments_at_end" do
     test "truncates before attachments at the end of a post" do
-      input = <<~HTML.chomp.gsub("\n", "")
+      input = <<~HTML.chomp.delete("\n")
         <p>We should only see this paragraph.</p>
         <post-attachment id="1" file_type="image/png" width="1400" height="800"></post-attachment>
         <post-attachment id="2" file_type="image/png" width="1400" height="800"></post-attachment>
         <post-attachment id="3" file_type="image/png" width="1400" height="800"></post-attachment>
       HTML
 
-      expected = <<~HTML.chomp.gsub("\n", "")
+      expected = <<~HTML.chomp.delete("\n")
         <p>We should only see this paragraph.</p>
       HTML
 
@@ -187,7 +187,7 @@ class HtmlTruncatorTest < ActiveSupport::TestCase
     end
 
     test "doesn't truncate attachments that aren't at the end of a post" do
-      expected = <<~HTML.chomp.gsub("\n", "")
+      expected = <<~HTML.chomp.delete("\n")
         <p>We should see this paragraph and the one at the end.</p>
         <post-attachment id="1" file_type="image/png" width="1400" height="800"></post-attachment>
         <post-attachment id="1" file_type="image/png" width="1400" height="800"></post-attachment>
@@ -198,14 +198,14 @@ class HtmlTruncatorTest < ActiveSupport::TestCase
     end
 
     test "doesn't truncate file attachments" do
-      input = <<~HTML.chomp.gsub("\n", "")
+      input = <<~HTML.chomp.delete("\n")
         <p>We should see this paragraph and the one at the end.</p>
         <post-attachment id="1" file_type="image/png" width="1400" height="800"></post-attachment>
         <post-attachment id="1" file_type="image/png" width="1400" height="800"></post-attachment>
         <post-attachment id="1" file_type="application/pdf"></post-attachment>
       HTML
 
-      expected = <<~HTML.chomp.gsub("\n", "")
+      expected = <<~HTML.chomp.delete("\n")
         <p>We should see this paragraph and the one at the end.</p>
         <post-attachment id="1" file_type="application/pdf"></post-attachment>
       HTML

@@ -1,7 +1,8 @@
 # frozen_string_literal: true
 
 class OrganizationMembership < ApplicationRecord
-  SlackNotificationPreferenceError = Class.new(StandardError)
+  class SlackNotificationPreferenceError < StandardError
+  end
 
   include Discard::Model
   include PublicIdGenerator

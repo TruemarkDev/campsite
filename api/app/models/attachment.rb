@@ -324,7 +324,7 @@ class Attachment < ApplicationRecord
   def ensure_file_belongs_to_organization
     return if link? || subject.nil?
 
-    file_path_prefix_match = file_path.match(%r(^o\/(?<org_public_id>#{PublicIdGenerator::PUBLIC_ID_REGEX})\/p))
+    file_path_prefix_match = file_path.match(%r(^o\/(?<org_public_id>#{PublicIdGenerator::PUBLIC_ID_REGEX})\/p)o)
     return unless file_path_prefix_match
 
     file_path_org_public_id = file_path_prefix_match[:org_public_id]
