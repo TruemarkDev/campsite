@@ -7,7 +7,7 @@ gem "acts_as_list"
 gem "bootsnap", require: false
 gem "blueprinter"
 gem "commonmarker"
-gem "console1984", "0.2.1"
+gem "console1984", "0.2.4"
 gem "counter_culture"
 gem "cssbundling-rails"
 gem "device_detector"

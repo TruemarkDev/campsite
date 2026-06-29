@@ -116,7 +116,7 @@ class PostTest < ActiveSupport::TestCase
       note = create(:note, member: member, visibility: :public, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>")
       path = note.revalidate_public_static_cache_path
       parsed = URI.parse(path)
-      params = CGI.parse(parsed.query)
+      params = URI.decode_www_form(parsed.query).group_by(&:first).transform_values { |pairs| pairs.map(&:last) }
 
       assert_equal params["secret"].first, "REVALIDATE_SECRET"
       assert_equal params["rpath"].first, "/foo/p/notes/foo-bar-#{note.public_id}"

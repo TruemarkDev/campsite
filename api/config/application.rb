@@ -22,7 +22,7 @@ module CampsiteApi
     config.load_defaults(7.1)
 
     # redirect to app after login without raising an error
-    config.action_controller.raise_on_open_redirects = false
+    config.action_controller.action_on_open_redirect = :log
 
     # Configuration for the application, engines, and railties goes here.
     #
@@ -37,7 +37,9 @@ module CampsiteApi
     config.active_record.encryption.support_sha1_for_non_deterministic_encryption = true
     config.active_record.encryption.support_unencrypted_data = true
     config.active_record.queues.destroy = "within_30_minutes"
-    config.active_job.queue_adapter = :sidekiq
+    # Use the sidekiq gem's own Active Job adapter instance rather than the `:sidekiq`
+    # symbol, which resolves to Rails' built-in adapter (deprecated, removed in Rails 8.2).
+    config.active_job.queue_adapter = ActiveJob::QueueAdapters::SidekiqAdapter.new
     config.active_job.deliver_later_queue_name = "background"
 
     config.cache_store = :redis_cache_store, { url: Rails.application.credentials&.redis&.fetch(:url) }

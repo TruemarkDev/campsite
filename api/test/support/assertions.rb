@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require "minitest/assertions"
+require "json-schema"
+
+# Opt out of MultiJSON, which json-schema 6 deprecates in favor of the stdlib JSON parser.
+JSON::Validator.use_multi_json = false
 
 module Minitest
   module Assertions
