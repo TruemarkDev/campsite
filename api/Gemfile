@@ -47,6 +47,10 @@ gem "rack-cors"
 gem "rack-mini-profiler"
 gem "rails", "7.2.0"
 gem "redis", "~> 5.4"
+# Pin to 2.x: connection_pool 3.0 requires keyword args, but Rails 7.2's
+# RedisCacheStore still calls ConnectionPool.new positionally. Unpin when
+# upgrading to a Rails version that passes pool options as keywords.
+gem "connection_pool", "~> 2.5"
 gem "stackprof"
 gem "aws-sdk-s3"
 gem "aws-sdk-ecs"
