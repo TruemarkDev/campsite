@@ -16,8 +16,8 @@ kill_timeout = 60
   # api/Gemfile.lock "BUNDLED WITH" (BUNDLER_VERSION). See MAINTENANCE.md.
   [build.args]
     BUNDLER_VERSION = "4.0.15"
-    NODE_VERSION = "22.21.0"
-    RUBY_VERSION = "3.4.9"
+    NODE_VERSION = "26.4.0"
+    RUBY_VERSION = "4.0.5"
 
 [deploy]
 

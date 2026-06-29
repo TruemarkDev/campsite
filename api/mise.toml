@@ -4,6 +4,6 @@
 #   - api/fly.toml       [build.args] RUBY_VERSION / NODE_VERSION (deploy)
 # When bumping a version here, update those too (see MAINTENANCE.md).
 [tools]
-ruby = "3.4.9"
-node = "22.21.0"
+ruby = "4.0.5"
+node = "26.4.0"
 pnpm = "11.9.0"
