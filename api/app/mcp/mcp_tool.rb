@@ -76,34 +76,13 @@ class McpTool < MCP::Tool
     context.user
   end
 
-  # Resolve the org membership for the `org_slug` argument, set the Current context,
-  # and return [actor, organization, membership]. Raises ToolError if the user has
-  # no kept membership in that org (no cross-org leakage).
+  # Resolve the org membership for the `org_slug` argument, enforce org 2FA, set the
+  # Current context, and return [actor, organization, membership]. Raises ToolError
+  # if the user has no kept membership in that org (no cross-org leakage) or is
+  # blocked by the org's 2FA policy. Shared with McpResource via
+  # McpOrganizationResolver so the authorization gate can never drift between them.
   def organization_context!
-    slug = input[:org_slug]
-    raise ToolError, "An org_slug argument is required." if slug.blank?
-
-    membership = context.membership_for(slug)
-    unless membership
-      raise ToolError, "You are not a member of an organization with slug '#{slug}'."
-    end
-
-    organization = membership.organization
-
-    # Mirror the REST API's `require_org_two_factor_authentication` before_action
-    # (Api::V1::BaseController): if the org enforces 2FA, a user without it enabled
-    # is blocked from every action there, and MCP must not be a bypass.
-    if organization.enforce_two_factor_authentication? && !user.otp_enabled?
-      raise ToolError,
-        "This organization enforces two-factor authentication, which your account hasn't enabled. " \
-          "Enable 2FA in Campsite to use this connection here."
-    end
-
-    Current.user = user
-    Current.organization = organization
-    Current.organization_membership = membership
-
-    [context.actor, organization, membership]
+    McpOrganizationResolver.resolve!(context, input[:org_slug], ToolError)
   end
 
   # Enforce that the connection was granted a specific write scope before mutating.

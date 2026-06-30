@@ -25,6 +25,10 @@ module McpToolRegistry
     # CreateFollowUp writes a `follow_up` row but is a deliberate, self-only,
     # `mcp`-scope-only exemption grouped with reads — see the class comment.
     McpTools::CreateFollowUp,
+    # CreateUpload only mints short-lived S3 credentials and writes nothing in
+    # Campsite, so it gates on `mcp` alone — grouped with reads. The matching write
+    # scope is enforced later by attach_file when the attachment is actually created.
+    McpTools::CreateUpload,
   ].freeze
 
   WRITE_TOOLS = [
@@ -39,6 +43,8 @@ module McpToolRegistry
     McpTools::UpdatePost,
     McpTools::ReplyToComment,
     McpTools::CreateProject,
+    McpTools::AttachFile,
+    McpTools::UploadAttachment,
   ].freeze
 
   def tools

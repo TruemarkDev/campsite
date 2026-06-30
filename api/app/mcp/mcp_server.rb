@@ -17,13 +17,36 @@ class McpServer
   TEXT
 
   def self.build(context:)
-    MCP::Server.new(
+    resource = McpResource.new(context: context)
+
+    server = CampsiteMcpServer.new(
+      resources_provider: -> { resource.list },
       name: NAME,
       title: TITLE,
       version: VERSION,
       instructions: INSTRUCTIONS,
       tools: McpToolRegistry.tools,
+      prompts: McpPromptRegistry.prompts,
+      resource_templates: McpResource.templates,
+      # Resource subscriptions (resources.subscribe) are intentionally NOT advertised
+      # here — they require a server→client stream the remote transport hasn't been
+      # shown to hold (see add-mcp-tier-3 tasks 4.x, the subscription spike).
+      capabilities: { tools: {}, prompts: { listChanged: true }, resources: { listChanged: true } },
       server_context: context,
     )
+
+    # Resolve any campsite:// URI under the authenticated context, mapping our
+    # resource errors onto JSON-RPC errors.
+    server.resources_read_handler do |params|
+      resource.read(params[:uri])
+    rescue McpResource::ResourceError => e
+      raise MCP::Server::RequestHandlerError.new(e.message, params, error_type: :invalid_params)
+    rescue ActiveRecord::RecordNotFound
+      raise MCP::Server::RequestHandlerError.new("The requested resource could not be found.", params, error_type: :invalid_params)
+    rescue Pundit::NotAuthorizedError
+      raise MCP::Server::RequestHandlerError.new("You are not authorized to read this resource.", params, error_type: :invalid_params)
+    end
+
+    server
   end
 end

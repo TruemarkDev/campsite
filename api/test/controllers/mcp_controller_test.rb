@@ -763,7 +763,359 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     end
   end
 
+  # ---- prompts (add-mcp-tier-3 Phase C) -----------------------------------
+
+  describe "prompts capability" do
+    test "initialize handshake advertises the prompts capability" do
+      mcp_request(method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } })
+
+      assert_response :ok
+      assert json_response.dig("result", "capabilities").key?("prompts")
+    end
+  end
+
+  describe "prompts/list" do
+    test "lists the workflow prompt catalog with arguments" do
+      mcp_request(method: "prompts/list")
+
+      assert_response :ok
+      prompts = json_response.dig("result", "prompts")
+      names = prompts.pluck("name")
+      assert_includes names, "triage_inbox"
+      assert_includes names, "draft_standup"
+      assert_includes names, "summarize_thread"
+
+      triage = prompts.find { |p| p["name"] == "triage_inbox" }
+      assert triage["title"].present?
+      assert triage["description"].present?
+      org_arg = triage["arguments"].find { |a| a["name"] == "org_slug" }
+      assert org_arg["required"], "org_slug should be a required argument"
+    end
+  end
+
+  describe "prompts/get" do
+    ["triage_inbox", "draft_standup", "summarize_thread"].each do |name|
+      test "#{name} returns user messages" do
+        result = get_prompt(name, { "org_slug" => @org.slug })
+
+        assert_response :ok
+        messages = result["messages"]
+        assert messages.present?, "#{name} should return messages"
+        assert(messages.all? { |m| m["role"] == "user" })
+        assert(messages.all? { |m| m.dig("content", "type") == "text" && m.dig("content", "text").present? })
+      end
+    end
+
+    test "missing required org_slug argument is an error" do
+      mcp_request(method: "prompts/get", params: { name: "triage_inbox", arguments: {} })
+
+      assert json_response["error"].present?, "expected a JSON-RPC error for missing required argument"
+    end
+
+    test "unknown prompt is an error" do
+      mcp_request(method: "prompts/get", params: { name: "no_such_prompt", arguments: { "org_slug" => @org.slug } })
+
+      assert json_response["error"].present?
+    end
+  end
+
+  describe "prompt / tool registry coherence" do
+    # Guards against prompt drift: a prompt that references a renamed or removed
+    # tool, or a typo'd tool name (see add-mcp-tier-3 spec).
+    EXPECTED_PROMPT_TOOLS = {
+      "triage_inbox" => ["list_notifications", "create_follow_up", "read_post", "read_messages"],
+      "draft_standup" => ["whoami", "list_posts", "search_posts", "read_post"],
+      "summarize_thread" => ["read_post", "read_messages", "list_posts", "list_message_threads"],
+    }.freeze
+
+    test "every tool a prompt references is registered" do
+      registered = McpToolRegistry.tools.map { |t| t.name_value }.to_set
+
+      EXPECTED_PROMPT_TOOLS.each do |prompt_name, expected_tools|
+        text = get_prompt(prompt_name, { "org_slug" => @org.slug })["messages"].map { |m| m.dig("content", "text") }.join("\n")
+
+        expected_tools.each do |tool|
+          assert_includes registered, tool, "prompt #{prompt_name} references unregistered tool #{tool}"
+          assert_match(/`#{Regexp.escape(tool)}`/, text, "prompt #{prompt_name} no longer references #{tool}")
+        end
+      end
+    end
+  end
+
+  # ---- resources (add-mcp-tier-3 Phase B) ---------------------------------
+
+  describe "resources capability" do
+    test "initialize handshake advertises the resources capability" do
+      mcp_request(method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } })
+
+      assert_response :ok
+      resources_cap = json_response.dig("result", "capabilities", "resources")
+      assert resources_cap.present?, "expected resources capability"
+      assert_not resources_cap.key?("subscribe"), "subscriptions are spike-gated and must not be advertised yet"
+    end
+  end
+
+  describe "resources/templates/list" do
+    test "advertises the campsite:// URI templates for posts, notes, and threads" do
+      mcp_request(method: "resources/templates/list")
+
+      assert_response :ok
+      templates = json_response.dig("result", "resourceTemplates").pluck("uriTemplate")
+      assert_includes templates, "campsite://{org_slug}/posts/{public_id}"
+      assert_includes templates, "campsite://{org_slug}/notes/{public_id}"
+      assert_includes templates, "campsite://{org_slug}/threads/{public_id}"
+    end
+  end
+
+  describe "resources/read" do
+    test "reads a post resource" do
+      post = create(:post, project: @project, organization: @org)
+
+      result = read_resource("campsite://#{@org.slug}/posts/#{post.public_id}")
+
+      assert_response :ok
+      contents = result["contents"]
+      assert_equal 1, contents.length
+      assert_equal "campsite://#{@org.slug}/posts/#{post.public_id}", contents.first["uri"]
+      assert_equal post.public_id, JSON.parse(contents.first["text"])["id"]
+    end
+
+    test "reads a note resource" do
+      note = create(:note, member: @member)
+
+      result = read_resource("campsite://#{@org.slug}/notes/#{note.public_id}")
+
+      assert_equal note.public_id, JSON.parse(result.dig("contents", 0, "text"))["id"]
+    end
+
+    test "reads a message thread resource" do
+      thread = create(:message_thread, :dm, owner: @member)
+
+      result = read_resource("campsite://#{@org.slug}/threads/#{thread.public_id}")
+
+      assert_equal thread.public_id, JSON.parse(result.dig("contents", 0, "text"))["id"]
+    end
+
+    test "an unknown URI shape is an error" do
+      mcp_request(method: "resources/read", params: { uri: "campsite://#{@org.slug}/widgets/abc" })
+
+      assert json_response["error"].present?
+    end
+
+    test "a post in a private project the user cannot see is denied (no Pundit bypass)" do
+      private_project = create(:project, :private, organization: @org)
+      post = create(:post, project: private_project, organization: @org)
+
+      mcp_request(method: "resources/read", params: { uri: "campsite://#{@org.slug}/posts/#{post.public_id}" })
+
+      assert json_response["error"].present?
+    end
+
+    test "a URI in an org the user does not belong to is denied (no cross-org leakage)" do
+      other_org = create(:organization)
+      other_member = create(:organization_membership, :member, organization: other_org)
+      post = create(:post, organization: other_org, member: other_member)
+
+      mcp_request(method: "resources/read", params: { uri: "campsite://#{other_org.slug}/posts/#{post.public_id}" })
+
+      assert json_response["error"].present?
+    end
+
+    test "a thread URI cannot address a thread in a different org than the slug" do
+      other_org = create(:organization)
+      other_member = create(:organization_membership, :member, organization: other_org)
+      thread = create(:message_thread, :dm, owner: other_member)
+
+      # Slug is the user's org, but the thread belongs to another org: must not resolve.
+      mcp_request(method: "resources/read", params: { uri: "campsite://#{@org.slug}/threads/#{thread.public_id}" })
+
+      assert json_response["error"].present?
+    end
+  end
+
+  describe "resources/list" do
+    test "lists the user's recent posts and notes as campsite:// resources" do
+      post = create(:post, project: @project, organization: @org)
+      note = create(:note, member: @member)
+
+      mcp_request(method: "resources/list")
+
+      assert_response :ok
+      uris = json_response.dig("result", "resources").pluck("uri")
+      assert_includes uris, "campsite://#{@org.slug}/posts/#{post.public_id}"
+      assert_includes uris, "campsite://#{@org.slug}/notes/#{note.public_id}"
+    end
+  end
+
+  # ---- attachments (add-mcp-tier-3 Phase A) -------------------------------
+
+  describe "create_upload" do
+    test "returns presigned S3 fields and a key (mcp scope only, no write)" do
+      result = call_tool("create_upload", { org_slug: @org.slug, mime_type: "image/png" })
+
+      assert_not tool_error?(result)
+      data = structured_content(result)
+      assert data["key"].present?
+      assert data["url"].present?
+    end
+
+    test "requires a mime_type" do
+      result = call_tool("create_upload", { org_slug: @org.slug })
+
+      assert tool_error?(result)
+    end
+  end
+
+  describe "attach_file" do
+    test "attaches an uploaded file to a post" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      file_path = "o/#{@org.public_id}/p/#{SecureRandom.uuid}.png"
+
+      result = call_tool("attach_file", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        file_path: file_path,
+        file_type: "image/png",
+      })
+
+      assert_not tool_error?(result)
+      assert_equal "image/png", structured_content(result)["file_type"]
+      assert_equal post.public_id, structured_content(result)["subject_id"]
+      assert_equal 1, post.reload.attachments.count
+    end
+
+    test "attaches an uploaded file to a note" do
+      note = create(:note, member: @member)
+      file_path = "o/#{@org.public_id}/p/#{SecureRandom.uuid}.png"
+
+      result = call_tool("attach_file", {
+        org_slug: @org.slug,
+        subject_type: "note",
+        subject_id: note.public_id,
+        file_path: file_path,
+        file_type: "image/png",
+      })
+
+      assert_not tool_error?(result)
+      assert_equal 1, note.reload.attachments.count
+    end
+
+    test "blocked without the subject's write scope" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_post")
+
+      result = call_tool(
+        "attach_file",
+        {
+          org_slug: @org.slug,
+          subject_type: "post",
+          subject_id: post.public_id,
+          file_path: "o/#{@org.public_id}/p/x.png",
+          file_type: "image/png",
+        },
+        token: token.plaintext_token,
+      )
+
+      assert tool_error?(result)
+      assert_match(/write_post/, tool_text(result))
+    end
+
+    test "denied for a post the user cannot update (no Pundit bypass)" do
+      private_project = create(:project, :private, organization: @org)
+      post = create(:post, project: private_project, organization: @org)
+
+      result = call_tool("attach_file", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        file_path: "o/#{@org.public_id}/p/x.png",
+        file_type: "image/png",
+      })
+
+      assert tool_error?(result)
+    end
+
+    test "rejects an unknown subject_type" do
+      result = call_tool("attach_file", {
+        org_slug: @org.slug,
+        subject_type: "comment",
+        subject_id: "abc",
+        file_path: "o/#{@org.public_id}/p/x.png",
+        file_type: "image/png",
+      })
+
+      assert tool_error?(result)
+    end
+  end
+
+  describe "upload_attachment" do
+    test "uploads a small inline file and attaches it to a post" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      S3_BUCKET.stubs(:object).returns(stub(put: true))
+
+      result = call_tool("upload_attachment", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        content: Base64.strict_encode64("hello bytes"),
+        file_type: "image/png",
+        name: "art.png",
+      })
+
+      assert_not tool_error?(result)
+      assert_equal "image/png", structured_content(result)["file_type"]
+      assert_equal 1, post.reload.attachments.count
+    end
+
+    test "rejects content over the inline size cap" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      oversized = Base64.strict_encode64("a" * (McpTools::UploadAttachment::MAX_INLINE_UPLOAD_BYTES + 1))
+
+      result = call_tool("upload_attachment", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        content: oversized,
+        file_type: "image/png",
+      })
+
+      assert tool_error?(result)
+      assert_match(/create_upload/, tool_text(result))
+    end
+
+    test "blocked without the subject's write scope" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_post")
+
+      result = call_tool(
+        "upload_attachment",
+        {
+          org_slug: @org.slug,
+          subject_type: "post",
+          subject_id: post.public_id,
+          content: Base64.strict_encode64("x"),
+          file_type: "image/png",
+        },
+        token: token.plaintext_token,
+      )
+
+      assert tool_error?(result)
+      assert_match(/write_post/, tool_text(result))
+    end
+  end
+
   private
+
+  def get_prompt(name, arguments = {}, token: nil)
+    mcp_request(method: "prompts/get", params: { name: name, arguments: arguments }, token: token)
+    json_response["result"]
+  end
+
+  def read_resource(uri, token: nil)
+    mcp_request(method: "resources/read", params: { uri: uri }, token: token)
+    json_response["result"]
+  end
 
   def mcp_request(method:, params: nil, id: 1, token: nil)
     token ||= @token.plaintext_token
