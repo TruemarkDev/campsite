@@ -17,9 +17,6 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-// The request handler must be the first middleware on the app
-app.use(Sentry.Handlers.requestHandler())
-
 app.use(morgan('combined'))
 app.use(bodyParser.text({ limit: '5mb' }))
 app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }))
@@ -67,11 +64,9 @@ app.post('/markdown_to_html', bodyParser.json(), (req, res) => {
   res.json({ html: markdownToHtml(markdown, editor) })
 })
 
-// The error handler must be before any other error middleware and after all controllers
-app.use(
-  Sentry.Handlers.errorHandler({
-    shouldHandleError(error) {
-      return !error.status || parseInt(`${error.status}`) >= 400
-    }
-  })
-)
+// The error handler must be before any other error middleware and after all controllers.
+Sentry.setupExpressErrorHandler(app, {
+  shouldHandleError(error) {
+    return !error.status || parseInt(`${error.status}`) >= 400
+  }
+})

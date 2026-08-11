@@ -5,6 +5,7 @@
   "compilerOptions": {
     "lib": ["ES2021.String"],
     "allowJs": true,
+    "ignoreDeprecations": "6.0",
     "outDir": "./dist",
     "sourceMap": true,
     "inlineSources": true,
