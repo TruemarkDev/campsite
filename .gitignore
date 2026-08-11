@@ -21,6 +21,8 @@ build
 .DS_Store
 *.pem
 .npmrc
+mise.local.toml
+/.kamal/secrets*
 
 # debug
 npm-debug.log*

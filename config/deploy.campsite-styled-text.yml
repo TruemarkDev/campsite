@@ -1,0 +1,36 @@
+service: campsite-styled-text-tokdio
+image: truemarkdev/campsite-styled-text
+
+servers:
+  web:
+    - 192.168.2.41
+
+proxy:
+  ssl: false
+  host: camp-styled-text.tokdio.com
+  app_port: 9000
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: localhost:5555
+
+builder:
+  arch: amd64
+  remote: ssh://debian@192.168.2.41
+  context: .
+  dockerfile: apps/styled-text-server/Dockerfile
+  secrets:
+    - TIPTAP_PRIVATE_REGISTRY_KEY
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "9000"
+  secret:
+    - AUTHTOKEN
+    - SENTRY_DSN
+
+ssh:
+  user: debian

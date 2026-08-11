@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import { isMacOs } from 'react-device-detect'
 import toast from 'react-hot-toast'
 
+import { RAILS_ADMIN_URL } from '@campsite/config'
 import {
   OrganizationMember,
   PublicOrganization,
@@ -236,10 +237,7 @@ function Home({ navigate }: { navigate: NavigateFn }) {
   const { data: currentUser } = useGetCurrentUser()
   const isStaff = useCurrentUserIsStaff()
   const hasSidebarChat = useCurrentUserOrOrganizationHasFeature('sidebar_dms')
-  const ffUrl =
-    !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
-      ? 'http://admin.campsite.test:3001/admin/features/'
-      : 'https://admin.campsite.com/admin/features'
+  const ffUrl = `${RAILS_ADMIN_URL}/admin/features/`
   const { data: organization } = useGetCurrentOrganization()
 
   return (

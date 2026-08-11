@@ -1,21 +1,21 @@
-# syntax = docker/dockerfile:experimental
-ARG RUBY_VERSION
-ARG VARIANT=jemalloc-slim
-FROM quay.io/evl.ms/fullstaq-ruby:${RUBY_VERSION}-${VARIANT} as base
+# syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+ARG RUBY_VERSION=4.0.5
 
-ARG NODE_VERSION
+FROM node:22.21.0-bookworm-slim@sha256:f9f7f95dcf1f007b007c4dcd44ea8f7773f931b71dc79d57c216e731c87a090b AS node_runtime
+FROM ruby:${RUBY_VERSION}-slim-bookworm@sha256:707ef4cbfc3d990664996e5ef154abd6a41539aa774b8467f55126697e03d58f AS base
+
 ARG BUNDLER_VERSION
 
 ARG RAILS_ENV=production
 ENV RAILS_ENV=${RAILS_ENV}
 
-ENV RAILS_SERVE_STATIC_FILES true
-ENV RAILS_LOG_TO_STDOUT true
+ENV RAILS_SERVE_STATIC_FILES=true
+ENV RAILS_LOG_TO_STDOUT=true
 
 ARG BUNDLE_WITHOUT=development:test
 ARG BUNDLE_PATH=vendor/bundle
-ENV BUNDLE_PATH ${BUNDLE_PATH}
-ENV BUNDLE_WITHOUT ${BUNDLE_WITHOUT}
+ENV BUNDLE_PATH=${BUNDLE_PATH}
+ENV BUNDLE_WITHOUT=${BUNDLE_WITHOUT}
 
 RUN mkdir /app
 WORKDIR /app
@@ -23,18 +23,13 @@ RUN mkdir -p tmp/pids
 
 SHELL ["/bin/bash", "-c"]
 
-RUN curl https://get.volta.sh | bash
+COPY --from=node_runtime /usr/local/ /usr/local/
+RUN corepack enable
 
-ENV BASH_ENV ~/.bashrc
-ENV VOLTA_HOME /root/.volta
-ENV PATH $VOLTA_HOME/bin:/usr/local/bin:$PATH
-
-RUN volta install node@${NODE_VERSION} && corepack enable
-
-FROM base as build_deps
+FROM base AS build_deps
 
 ARG DEV_PACKAGES="git build-essential libpq-dev wget vim curl gzip xz-utils libsqlite3-dev default-libmysqlclient-dev ruby-mysql2"
-ENV DEV_PACKAGES ${DEV_PACKAGES}
+ENV DEV_PACKAGES=${DEV_PACKAGES}
 
 RUN --mount=type=cache,id=dev-apt-cache,sharing=locked,target=/var/cache/apt \
     --mount=type=cache,id=dev-apt-lib,sharing=locked,target=/var/lib/apt \
@@ -42,7 +37,7 @@ RUN --mount=type=cache,id=dev-apt-cache,sharing=locked,target=/var/cache/apt \
     apt-get install --no-install-recommends -y ${DEV_PACKAGES} \
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-FROM build_deps as gems
+FROM build_deps AS gems
 
 RUN gem install -N bundler -v ${BUNDLER_VERSION}
 
@@ -50,7 +45,7 @@ COPY Gemfile* ./
 COPY .ruby-version ./
 RUN bundle install &&  rm -rf vendor/bundle/ruby/*/cache
 
-FROM build_deps as node_modules
+FROM build_deps AS node_modules
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
@@ -82,9 +77,15 @@ COPY . .
 
 RUN SECRET_KEY_BASE=dummy bundle exec rails assets:precompile
 
+RUN groupadd --system rails && \
+    useradd --system --gid rails --create-home rails && \
+    chown -R rails:rails /app
+
+USER rails
+
 EXPOSE 8080
-ENV PORT 8080
+ENV PORT=8080
 
 ARG SERVER_COMMAND="bundle exec puma"
-ENV SERVER_COMMAND ${SERVER_COMMAND}
+ENV SERVER_COMMAND=${SERVER_COMMAND}
 CMD ${SERVER_COMMAND}

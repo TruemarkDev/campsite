@@ -1,0 +1,85 @@
+# syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+
+FROM node:22.21.0-bookworm-slim@sha256:f9f7f95dcf1f007b007c4dcd44ea8f7773f931b71dc79d57c216e731c87a090b AS base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable
+
+FROM base AS pruner
+WORKDIR /app
+RUN pnpm add --global turbo@2.0.9
+COPY . .
+RUN turbo prune @campsite/web --docker
+
+FROM base AS builder
+WORKDIR /app
+
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+
+RUN --mount=type=secret,id=TIPTAP_PRIVATE_REGISTRY_KEY \
+    pnpm config set "@tiptap-pro:registry" https://registry.tiptap.dev/ && \
+    pnpm config set "//registry.tiptap.dev/:_authToken" "$(cat /run/secrets/TIPTAP_PRIVATE_REGISTRY_KEY)" && \
+    pnpm install --frozen-lockfile && \
+    pnpm config delete "//registry.tiptap.dev/:_authToken"
+
+COPY --from=pruner /app/out/full/ .
+
+ARG NEXT_PUBLIC_WEB_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_SYNC_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_AUTH_URL
+ARG NEXT_PUBLIC_ADMIN_URL
+ARG NEXT_PUBLIC_CDN_URL
+ARG NEXT_PUBLIC_IMGIX_URL
+ARG NEXT_PUBLIC_OBJECT_STORAGE_URL
+ARG NEXT_PUBLIC_FIGMA_PLUGIN_URL
+ARG NEXT_PUBLIC_LINEAR_CLIENT_ID
+ARG NEXT_PUBLIC_LINEAR_APP_URL
+ARG NEXT_PUBLIC_PUSHER_KEY
+ARG NEXT_PUBLIC_PUSHER_CLUSTER
+ARG NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY
+ARG NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
+
+ENV NEXT_PUBLIC_WEB_URL=$NEXT_PUBLIC_WEB_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SYNC_URL=$NEXT_PUBLIC_SYNC_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
+ENV NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL
+ENV NEXT_PUBLIC_CDN_URL=$NEXT_PUBLIC_CDN_URL
+ENV NEXT_PUBLIC_IMGIX_URL=$NEXT_PUBLIC_IMGIX_URL
+ENV NEXT_PUBLIC_OBJECT_STORAGE_URL=$NEXT_PUBLIC_OBJECT_STORAGE_URL
+ENV NEXT_PUBLIC_FIGMA_PLUGIN_URL=$NEXT_PUBLIC_FIGMA_PLUGIN_URL
+ENV NEXT_PUBLIC_LINEAR_CLIENT_ID=$NEXT_PUBLIC_LINEAR_CLIENT_ID
+ENV NEXT_PUBLIC_LINEAR_APP_URL=$NEXT_PUBLIC_LINEAR_APP_URL
+ENV NEXT_PUBLIC_PUSHER_KEY=$NEXT_PUBLIC_PUSHER_KEY
+ENV NEXT_PUBLIC_PUSHER_CLUSTER=$NEXT_PUBLIC_PUSHER_CLUSTER
+ENV NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY=$NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY
+ENV NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA=$NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+RUN pnpm turbo run build --filter=@campsite/web
+
+FROM node:22.21.0-bookworm-slim@sha256:f9f7f95dcf1f007b007c4dcd44ea8f7773f931b71dc79d57c216e731c87a090b AS runner
+WORKDIR /app/apps/web
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone /app
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+
+CMD ["node", "server.js"]

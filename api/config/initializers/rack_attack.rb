@@ -11,7 +11,9 @@ Rack::Attack.enabled = false
 
 if Rails.env.production?
   Rack::Attack.enabled = true
-  Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(url: Rails.application.credentials&.rack_attack&.url)
+  Rack::Attack.cache.store = ActiveSupport::Cache::RedisCacheStore.new(
+    url: ENV["RACK_ATTACK_REDIS_URL"] || ENV["REDIS_URL"] || Rails.application.credentials&.rack_attack&.url,
+  )
 end
 
 Rack::Attack.blocklist_ip("46.246.41.169")

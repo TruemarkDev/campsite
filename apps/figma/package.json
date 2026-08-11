@@ -63,6 +63,10 @@
         "https://camp-auth.polo-apps.com",
         "https://camp-api.polo-apps.com",
         "https://camp-cdn.polo-apps.com",
+        "https://camp.tokdio.com",
+        "https://camp-auth.tokdio.com",
+        "https://camp-api.tokdio.com",
+        "https://camp-cdn.tokdio.com",
         "https://sockjs-ap2.pusher.com",
         "wss://ws-ap2.pusher.com",
         "https://hel1.your-objectstorage.com"
@@ -73,6 +77,10 @@
         "https://camp-auth.polo-apps.com",
         "https://camp-api.polo-apps.com",
         "https://camp-cdn.polo-apps.com",
+        "https://camp.tokdio.com",
+        "https://camp-auth.tokdio.com",
+        "https://camp-api.tokdio.com",
+        "https://camp-cdn.tokdio.com",
         "https://sockjs-ap2.pusher.com",
         "wss://ws-ap2.pusher.com",
         "https://hel1.your-objectstorage.com"

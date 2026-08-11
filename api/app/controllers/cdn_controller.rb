@@ -5,7 +5,7 @@ class CdnController < ApplicationController
 
   def show
     key = params[:path]
-    bucket = Rails.application.credentials.dig(:aws, :s3_bucket)
+    bucket = ENV["S3_BUCKET"] || Rails.application.credentials.dig(:aws, :s3_bucket)
 
     # Fetch object from S3
     s3_object = s3_client.get_object(bucket: bucket, key: key)
@@ -29,11 +29,11 @@ class CdnController < ApplicationController
 
   def s3_client
     @s3_client ||= Aws::S3::Client.new(
-      access_key_id:     Rails.application.credentials.dig(:aws, :access_key_id),
-      secret_access_key: Rails.application.credentials.dig(:aws, :secret_access_key),
-      region:            Rails.application.credentials.dig(:aws, :region),
-      endpoint:          Rails.application.credentials.dig(:aws, :endpoint),
-      force_path_style:  true,
+      access_key_id:     ENV["S3_ACCESS_KEY_ID"] || Rails.application.credentials.dig(:aws, :access_key_id),
+      secret_access_key: ENV["S3_SECRET_ACCESS_KEY"] || Rails.application.credentials.dig(:aws, :secret_access_key),
+      region:            ENV["S3_REGION"] || Rails.application.credentials.dig(:aws, :region),
+      endpoint:          ENV["S3_ENDPOINT"] || Rails.application.credentials.dig(:aws, :endpoint),
+      force_path_style:  ActiveModel::Type::Boolean.new.cast(ENV.fetch("S3_FORCE_PATH_STYLE", true)),
     )
   end
 end

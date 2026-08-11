@@ -1,0 +1,36 @@
+service: campsite-sync-tokdio
+image: truemarkdev/campsite-sync
+
+servers:
+  web:
+    - 192.168.2.41
+
+proxy:
+  ssl: false
+  host: camp-sync.tokdio.com
+  app_port: 9000
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: localhost:5555
+
+builder:
+  arch: amd64
+  remote: ssh://debian@192.168.2.41
+  context: .
+  dockerfile: apps/sync-server/Dockerfile
+  secrets:
+    - TIPTAP_PRIVATE_REGISTRY_KEY
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "9000"
+    API_BASE_URL: https://camp-api.tokdio.com
+  secret:
+    - SENTRY_DSN
+
+ssh:
+  user: debian

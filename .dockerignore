@@ -1,4 +1,13 @@
 .git
+.beads
+.planning
+.kamal
+mise.local.toml
+**/.npmrc
+**/.env
+**/.env.*
+!**/.env.sample
+**/*.pem
 **/node_modules
 **/dist
 **/out

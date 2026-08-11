@@ -7,7 +7,15 @@
       "passThroughEnv": ["PORT"]
     },
     "build": {
-      "env": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "TIPTAP_PRIVATE_REGISTRY_KEY", "NODE_ENV", "PORT"]
+      "env": [
+        "SENTRY_AUTH_TOKEN",
+        "SENTRY_ORG",
+        "SENTRY_PROJECT",
+        "SENTRY_DSN",
+        "TIPTAP_PRIVATE_REGISTRY_KEY",
+        "NODE_ENV",
+        "PORT"
+      ]
     },
     "sentry:sourcemaps": {
       "env": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT"]

@@ -1,0 +1,98 @@
+service: campsite-api-tokdio
+image: truemarkdev/campsite-api
+
+servers:
+  web:
+    - 192.168.2.41
+
+proxy:
+  ssl: false
+  hosts:
+    - camp-api.tokdio.com
+    - camp-auth.tokdio.com
+    - camp-admin.tokdio.com
+    - camp-cdn.tokdio.com
+  app_port: 8080
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: localhost:5555
+
+builder:
+  arch: amd64
+  remote: ssh://debian@192.168.2.41
+  context: api
+  dockerfile: api/Dockerfile
+  args:
+    BUNDLER_VERSION: "4.0.15"
+    RUBY_VERSION: "4.0.5"
+
+env:
+  clear:
+    RAILS_ENV: production
+    RAILS_SERVE_STATIC_FILES: "true"
+    RAILS_LOG_TO_STDOUT: "true"
+    PORT: "8080"
+    APP_URL: https://camp.tokdio.com
+    MARKETING_SITE_URL: https://camp.tokdio.com
+    STYLED_TEXT_API_URL: https://camp-styled-text.tokdio.com
+    HTML_TO_IMAGE_URL: https://camp-html-to-image.tokdio.com
+    API_SUBDOMAIN: camp-api
+    AUTH_SUBDOMAIN: camp-auth
+    ADMIN_SUBDOMAIN: camp-admin
+    MAILER_HOST: camp-auth.tokdio.com
+    MAILER_PROTOCOL: https
+    ALLOWED_HOSTS: camp-api.tokdio.com,camp-auth.tokdio.com,camp-admin.tokdio.com,camp-cdn.tokdio.com
+    REDIS_URL: redis://campsite-api-tokdio-redis:6379/0
+    REDIS_SIDEKIQ_URL: redis://campsite-api-tokdio-redis:6379/1
+    RACK_ATTACK_REDIS_URL: redis://campsite-api-tokdio-redis:6379/2
+    SIDEKIQ_SCHEDULER_ENABLED: "false"
+    S3_REGION: us-east-1
+    S3_ENDPOINT: http://campsite-api-tokdio-objects:9000
+    S3_BUCKET: campsite-media
+    S3_FORCE_PATH_STYLE: "true"
+  secret:
+    - RAILS_MASTER_KEY
+    - DATABASE_URL
+    - DATABASE_REPLICA_URL
+    - ELASTICSEARCH_URL
+    - S3_ACCESS_KEY_ID
+    - S3_SECRET_ACCESS_KEY
+    - GEMINI_API_KEY
+    - OPENAI_API_KEY
+    - ANTHROPIC_API_KEY
+
+accessories:
+  elasticsearch:
+    service: campsite-api-tokdio-elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0@sha256:9aaa38551b4d9e655c54d9dc6a1dad24ee568c41952dc8cf1d4808513cfb5f65
+    host: shuri@192.168.2.14
+    port: "192.168.2.14:9200:9200"
+    env:
+      clear:
+        cluster.name: campsite-tokdio
+        node.name: campsite-tokdio-es01
+        discovery.type: single-node
+        xpack.security.enabled: "true"
+        node.store.allow_mmap: "false"
+        ingest.geoip.downloader.enabled: "false"
+      secret:
+        - ELASTIC_PASSWORD
+    files:
+      - config/elasticsearch/shadow-heap.options:/usr/share/elasticsearch/config/jvm.options.d/heap.options:ro
+    volumes:
+      - campsite-api-tokdio_elasticsearch-data:/usr/share/elasticsearch/data
+    options:
+      restart: unless-stopped
+      memory: 2g
+      ulimit: nofile=65535:65535
+      health-cmd: curl --fail --silent -u elastic:$ELASTIC_PASSWORD http://127.0.0.1:9200/_cluster/health
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 12
+      health-start-period: 30s
+
+ssh:
+  user: debian

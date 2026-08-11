@@ -6,3 +6,6 @@
 node = "22.21.0"
 ruby = "3.4.9"
 pnpm = "11.9.0"
+
+[settings]
+experimental = true

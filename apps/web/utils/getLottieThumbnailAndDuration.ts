@@ -1,8 +1,8 @@
-import lottie from 'lottie-web/build/player/lottie_light'
-
 export async function getLottieThumbnailAndDuration(
   file: File
 ): Promise<{ preview: File; duration: number; width: number; height: number }> {
+  const { default: lottie } = await import('lottie-web/build/player/lottie_light')
+
   return new Promise<any>((resolve, reject) => {
     const src = URL.createObjectURL(file)
 

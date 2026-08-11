@@ -1,0 +1,31 @@
+service: campsite-html-to-image-tokdio
+image: truemarkdev/campsite-html-to-image
+
+servers:
+  web:
+    - 192.168.2.41
+
+proxy:
+  ssl: false
+  host: camp-html-to-image.tokdio.com
+  app_port: 9222
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: localhost:5555
+
+builder:
+  arch: amd64
+  remote: ssh://debian@192.168.2.41
+  context: html-to-image
+  dockerfile: html-to-image/Dockerfile
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "9222"
+
+ssh:
+  user: debian

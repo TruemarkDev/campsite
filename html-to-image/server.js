@@ -12,7 +12,7 @@ import { Cluster } from 'puppeteer-cluster'
     puppeteerOptions: {
       headless: 'shell',
       executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome' : undefined,
-      args: ['--no-sandbox', '--disable-gpu']
+      args: ['--disable-gpu']
     }
   })
 
@@ -70,9 +70,8 @@ import { Cluster } from 'puppeteer-cluster'
 
   // Health check endpoint
   app.get('/up', (req, res) => {
-  res.send('OK')
+    res.send('OK')
   })
-
 
   app.post('/image', bodyParser.json(), async (req, res) => {
     if (!req.is('*/json')) {
@@ -95,6 +94,7 @@ import { Cluster } from 'puppeteer-cluster'
   )
 
   const port = process.env.PORT || 3000
+
   app.listen(port, function () {
     console.log(`html-to-image listening on port ${port}`)
   })

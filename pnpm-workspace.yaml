@@ -2,9 +2,14 @@ packages:
   - apps/*
   - packages/*
 
+registries:
+  '@tiptap-pro': https://registry.tiptap.dev/
+
 # Migrated from package.json "pnpm" field (pnpm 10+ reads these here, not there).
 overrides:
   '@types/react': ^18.0.0
+  'form-data@>=4.0.0 <4.0.4': 4.0.4
+  'tar@>=7.0.0 <7.5.19': 7.5.19
 patchedDependencies:
   '@radix-ui/react-popper': patches/@radix-ui__react-popper.patch
 
@@ -202,7 +207,7 @@ catalog:
   metascraper-video: ^5.34.7
   metascraper-youtube: ^5.34.7
   morgan: ^1.10.0
-  next: ^14.2.5
+  next: ^14.2.35
   next-mdx-remote: ^5.0.0
   next-sanity: ^9.5.0
   next-seo: ^6.0.0

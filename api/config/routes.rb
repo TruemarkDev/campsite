@@ -6,6 +6,8 @@ require "sidekiq-scheduler/web"
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
+  get "/up", to: proc { [200, { "Content-Type" => "text/plain" }, ["OK"]] }
+
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/preview-emails"
   end

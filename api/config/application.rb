@@ -42,6 +42,8 @@ module CampsiteApi
     config.active_job.queue_adapter = ActiveJob::QueueAdapters::SidekiqAdapter.new
     config.active_job.deliver_later_queue_name = "background"
 
-    config.cache_store = :redis_cache_store, { url: Rails.application.credentials&.redis&.fetch(:url) }
+    config.cache_store = :redis_cache_store, {
+      url: ENV["REDIS_URL"] || Rails.application.credentials&.redis&.fetch(:url),
+    }
   end
 end

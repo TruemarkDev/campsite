@@ -4,7 +4,7 @@ import { useSignoutUser } from 'hooks/useSignoutUser'
 import { isMobile } from 'react-device-detect'
 import * as R from 'remeda'
 
-import { FIGMA_PLUGIN_URL, LINEAR_APP_URL } from '@campsite/config'
+import { FIGMA_PLUGIN_URL, LINEAR_APP_URL, RAILS_ADMIN_URL } from '@campsite/config'
 import {
   AccessIcon,
   AppsIcon,
@@ -161,10 +161,7 @@ export function ProfileDropdown({
       label: 'Feature flags',
       leftSlot: <AccessIcon />,
       external: true,
-      url:
-        !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
-          ? 'http://admin.campsite.test:3001/admin/features/'
-          : 'https://admin.campsite.com/admin/features'
+      url: `${RAILS_ADMIN_URL}/admin/features/`
     },
     isStaff && { type: 'separator' },
     {

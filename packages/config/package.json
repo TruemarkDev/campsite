@@ -6,7 +6,8 @@
   "module": "./dist/index.js",
   "scripts": {
     "build": "tsc",
-    "clean": "rm -rf .turbo dist node_modules"
+    "clean": "rm -rf .turbo dist node_modules",
+    "test": "pnpm run build && node --test tests/*.test.cjs"
   },
   "devDependencies": {
     "@campsite/eslint-config": "workspace:*",
