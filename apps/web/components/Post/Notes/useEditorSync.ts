@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { HocuspocusProvider } from '@hocuspocus/provider'
+import { HocuspocusProvider, WebSocketStatus } from '@hocuspocus/provider'
 import { toUint8Array } from 'js-base64'
 import * as Y from 'yjs'
 
@@ -40,9 +40,16 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
       document = ydoc
     }
 
-    return new HocuspocusProvider({
+    // v3 removed the `parameters` config option; pass them via the URL instead
+    const parameters = new URLSearchParams({
+      schemaVersion: String(NOTE_SCHEMA_VERSION),
+      organization: String(scope),
+      type: resourceType
+    })
+
+    const hocuspocusProvider = new HocuspocusProvider({
       document,
-      url: SYNC_URL,
+      url: `${SYNC_URL}?${parameters}`,
       name: resourceId,
       token: () =>
         apiClient.users
@@ -53,12 +60,6 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
             apiErrorToast(error)
             return ''
           }),
-      connect: isLoggedIn,
-      parameters: {
-        schemaVersion: NOTE_SCHEMA_VERSION,
-        organization: scope,
-        type: resourceType
-      },
       onStateless: (data) => {
         const message = JSON.parse(data.payload)
 
@@ -79,15 +80,22 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
         setSyncState(data.status)
       }
     })
+
+    // v3 removed the `connect` config option; providers connect on construction
+    if (!isLoggedIn) hocuspocusProvider.disconnect()
+
+    return hocuspocusProvider
   })
 
   useEffect(() => {
-    if (!provider.isConnected) {
+    const status = () => provider.configuration.websocketProvider.status
+
+    if (status() !== WebSocketStatus.Connected) {
       provider.connect()
     }
 
     return () => {
-      if (provider.isConnected) {
+      if (status() === WebSocketStatus.Connected) {
         provider.disconnect()
       }
     }

@@ -9,8 +9,9 @@ export type CodeBlockHighlightedOptions = CodeBlockOptions & {
 
 export const CodeBlockHighlighted = CodeBlock.extend<CodeBlockHighlightedOptions>({
   addOptions() {
+    // this.parent is always defined when extending a concrete extension
     return {
-      ...this.parent?.(),
+      ...this.parent!(),
       highlight: false
     }
   },

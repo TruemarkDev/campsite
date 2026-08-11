@@ -7,6 +7,7 @@ import {
   CheckSquareIcon,
   CodeIcon,
   FaceSmileIcon,
+  GridIcon,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
@@ -144,6 +145,14 @@ const COMMANDS: CommandItemProps[] = [
     icon: <HorizontalRuleIcon />,
     command: ({ editor, range }: CommandProps) => editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
     kbd: '---'
+  },
+  {
+    title: 'Table',
+    searchTerms: ['grid', 'spreadsheet', 'columns', 'rows'],
+    icon: <GridIcon />,
+    command: ({ editor, range }: CommandProps) => {
+      editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+    }
   },
   {
     title: 'Toggle section',

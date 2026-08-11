@@ -1,7 +1,6 @@
 import { Extension } from '@tiptap/core'
 import { NodeSelection, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
-// @ts-ignore
-import { __serializeForClipboard, EditorView } from '@tiptap/pm/view'
+import { EditorView } from '@tiptap/pm/view'
 
 interface DragHandleOptions {
   dragHandleWidth: number
@@ -74,7 +73,8 @@ function DragHandle(options: DragHandleOptions) {
     view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, nodePos)))
 
     const slice = view.state.selection.content()
-    const { dom, text } = __serializeForClipboard(view, slice)
+    // prosemirror-view removed the private __serializeForClipboard export in favor of this public method
+    const { dom, text } = view.serializeForClipboard(slice)
 
     event.dataTransfer.clearData()
     event.dataTransfer.setData('text/html', dom.innerHTML)

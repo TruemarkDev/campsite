@@ -14,7 +14,7 @@ import { Editor as TTEditor } from '@tiptap/core'
 import { EditorContent } from '@tiptap/react'
 import { useSetAtom } from 'jotai'
 
-import { ActiveEditorComment, BlurAtTopOptions, focusAtStartWithNewline } from '@campsite/editor'
+import { ActiveEditorComment, BlurAtTopOptions, focusAtStartWithNewline, TableOfContentData } from '@campsite/editor'
 import { Note } from '@campsite/types/generated'
 import { LayeredHotkeys } from '@campsite/ui/DismissibleLayer'
 import { cn } from '@campsite/ui/src/utils'
@@ -35,6 +35,7 @@ import { HighlightCommentPopover } from '../NoteComments/HighlightCommentPopover
 import { useUploadNoteAttachments } from '../Post/Notes/Attachments/useUploadAttachments'
 import { NoteCommentPreview } from '../Post/Notes/CommentRenderer'
 import { useNoteEditor } from '../Post/Notes/useNoteEditor'
+import { NoteTableOfContents } from './NoteTableOfContents'
 
 interface Props {
   provider?: HocuspocusProvider | null
@@ -62,6 +63,7 @@ export const NoteContent = memo(
     const [activeComment, setActiveComment] = useState<ActiveEditorComment | null>(null)
     const [hoverComment, setHoverComment] = useState<ActiveEditorComment | null>(null)
     const [openAttachmentId, setOpenAttachmentId] = useState<string | undefined>()
+    const [tableOfContents, setTableOfContents] = useState<TableOfContentData>([])
 
     const canUploadAttachments = editable === 'all'
     const upload = useUploadNoteAttachments({ noteId, enabled: canUploadAttachments })
@@ -74,7 +76,8 @@ export const NoteContent = memo(
       onActiveComment: setActiveComment,
       onOpenAttachment: setOpenAttachmentId,
       onBlurAtTop,
-      provider
+      provider,
+      onTableOfContents: setTableOfContents
     })
 
     const setActiveEditor = useSetAtom(activeNoteEditorAtom)
@@ -196,6 +199,7 @@ export const NoteContent = memo(
 
         {!isSyncError && <EditorBubbleMenu editor={editor} canComment />}
 
+        <NoteTableOfContents anchors={tableOfContents} />
         <EditorContent editor={editor} onKeyDown={props.onKeyDown} onPaste={onPaste} onDrop={onDrop} />
         <div className={cn('mx-auto h-[2px] max-w-[44rem] bg-blue-500', { hidden: !tailDropcursorVisible })} />
       </div>

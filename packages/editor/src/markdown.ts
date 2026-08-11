@@ -103,6 +103,10 @@ export function getMarkdownExtensions(options?: GetMarkdownExtensionsOptions) {
 
     E.TaskItem.configure(options?.taskItem),
     E.TaskList,
+    E.Table,
+    E.TableRow,
+    E.TableHeader,
+    E.TableCell,
     E.Mention.configure(options?.mention),
     E.Reaction,
 
@@ -113,8 +117,7 @@ export function getMarkdownExtensions(options?: GetMarkdownExtensionsOptions) {
     E.DetailsSummary,
 
     E.PostNoteAttachment.extend({
-      addNodeView: options?.postNoteAttachment?.addNodeView,
-      postId: options?.postNoteAttachment?.postId
+      addNodeView: options?.postNoteAttachment?.addNodeView
     }).configure(options?.postNoteAttachment),
 
     E.MediaGallery.extend({

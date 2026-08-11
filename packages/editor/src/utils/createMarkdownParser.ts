@@ -6,6 +6,25 @@ import Token from 'markdown-it/lib/token'
 import markdownItTasks from './markdownItTasks'
 import { MarkdownParser, ParseSpec } from './MarkdownParser'
 
+// Tiptap v2 allowed arbitrary extra keys in extension configs; v3 types are
+// closed, so our custom markdown-parsing config keys need explicit augmentation.
+declare module '@tiptap/core' {
+  interface NodeConfig<Options, Storage> {
+    markdownParseSpec?: () => ParseSpec | null | undefined
+    markdownToken?: string
+  }
+
+  interface MarkConfig<Options, Storage> {
+    markdownParseSpec?: () => ParseSpec | null | undefined
+    markdownToken?: string
+  }
+
+  interface ExtensionConfig<Options, Storage> {
+    markdownParseSpec?: () => ParseSpec | null | undefined
+    markdownToken?: string
+  }
+}
+
 const ignoreAllMarkdownTokens: { [name: string]: ParseSpec } = {
   // blocks
   paragraph: { block: 'paragraph' },
@@ -34,6 +53,15 @@ const ignoreAllMarkdownTokens: { [name: string]: ParseSpec } = {
   em: { ignore: true },
   link: { ignore: true },
   s: { ignore: true }
+}
+
+const tableMarkdownTokens: { [name: string]: ParseSpec } = {
+  table: { block: 'table' },
+  thead: { ignore: true },
+  tbody: { ignore: true },
+  tr: { block: 'tableRow' },
+  th: { block: 'tableHeader', contentWrapper: 'paragraph' },
+  td: { block: 'tableCell', contentWrapper: 'paragraph' }
 }
 
 export function listIsTight(tokens: readonly Token[], i: number) {
@@ -69,18 +97,26 @@ export function createMarkdownParser(
     .filter(
       (extension) => 'markdownParseSpec' in extension.config && typeof extension.config.markdownParseSpec === 'function'
     )
-    .reduce((nodes, extension) => {
-      const parseSpec = getMarkdownSpec(extension)
+    .reduce(
+      (nodes, extension) => {
+        const parseSpec = getMarkdownSpec(extension)
 
-      if (!parseSpec) {
-        return nodes
-      }
+        if (!parseSpec) {
+          return nodes
+        }
 
-      return {
-        ...nodes,
-        [getMarkdownToken(extension)]: parseSpec
-      }
-    }, ignoreAllMarkdownTokens)
+        return {
+          ...nodes,
+          [getMarkdownToken(extension)]: parseSpec
+        }
+      },
+      { ...ignoreAllMarkdownTokens }
+    )
+
+  const tableNodeNames = ['table', 'tableRow', 'tableHeader', 'tableCell']
+  if (tableNodeNames.every((name) => schema.nodes[name])) {
+    Object.assign(tokens, tableMarkdownTokens)
+  }
 
   return new MarkdownParser(
     schema,
@@ -89,7 +125,9 @@ export function createMarkdownParser(
       html: true,
       breaks: false,
       linkify: true
-    }).use(markdownItTasks),
+    })
+      .enable('table')
+      .use(markdownItTasks),
     tokens,
     domParser,
     document

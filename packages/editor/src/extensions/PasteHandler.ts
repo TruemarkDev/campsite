@@ -17,7 +17,7 @@ import { parseSingleIframeSrc } from '../utils/parseSingleIframeSrc'
 import { singleNodeContent } from '../utils/singleNodeContent'
 import { supportedResourceMention } from './ResourceMention'
 
-interface PasteHandlerOptions {
+export interface PasteHandlerOptions {
   enableInlineAttachments: boolean
 }
 

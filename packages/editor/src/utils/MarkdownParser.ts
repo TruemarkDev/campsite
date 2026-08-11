@@ -41,7 +41,36 @@ function elementFromString(value: string, parser: DOMParser): HTMLElement {
 
   const html = parser.parseFromString(wrappedValue, 'text/html').body
 
-  return removeWhitespaces(html)
+  return normalizeDetailsElements(removeWhitespaces(html))
+}
+
+// Raw <details> from markdown often lacks the explicit <summary> +
+// <div data-type="detailsContent"> structure our schema expects. Without it,
+// ProseMirror's DOM parser hoists the children out of the details node
+// entirely, so make the structure explicit before parsing.
+function normalizeDetailsElements(root: HTMLElement) {
+  const document = root.ownerDocument
+
+  root.querySelectorAll('details').forEach((details) => {
+    if (details.querySelector(':scope > div[data-type="detailsContent"]')) return
+
+    let summary = details.querySelector(':scope > summary')
+    const content = document.createElement('div')
+
+    content.setAttribute('data-type', 'detailsContent')
+    Array.from(details.childNodes).forEach((child) => {
+      if (child !== summary) content.appendChild(child)
+    })
+
+    if (!summary) {
+      summary = document.createElement('summary')
+      details.appendChild(summary)
+    }
+
+    details.appendChild(content)
+  })
+
+  return root
 }
 
 const isClosingTag = (html: string) => html.startsWith('</')
@@ -317,6 +346,14 @@ function withoutTrailingNewline(str: string) {
 // eslint-disable-next-line no-empty-function
 function noOp() {}
 
+function getNodeType(schema: Schema, name: string) {
+  const nodeType = schema.nodes[name]
+
+  if (!nodeType) throw new RangeError(`Unknown node type: ${name}`)
+
+  return nodeType
+}
+
 function tokenHandlers(schema: Schema, tokens: { [token: string]: ParseSpec }) {
   let handlers: { [token: string]: (stat: MarkdownParseState, token: Token, tokens: Token[], i: number) => void } =
     Object.create(null)
@@ -325,8 +362,7 @@ function tokenHandlers(schema: Schema, tokens: { [token: string]: ParseSpec }) {
     let spec = tokens[type]
 
     if (spec.block) {
-      // @ts-ignore
-      let nodeType = schema.nodeType(spec.block)
+      let nodeType = getNodeType(schema, spec.block)
 
       if (noCloseToken(spec, type)) {
         handlers[type] = (state, tok, tokens, i) => {
@@ -335,12 +371,17 @@ function tokenHandlers(schema: Schema, tokens: { [token: string]: ParseSpec }) {
           state.closeNode()
         }
       } else {
-        handlers[type + '_open'] = (state, tok, tokens, i) => state.openNode(nodeType, attrs(spec, tok, tokens, i))
-        handlers[type + '_close'] = (state) => state.closeNode()
+        handlers[type + '_open'] = (state, tok, tokens, i) => {
+          state.openNode(nodeType, attrs(spec, tok, tokens, i))
+          if (spec.contentWrapper) state.openNode(getNodeType(schema, spec.contentWrapper), null)
+        }
+        handlers[type + '_close'] = (state) => {
+          if (spec.contentWrapper) state.closeNode()
+          state.closeNode()
+        }
       }
     } else if (spec.node) {
-      // @ts-ignore
-      let nodeType = schema.nodeType(spec.node)
+      let nodeType = getNodeType(schema, spec.node)
 
       handlers[type] = (state, tok, tokens, i) => state.addNode(nodeType, attrs(spec, tok, tokens, i))
     } else if (spec.mark) {
@@ -415,6 +456,10 @@ export interface ParseSpec {
   /// no `_open` or `_close` for the nodes. This defaults to `true`
   /// for `code_inline`, `code_block` and `fence`.
   noCloseToken?: boolean
+
+  /// Wrap parsed inline content in a block node. Used by Markdown table cells,
+  /// whose schema requires paragraphs rather than direct text children.
+  contentWrapper?: string
 
   /// When true, ignore content for the matched token.
   ignore?: boolean

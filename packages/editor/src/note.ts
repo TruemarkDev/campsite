@@ -16,7 +16,7 @@ import { SoftbreakMarkdownParser } from './extensions/SoftbreakMarkdownParser'
  * - Do NOT remove any extensions. If you want to, we should deprecate its use instead
  * - If you reorder the extensions, you do not need to bump the version number
  */
-export const NOTE_SCHEMA_VERSION = 6
+export const NOTE_SCHEMA_VERSION = 7
 
 export interface GetNoteExtensionsOptions {
   link?: Partial<E.LinkOptions>
@@ -61,6 +61,8 @@ export interface GetNoteExtensionsOptions {
     disabled?: boolean
     addNodeView?(): NodeViewRenderer
   }
+
+  tableOfContents?: Partial<E.TableOfContentsOptions> & { enabled?: boolean }
 }
 
 export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
@@ -117,6 +119,11 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
 
     E.TaskItem.configure(options?.taskItem),
     E.TaskList,
+    E.Selection.configure({ className: 'note-selection' }),
+    E.Table,
+    E.TableRow,
+    E.TableHeader,
+    E.TableCell,
     E.Mention.configure(options?.mention),
     E.Reaction,
 
@@ -139,6 +146,8 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
     E.ResourceMention.extend({
       addNodeView: options?.resourceMention?.addNodeView
     }).configure(options?.resourceMention),
+
+    ...(options?.tableOfContents?.enabled !== false ? [E.TableOfContents.configure(options?.tableOfContents)] : []),
 
     ...(options?.comment?.enabled !== false ? [E.Comment.configure(options?.comment)] : [])
   ]

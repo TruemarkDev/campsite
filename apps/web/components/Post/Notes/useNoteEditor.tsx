@@ -1,10 +1,16 @@
 import { useEffect, useMemo } from 'react'
 import { HocuspocusProvider } from '@hocuspocus/provider'
 import Collaboration from '@tiptap/extension-collaboration'
-import CollaborationCursor from '@tiptap/extension-collaboration-cursor'
+import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import { EditorOptions, ReactNodeViewRenderer, useEditor } from '@tiptap/react'
 
-import { ActiveEditorComment, BlurAtTopOptions, getNoteExtensions, PostNoteAttachmentOptions } from '@campsite/editor'
+import {
+  ActiveEditorComment,
+  BlurAtTopOptions,
+  getNoteExtensions,
+  PostNoteAttachmentOptions,
+  TableOfContentData
+} from '@campsite/editor'
 import { cn } from '@campsite/ui/src/utils'
 
 import { InlineResourceMentionRenderer } from '@/components/InlineResourceMentionRenderer'
@@ -14,6 +20,7 @@ import { InlineRelativeTimeRenderer } from '@/components/RichTextRenderer/handle
 import { useCurrentUserOrOrganizationHasFeature } from '@/hooks/useCurrentUserOrOrganizationHasFeature'
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
 import { notEmpty } from '@/utils/notEmpty'
+import { getImmediateScrollableNode } from '@/utils/scroll'
 
 import { LinkUnfurlRenderer } from '../LinkUnfurlRenderer'
 import { NoteAttachmentRenderer } from './Attachments/NoteAttachmentRenderer'
@@ -42,6 +49,7 @@ interface NoteEditorOptions {
   onBlurAtTop?: BlurAtTopOptions['onBlur']
   provider?: HocuspocusProvider | null
   upload?: ReturnType<typeof useUploadNoteAttachments>
+  onTableOfContents?(anchors: TableOfContentData): void
 }
 
 export function useNoteEditor({
@@ -53,7 +61,8 @@ export function useNoteEditor({
   onActiveComment,
   onOpenAttachment,
   onBlurAtTop,
-  provider
+  provider,
+  onTableOfContents
 }: NoteEditorOptions) {
   const { data: currentUser } = useGetCurrentUser()
   const linkOptions = useControlClickLink()
@@ -117,6 +126,13 @@ export function useNoteEditor({
           addNodeView() {
             return ReactNodeViewRenderer(InlineRelativeTimeRenderer, { contentDOMElementTag: 'span' })
           }
+        },
+        tableOfContents: {
+          onUpdate: onTableOfContents,
+          scrollParent: () => {
+            const noteEditor = document.querySelector('.ProseMirror.new-posts') as HTMLElement | null
+            return noteEditor ? getImmediateScrollableNode(noteEditor) : window
+          }
         }
       }),
       ...(provider
@@ -129,7 +145,7 @@ export function useNoteEditor({
             }).configure({
               document: provider.document
             }),
-            CollaborationCursor.configure({
+            CollaborationCaret.configure({
               provider: provider,
               render(user) {
                 const element = document.createElement('div')
@@ -153,7 +169,17 @@ export function useNoteEditor({
         : []),
       DragAndDrop
     ].filter(notEmpty)
-  }, [editable, linkOptions, onActiveComment, onBlurAtTop, onHoverComment, onOpenAttachment, provider, hasRelativeTime])
+  }, [
+    editable,
+    linkOptions,
+    onActiveComment,
+    onBlurAtTop,
+    onHoverComment,
+    onOpenAttachment,
+    onTableOfContents,
+    provider,
+    hasRelativeTime
+  ])
 
   const allEditable = editable === 'all'
 

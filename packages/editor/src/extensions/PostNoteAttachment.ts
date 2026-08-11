@@ -8,6 +8,7 @@ export interface PostNoteAttachmentOptions {
   onOpenAttachment: (id: string) => void
   onCreateLinkAttachment?: (props: { url: string; editor: Editor; chain: () => ChainedCommands }) => void
   disableComments: boolean
+  postId?: string
 }
 
 declare module '@tiptap/core' {

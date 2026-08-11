@@ -219,8 +219,10 @@ function CodeBlockLanguagePlugin({ editor, element, onActiveLanguage }: CodeBloc
       return
     }
 
-    if (!popup && editor.options.element.parentElement) {
-      popup = tippy(editor.options.element, {
+    const editorElement = editor.options.element
+
+    if (!popup && editorElement instanceof Element && editorElement.parentElement) {
+      popup = tippy(editorElement, {
         duration: 0,
         getReferenceClientRect: null,
         content: element,

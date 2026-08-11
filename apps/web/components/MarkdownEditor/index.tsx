@@ -367,7 +367,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
 
   return (
     <>
-      {!props.disabled && <EditorBubbleMenu editor={editor} tippyAppendTo={appendBubbleMenuTo} />}
+      {!props.disabled && <EditorBubbleMenu editor={editor} appendBubbleMenuTo={appendBubbleMenuTo} />}
       {enableSyntaxHighlighting && <CodeBlockLanguagePicker editor={editor} />}
       {!disableSlashCommand && <SlashCommand editor={editor} upload={upload} />}
       {!disableMentions && <MentionList editor={editor} defaultMentions={defaultMentions} />}

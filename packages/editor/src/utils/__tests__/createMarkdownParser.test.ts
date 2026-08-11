@@ -5,6 +5,7 @@ import { getChatExtensions } from '../../chat'
 import { getMarkdownExtensions } from '../../markdown'
 import { getNoteExtensions } from '../../note'
 import { createMarkdownParser } from '../createMarkdownParser'
+import isMarkdown from '../isMarkdown'
 
 describe('createMarkdownParser', () => {
   const SAMPLE_MARKDOWN = `
@@ -310,6 +311,18 @@ Foo bar baz
     const result = parser.parse(md)
 
     expect(result).toMatchSnapshot()
+  })
+
+  it('parses Markdown tables into real table nodes', () => {
+    const extensions = getNoteExtensions()
+    const schema = getSchemaByResolvedExtensions(extensions)
+    const parser = createMarkdownParser(schema, extensions)
+    const result = parser.parse('| Name | Status |\n| --- | --- |\n| Editor | Ready |')
+
+    expect(result.firstChild?.type.name).toBe('table')
+    expect(result.firstChild?.childCount).toBe(2)
+    expect(result.firstChild?.firstChild?.firstChild?.type.name).toBe('tableHeader')
+    expect(isMarkdown('| Name | Status |\n| --- | --- |\n| Editor | Ready |')).toBe(true)
   })
 
   it('strips unsupported link attribute values', () => {

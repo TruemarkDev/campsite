@@ -1,13 +1,13 @@
 import { InputRule, isNodeActive } from '@tiptap/core'
-import {
-  inputRegex,
-  TaskItem as TiptapTaskItem,
-  TaskItemOptions as TiptapTaskItemOptions
-} from '@tiptap/extension-task-item'
+import { TaskItem as TiptapTaskItem, TaskItemOptions as TiptapTaskItemOptions } from '@tiptap/extension-task-item'
 import { Node } from '@tiptap/pm/model'
 import { canJoin, findWrapping } from '@tiptap/pm/transform'
 
 import { createMarkdownParserSpec } from '../utils/createMarkdownParser'
+
+// Matches a task item checkbox prefix, e.g. "[ ] " or "[x] ".
+// Copied from @tiptap/extension-task-item, which stopped exporting it in v3.
+const inputRegex = /^\s*(\[([( |x])?\])\s$/
 
 export interface TaskItemOptions extends Omit<TiptapTaskItemOptions, 'onReadOnlyChecked'> {
   canEdit?(): boolean
@@ -59,6 +59,8 @@ export const TaskItem = TiptapTaskItem.extend<TaskItemOptions>({
             .focus(undefined, { scrollIntoView: false })
             .command(({ tr }) => {
               const position = getPos()
+
+              if (position === undefined) return false
               const currentNode = tr.doc.nodeAt(position)
 
               tr.setNodeMarkup(position, undefined, {
@@ -167,7 +169,7 @@ export const TaskItem = TiptapTaskItem.extend<TaskItemOptions>({
 
   markdownParseSpec() {
     return createMarkdownParserSpec({
-      block: TaskItem.name,
+      block: TiptapTaskItem.name,
       getAttrs: (token) => ({
         checked: token.attrGet('checked') === 'true'
       })

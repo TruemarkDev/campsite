@@ -6,16 +6,24 @@ exports[`createMarkdownParser > converts HTML blocks with markdown inside 1`] = 
     {
       "content": [
         {
-          "content": [
-            {
-              "text": "Heading",
-              "type": "text",
-            },
-          ],
           "type": "detailsSummary",
         },
         {
           "content": [
+            {
+              "attrs": {
+                "data-toc-id": null,
+                "id": null,
+                "level": 2,
+              },
+              "content": [
+                {
+                  "text": "Heading",
+                  "type": "text",
+                },
+              ],
+              "type": "heading",
+            },
             {
               "content": [
                 {
@@ -637,6 +645,7 @@ exports[`createMarkdownParser > parses chat extensions 1`] = `
                 "href": "https://linear.app/campsite/issue/CAM-6845/normalize-notes",
                 "rel": "noopener noreferrer nofollow",
                 "target": "_blank",
+                "title": null,
                 "truncated": false,
               },
               "type": "link",
@@ -806,7 +815,7 @@ exports[`createMarkdownParser > parses markdown extensions 1`] = `
     {
       "attrs": {
         "start": 1,
-        "type": undefined,
+        "type": null,
       },
       "content": [
         {
@@ -882,6 +891,7 @@ exports[`createMarkdownParser > parses markdown extensions 1`] = `
                 "href": "https://github.com/campsite/campsite/assets/739696/49b398b1-8c03-4255-a759-21b8b53a3f5d",
                 "rel": "noopener noreferrer nofollow",
                 "target": "_blank",
+                "title": null,
                 "truncated": false,
               },
               "type": "link",
@@ -896,11 +906,202 @@ exports[`createMarkdownParser > parses markdown extensions 1`] = `
     {
       "content": [
         {
-          "text": "HeaderHeaderHeaderCellCellCellCellCellCell",
-          "type": "text",
+          "content": [
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Header",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableHeader",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Header",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableHeader",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Header",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableHeader",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
         },
       ],
-      "type": "paragraph",
+      "type": "table",
     },
     {
       "content": [
@@ -930,6 +1131,7 @@ exports[`createMarkdownParser > parses markdown extensions 1`] = `
                 "href": "https://linear.app/campsite/issue/CAM-6845/normalize-notes",
                 "rel": "noopener noreferrer nofollow",
                 "target": "_blank",
+                "title": null,
                 "truncated": false,
               },
               "type": "link",
@@ -971,6 +1173,8 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
   "content": [
     {
       "attrs": {
+        "data-toc-id": null,
+        "id": null,
         "level": 1,
       },
       "content": [
@@ -983,6 +1187,8 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     },
     {
       "attrs": {
+        "data-toc-id": null,
+        "id": null,
         "level": 2,
       },
       "content": [
@@ -995,6 +1201,8 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     },
     {
       "attrs": {
+        "data-toc-id": null,
+        "id": null,
         "level": 3,
       },
       "content": [
@@ -1007,6 +1215,8 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     },
     {
       "attrs": {
+        "data-toc-id": null,
+        "id": null,
         "level": 4,
       },
       "content": [
@@ -1019,6 +1229,8 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     },
     {
       "attrs": {
+        "data-toc-id": null,
+        "id": null,
         "level": 5,
       },
       "content": [
@@ -1031,6 +1243,8 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     },
     {
       "attrs": {
+        "data-toc-id": null,
+        "id": null,
         "level": 6,
       },
       "content": [
@@ -1099,7 +1313,7 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     {
       "attrs": {
         "start": 1,
-        "type": undefined,
+        "type": null,
       },
       "content": [
         {
@@ -1175,6 +1389,7 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
                 "href": "https://github.com/campsite/campsite/assets/739696/49b398b1-8c03-4255-a759-21b8b53a3f5d",
                 "rel": "noopener noreferrer nofollow",
                 "target": "_blank",
+                "title": null,
                 "truncated": false,
               },
               "type": "link",
@@ -1189,11 +1404,202 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
     {
       "content": [
         {
-          "text": "HeaderHeaderHeaderCellCellCellCellCellCell",
-          "type": "text",
+          "content": [
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Header",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableHeader",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Header",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableHeader",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Header",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableHeader",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
+        },
+        {
+          "content": [
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+            {
+              "attrs": {
+                "align": null,
+                "colspan": 1,
+                "colwidth": null,
+                "rowspan": 1,
+              },
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Cell",
+                      "type": "text",
+                    },
+                  ],
+                  "type": "paragraph",
+                },
+              ],
+              "type": "tableCell",
+            },
+          ],
+          "type": "tableRow",
         },
       ],
-      "type": "paragraph",
+      "type": "table",
     },
     {
       "content": [
@@ -1223,6 +1629,7 @@ exports[`createMarkdownParser > parses note extensions 1`] = `
                 "href": "https://linear.app/campsite/issue/CAM-6845/normalize-notes",
                 "rel": "noopener noreferrer nofollow",
                 "target": "_blank",
+                "title": null,
                 "truncated": false,
               },
               "type": "link",
@@ -1340,6 +1747,7 @@ exports[`createMarkdownParser > strips unsupported link attribute values 1`] = `
                 "href": "https://campsite.com",
                 "rel": "noopener noreferrer nofollow",
                 "target": "_blank",
+                "title": null,
                 "truncated": false,
               },
               "type": "link",

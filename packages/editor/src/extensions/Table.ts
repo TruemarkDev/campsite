@@ -1,0 +1,1 @@
+export { Table, TableCell, TableHeader, TableRow } from '@tiptap/extension-table'

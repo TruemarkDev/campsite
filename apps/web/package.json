@@ -42,7 +42,7 @@
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "@tiptap/extension-collaboration": "catalog:",
-    "@tiptap/extension-collaboration-cursor": "catalog:",
+    "@tiptap/extension-collaboration-caret": "catalog:",
     "@tiptap/pm": "catalog:",
     "@tiptap/react": "catalog:",
     "@todesktop/client-core": "catalog:",

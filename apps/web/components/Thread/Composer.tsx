@@ -410,10 +410,10 @@ const ComposerEditor = forwardRef<ComposerEditorRef, ComposerEditorProps>(functi
     if (editMode) {
       const currentContent = editor?.getHTML() ?? EMPTY_HTML
 
-      editor.chain().setContent(editMode.content, true).focus().run()
+      editor.chain().setContent(editMode.content, { emitUpdate: true }).focus().run()
 
       return () => {
-        editor.chain().setContent(currentContent, true).focus().run()
+        editor.chain().setContent(currentContent, { emitUpdate: true }).focus().run()
       }
     }
     // including editor?.commands here causes an infinite loop
