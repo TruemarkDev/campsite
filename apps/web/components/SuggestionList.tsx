@@ -284,7 +284,7 @@ export function SuggestionRoot(props: SuggestionProps) {
               'scrollbar-hide bg-elevated dark:border-primary-opaque flex max-h-60 min-w-[265px] scroll-p-1 flex-col gap-0.5 overflow-y-auto overflow-x-hidden rounded-[9px] border border-neutral-400/40 p-1 shadow-md outline-none focus:outline-none dark:shadow-[0px_0px_0px_0.5px_rgba(0,0,0,1),_0px_4px_4px_rgba(0,0,0,0.24)]',
               contentClassName
             )}
-            avoidCollisions='autoPlacement'
+            avoidCollisions
             asChild
           >
             <Command
