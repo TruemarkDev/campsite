@@ -1,5 +1,5 @@
 import { Logger } from '@hocuspocus/extension-logger'
-import { Hocuspocus } from '@hocuspocus/server'
+import { Server } from '@hocuspocus/server'
 import * as Sentry from '@sentry/node'
 import * as dotenv from 'dotenv'
 
@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 
 dotenv.config()
 
-const server = new Hocuspocus({
+const server = new Server({
   port: parseInt(process.env.PORT || '9000', 10),
 
   async onAuthenticate(data): Promise<Context> {
@@ -42,7 +42,7 @@ const server = new Hocuspocus({
       const document = data.instance.documents.get(data.documentName)
 
       if (document) sendVersionToConnections(document, state.description_schema_version)
-      data.connection.readOnly = schemaVersion < state.description_schema_version
+      data.connectionConfig.readOnly = schemaVersion < state.description_schema_version
 
       return {
         token: data.token,

@@ -5,7 +5,6 @@ on:
 
 env:
   FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-  TIPTAP_PRIVATE_REGISTRY_KEY: ${{ secrets.TIPTAP_PRIVATE_REGISTRY_KEY }}
   SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
   SENTRY_ORG: campsite-software
   SENTRY_PROJECT: sync-server
@@ -38,7 +37,6 @@ jobs:
           flyctl deploy \
             --config apps/sync-server/fly.toml \
             --dockerfile apps/sync-server/Dockerfile \
-            --build-arg TIPTAP_PRIVATE_REGISTRY_KEY=${{ secrets.TIPTAP_PRIVATE_REGISTRY_KEY }} \
             --remote-only \
             --env RELEASE_SHA=${{ github.sha }} \
             --build-arg SENTRY_AUTH_TOKEN=${{ secrets.SENTRY_AUTH_TOKEN }} \

@@ -25,11 +25,7 @@ WORKDIR /app
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-RUN --mount=type=secret,id=TIPTAP_PRIVATE_REGISTRY_KEY \
-    pnpm config set "@tiptap-pro:registry" https://registry.tiptap.dev/ && \
-    pnpm config set "//registry.tiptap.dev/:_authToken" "$(cat /run/secrets/TIPTAP_PRIVATE_REGISTRY_KEY)" && \
-    pnpm install --frozen-lockfile && \
-    pnpm config delete "//registry.tiptap.dev/:_authToken"
+RUN pnpm install --frozen-lockfile
 
 COPY --from=builder /app/out/full/ .
 
