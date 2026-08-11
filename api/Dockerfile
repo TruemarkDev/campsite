@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 ARG RUBY_VERSION=4.0.5
 
-FROM node:22.21.0-bookworm-slim@sha256:f9f7f95dcf1f007b007c4dcd44ea8f7773f931b71dc79d57c216e731c87a090b AS node_runtime
+FROM node:22.22.2-bookworm-slim@sha256:9f6d5975c7dca860947d3915877f85607946403fc55349f39b4bc3688448bb6e AS node_runtime
 FROM ruby:${RUBY_VERSION}-slim-bookworm@sha256:707ef4cbfc3d990664996e5ef154abd6a41539aa774b8467f55126697e03d58f AS base
 
 ARG BUNDLER_VERSION

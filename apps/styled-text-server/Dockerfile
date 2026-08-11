@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 
-FROM node:22.21.0-bookworm-slim@sha256:f9f7f95dcf1f007b007c4dcd44ea8f7773f931b71dc79d57c216e731c87a090b AS base
+FROM node:22.22.2-bookworm-slim@sha256:9f6d5975c7dca860947d3915877f85607946403fc55349f39b4bc3688448bb6e AS base
 
 # configure pnpm
 ENV PNPM_HOME="/pnpm"
@@ -15,9 +15,8 @@ FROM base AS builder
 RUN apt-get update -qq && \
   apt-get install -y build-essential pkg-config python-is-python3 ca-certificates
 WORKDIR /app
-RUN pnpm install turbo@2.0.9 --global
 COPY . .
-RUN turbo prune @campsite/styled-text-server --docker
+RUN pnpm dlx turbo@2.10.9 prune @campsite/styled-text-server --docker
 WORKDIR /app
 
 

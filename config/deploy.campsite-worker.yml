@@ -3,6 +3,7 @@
 # production worker and queue consumption has been explicitly authorized.
 service: campsite-worker-tokdio
 image: truemarkdev/campsite-api
+secrets_path: .kamal/campsite-secrets
 
 primary_role: worker
 servers:

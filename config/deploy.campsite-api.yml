@@ -1,5 +1,6 @@
 service: campsite-api-tokdio
 image: truemarkdev/campsite-api
+secrets_path: .kamal/campsite-secrets
 
 servers:
   web:

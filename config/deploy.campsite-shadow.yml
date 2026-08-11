@@ -3,6 +3,7 @@
 # stateful accessory. This configuration does not change public DNS.
 service: campsite-shadow-html-to-image
 image: truemarkdev/campsite-shadow-html-to-image
+secrets_path: .kamal/campsite-secrets
 
 servers:
   web:

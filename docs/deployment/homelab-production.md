@@ -131,9 +131,12 @@ one-to-two-user load.
 
 ## Secrets
 
-Kamal injects secret names from the ignored `.kamal/secrets` environment
-bridge; no secret value belongs in that file, a deploy YAML file, image layer,
-Git history, or command output. The bridge references values loaded by
+Kamal injects secret names from the tracked, value-free
+`.kamal/campsite-secrets` environment bridge; no secret value belongs in that
+file, a deploy YAML file, image layer, Git history, or command output. The
+dedicated `secrets_path` keeps homelab configs isolated from the legacy
+Doppler-backed `.kamal/secrets-common` file while preserving that production
+custody unchanged. The bridge references values loaded by
 `mise exec --` from the ignored, age-encrypted `mise.local.toml` or from the
 operator environment.
 
@@ -144,8 +147,9 @@ mise exec -- script/check-campsite-kamal-secrets
 ```
 
 The preflight derives required names from every `deploy.campsite-*.yml`, checks
-that the bridge contains environment-only references, reports presence by name
-only, and exits nonzero when anything is missing. The Rails credentials key,
+that each config selects the dedicated bridge and that it contains
+environment-only references, reports presence by name only, and exits nonzero
+when anything is missing. The Rails credentials key,
 database URLs, object-store keys, Elasticsearch credential, provider
 credentials, and observability tokens are required inputs. At the time this
 platform was declared, only the private Tiptap registry token was present; a

@@ -1,5 +1,6 @@
 service: campsite-styled-text-tokdio
 image: truemarkdev/campsite-styled-text
+secrets_path: .kamal/campsite-secrets
 
 servers:
   web:
