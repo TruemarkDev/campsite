@@ -1,15 +1,14 @@
-const assert = require('node:assert/strict')
-const { describe, it } = require('node:test')
+import { describe, expect, it } from 'vitest'
 
-const { buildDeploymentConfig } = require('./deployment')
+import { buildDeploymentConfig } from './deployment'
 
 describe('web deployment origins', () => {
   it('preserves the polo-apps production defaults', () => {
     const config = buildDeploymentConfig({})
 
-    assert.equal(config.deploymentUrls.web, 'https://camp.polo-apps.com')
-    assert.ok(config.deploymentOrigins.includes('wss://camp-sync.polo-apps.com'))
-    assert.ok(config.deploymentImageDomains.includes('camp-cdn.polo-apps.com'))
+    expect(config.deploymentUrls.web).toBe('https://camp.polo-apps.com')
+    expect(config.deploymentOrigins).toContain('wss://camp-sync.polo-apps.com')
+    expect(config.deploymentImageDomains).toContain('camp-cdn.polo-apps.com')
   })
 
   it('renders a tokdio canary without polo-apps deployment origins', () => {
@@ -24,8 +23,8 @@ describe('web deployment origins', () => {
       NEXT_PUBLIC_OBJECT_STORAGE_URL: 'https://camp-objects.tokdio.com'
     })
 
-    assert.equal(JSON.stringify(config).includes('polo-apps.com'), false)
-    assert.deepEqual(config.deploymentOrigins.sort(), [
+    expect(JSON.stringify(config)).not.toContain('polo-apps.com')
+    expect(config.deploymentOrigins.sort()).toEqual([
       'https://camp-admin.tokdio.com',
       'https://camp-api.tokdio.com',
       'https://camp-auth.tokdio.com',
