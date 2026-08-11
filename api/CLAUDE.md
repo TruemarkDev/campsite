@@ -7,7 +7,7 @@ Truemark/Varicon. Some upstream tooling is now stale — see **Deployment** belo
 
 ## Stack
 
-- **Ruby** 4.0.5 (`.ruby-version`), **Rails** 8.1, **Bundler** 4.x
+- **Ruby** 4.0.6 (`.ruby-version`), **Rails** 8.1, **Bundler** 4.x
 - **Database**: MySQL via the **`trilogy`** adapter (PlanetScale-style). Not Postgres.
 - **Background jobs**: Sidekiq 8.1 + `sidekiq-scheduler` (`config/sidekiq.yml`), Redis-backed
 - **Search**: Elasticsearch

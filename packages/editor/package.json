@@ -54,7 +54,6 @@
     "@types/diff": "catalog:",
     "@types/markdown-it": "catalog:",
     "@types/node": "catalog:",
-    "@types/uuid": "catalog:",
     "jsdom": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",

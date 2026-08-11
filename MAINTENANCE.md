@@ -52,14 +52,14 @@ These four must always agree. When bumping one, bump all:
 
 | Where | File |
 | --- | --- |
-| asdf/mise root | `.tool-versions` |
-| asdf/mise api  | `api/.tool-versions` |
+| mise root      | `mise.toml` |
+| mise api       | `api/mise.toml` |
 | Ruby pin       | `api/.ruby-version` (symlinked from `/.ruby-version`) |
 | Node engines   | `package.json` → `engines.node` |
 | CI runners     | `.github/workflows/*` → `node-version` |
-| Container base | `apps/*/Dockerfile` → `FROM node:*`; api derives Ruby from `.ruby-version` |
+| Container base | `apps/*/Dockerfile` → `FROM node:*`; API uses `api/Dockerfile` → `ARG RUBY_VERSION` |
 
-Current baseline: **Node 22.x, Ruby 3.4.9.**
+Current baseline: **Node 24.x, Ruby 4.0.6.**
 
 ## Automated watchdog
 

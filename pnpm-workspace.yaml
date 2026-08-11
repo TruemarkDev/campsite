@@ -145,9 +145,7 @@ catalog:
   '@types/pluralize': ^0.0.30
   '@types/react': ^18.2.74
   '@types/react-dom': ^18.2.24
-  '@types/react-timeago': ^4.1.3
   '@types/supertest': ^6.0.2
-  '@types/uuid': ^9.0.4
   '@typescript-eslint/eslint-plugin': ^7.11.0
   '@typescript-eslint/parser': ^7.11.0
   '@vercel/og': ^0.6.2
@@ -246,7 +244,7 @@ catalog:
   react-remove-scroll: ^2.5.10
   react-select: ^5.7.0
   react-textarea-autosize: ^8.5.3
-  react-timeago: ^7.2.0
+  react-timeago: ^8.3.0
   react-tweet: ^3.1.1
   react-use-measure: ^2.1.1
   react-wrap-balancer: ^0.5.0
@@ -274,7 +272,7 @@ catalog:
   turbo: 2.10.9
   use-debounce: ^9.0.4
   use-sound: ^4.0.1
-  uuid: ^9.0.1
+  uuid: ^14.0.1
   vaul: ^0.9.1
   vitest: ^1.5.2
   wait-on: ^7.0.1

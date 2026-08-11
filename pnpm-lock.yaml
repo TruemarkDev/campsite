@@ -348,15 +348,9 @@ catalogs:
     '@types/react-dom':
       specifier: ^18.2.24
       version: 18.2.24
-    '@types/react-timeago':
-      specifier: ^4.1.3
-      version: 4.1.6
     '@types/supertest':
       specifier: ^6.0.2
       version: 6.0.2
-    '@types/uuid':
-      specifier: ^9.0.4
-      version: 9.0.4
     '@typescript-eslint/eslint-plugin':
       specifier: ^7.11.0
       version: 7.11.0
@@ -649,8 +643,8 @@ catalogs:
       specifier: ^8.5.3
       version: 8.5.3
     react-timeago:
-      specifier: ^7.2.0
-      version: 7.2.0
+      specifier: ^8.3.0
+      version: 8.3.0
     react-tweet:
       specifier: ^3.1.1
       version: 3.1.1
@@ -733,8 +727,8 @@ catalogs:
       specifier: ^4.0.1
       version: 4.0.1
     uuid:
-      specifier: ^9.0.1
-      version: 9.0.1
+      specifier: ^14.0.1
+      version: 14.0.1
     vaul:
       specifier: ^0.9.1
       version: 0.9.1
@@ -1522,7 +1516,7 @@ importers:
         version: 5.7.0(@types/react@18.2.74)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
       react-timeago:
         specifier: 'catalog:'
-        version: 7.2.0(react@18.2.0)
+        version: 8.3.0(react@18.2.0)
       react-tweet:
         specifier: 'catalog:'
         version: 3.1.1(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -1549,7 +1543,7 @@ importers:
         version: 4.0.1(react@18.2.0)
       uuid:
         specifier: 'catalog:'
-        version: 9.0.1
+        version: 14.0.1
       vaul:
         specifier: 'catalog:'
         version: 0.9.1(@types/react-dom@18.2.24)(@types/react@18.2.74)(react-dom@18.2.0(react@18.2.0))(react@18.2.0)
@@ -1635,12 +1629,6 @@ importers:
       '@types/react-dom':
         specifier: 'catalog:'
         version: 18.2.24
-      '@types/react-timeago':
-        specifier: 'catalog:'
-        version: 4.1.6
-      '@types/uuid':
-        specifier: 'catalog:'
-        version: 9.0.4
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 4.3.0(vite@5.2.10(@types/node@20.12.4)(terser@5.30.3))
@@ -1811,7 +1799,7 @@ importers:
         version: 5.0.1
       uuid:
         specifier: 'catalog:'
-        version: 9.0.1
+        version: 14.0.1
     devDependencies:
       '@campsite/eslint-config':
         specifier: workspace:*
@@ -1828,9 +1816,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 20.12.4
-      '@types/uuid':
-        specifier: 'catalog:'
-        version: 9.0.4
       jsdom:
         specifier: 'catalog:'
         version: 24.0.0
@@ -1997,7 +1982,7 @@ importers:
         version: 8.5.3(@types/react@18.2.74)(react@18.2.0)
       react-timeago:
         specifier: 'catalog:'
-        version: 7.2.0(react@18.2.0)
+        version: 8.3.0(react@18.2.0)
       tailwind-merge:
         specifier: 'catalog:'
         version: 2.3.0
@@ -2029,9 +2014,6 @@ importers:
       '@types/react':
         specifier: ^18.0.0
         version: 18.2.74
-      '@types/react-timeago':
-        specifier: 'catalog:'
-        version: 4.1.6
       postcss:
         specifier: 'catalog:'
         version: 8.4.38
@@ -6526,9 +6508,6 @@ packages:
 
   '@types/react-is@18.3.0':
     resolution: {integrity: sha512-KZJpHUkAdzyKj/kUHJDc6N7KyidftICufJfOFpiG6haL/BDQNQt5i4n1XDUL/nDZAtGLHDSWRYpLzKTAKSvX6w==}
-
-  '@types/react-timeago@4.1.6':
-    resolution: {integrity: sha512-BFUH7FEple9m0K8dNvOqhba3+iCyrgsLcRtAnaZ6HlXvG8AJfC/7NCDcLaXfB1jvpAezwDRi/BflzdaLI4+Fow==}
 
   '@types/react-transition-group@4.4.5':
     resolution: {integrity: sha512-juKD/eiSM3/xZYzjuzH6ZwpP+/lejltmiS3QEzV/vmb/Q8+HfDmxu+Baga8UEMGBqV88Nbg4l2hY/K2DkyaLLA==}
@@ -12431,10 +12410,10 @@ packages:
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0
 
-  react-timeago@7.2.0:
-    resolution: {integrity: sha512-2KsBEEs+qRhKx/kekUVNSTIpop3Jwd7SRBm0R4Eiq3mPeswRGSsftY9FpKsE/lXLdURyQFiHeHFrIUxLYskG5g==}
+  react-timeago@8.3.0:
+    resolution: {integrity: sha512-BeR0hj/5qqTc2+zxzBSQZMky6MmqwOtKseU3CSmcjKR5uXerej2QY34v2d+cdz11PoeVfAdWLX+qjM/UdZkUUg==}
     peerDependencies:
-      react: ^16.0.0 || ^17.0.0 || ^18.0.0
+      react: ^16.0.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
   react-transition-group@4.4.5:
     resolution: {integrity: sha512-pZcd1MCJoiKiBR2NRxeCRg13uCXbydPnmB4EOeRrY7480qNWO8IIgQG6zlDkm6uRMsURXPuKq0GWtiM59a5Q6g==}
@@ -14031,6 +14010,10 @@ packages:
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
+    hasBin: true
+
+  uuid@14.0.1:
+    resolution: {integrity: sha512-6ZxzVpzDXDa3bJWaHilVayA+BH/1zmxCJoVgvmqJnid/gPoKHxUrS/aC/T6LGQtNHT+XHG9fXPJB4d+IrU30Ew==}
     hasBin: true
 
   uuid@8.3.2:
@@ -20391,10 +20374,6 @@ snapshots:
       '@types/react': 18.2.74
 
   '@types/react-is@18.3.0':
-    dependencies:
-      '@types/react': 18.2.74
-
-  '@types/react-timeago@4.1.6':
     dependencies:
       '@types/react': 18.2.74
 
@@ -27665,7 +27644,7 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  react-timeago@7.2.0(react@18.2.0):
+  react-timeago@8.3.0(react@18.2.0):
     dependencies:
       react: 18.2.0
 
@@ -29669,6 +29648,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@10.0.0: {}
+
+  uuid@14.0.1: {}
 
   uuid@8.3.2: {}
 

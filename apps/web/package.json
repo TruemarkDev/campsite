@@ -141,8 +141,6 @@
     "@types/pluralize": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "@types/react-timeago": "catalog:",
-    "@types/uuid": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@welldone-software/why-did-you-render": "catalog:",
     "autoprefixer": "catalog:",

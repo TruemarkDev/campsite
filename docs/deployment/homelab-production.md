@@ -66,7 +66,7 @@ current Odin-local registry is acceptable for shadow work but is not a durable
 production registry until its storage and backup are declared.
 
 Runtime base images and Elasticsearch are also pinned to immutable manifest
-digests. Node-based images use the repository's declared Node 22.21.0 runtime;
+digests. Node-based images use the repository's declared Node 24.19.0 runtime;
 all application processes run as unprivileged users. Updating a base image or
 Elasticsearch therefore requires an explicit digest refresh and rebuild rather
 than silently following a mutable registry tag.

@@ -28,7 +28,7 @@ builder:
   dockerfile: api/Dockerfile
   args:
     BUNDLER_VERSION: "4.0.15"
-    RUBY_VERSION: "4.0.5"
+    RUBY_VERSION: "4.0.6"
 
 env:
   clear:

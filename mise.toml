@@ -3,8 +3,8 @@
 # and CI installs from it via `jdx/mise-action`. The Ruby API has its own
 # `api/mise.toml` (it is a separate Rails project).
 [tools]
-node = "22.21.0"
-ruby = "3.4.9"
+node = "24.19.0"
+ruby = "4.0.6"
 pnpm = "11.9.0"
 
 [settings]

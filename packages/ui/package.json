@@ -46,7 +46,6 @@
     "@tailwindcss/forms": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@types/react": "catalog:",
-    "@types/react-timeago": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "catalog:",
     "tailwind-scrollbar-hide": "catalog:",
