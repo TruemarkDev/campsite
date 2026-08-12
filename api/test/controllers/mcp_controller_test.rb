@@ -2,9 +2,11 @@
 
 require "test_helper"
 require "test_helpers/oauth_test_helper"
+require "test_helpers/rack_attack_helper"
 
 class McpControllerTest < ActionDispatch::IntegrationTest
   include OauthTestHelper
+  include RackAttackHelper
 
   ALL_SCOPES = "mcp read_organization read_user read_post read_project write_post write_message write_note write_project"
 
@@ -49,6 +51,90 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :forbidden
       assert_equal "insufficient_scope", json_response["error"]
+    end
+  end
+
+  describe "rate limiting" do
+    test "rate limits write tools by bearer token at the write tier" do
+      token = @token.plaintext_token
+
+      enable_rack_attack do
+        exhaust_mcp_rate_limit(
+          throttle_name: "limit mcp write requests per token or ip",
+          discriminator: "token:#{Digest::SHA256.hexdigest(token)}",
+          limit: Rack::Attack::MCP_WRITE_REQUESTS_LIMIT,
+        )
+
+        post(
+          "/mcp",
+          params: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "create_post", arguments: {} } },
+          as: :json,
+          headers: bearer_token_header(token).merge("Mcp-Method" => "tools/call", "Mcp-Name" => "create_post"),
+        )
+
+        assert_response :too_many_requests
+      end
+    end
+
+    test "rate limits read tools by bearer token at the general tier" do
+      token = @token.plaintext_token
+
+      enable_rack_attack do
+        exhaust_mcp_rate_limit(
+          throttle_name: "limit mcp general requests per token or ip",
+          discriminator: "token:#{Digest::SHA256.hexdigest(token)}",
+          limit: Rack::Attack::MCP_GENERAL_REQUESTS_LIMIT,
+        )
+
+        post(
+          "/mcp",
+          params: { jsonrpc: "2.0", id: 1, method: "tools/call", params: { name: "list_posts", arguments: {} } },
+          as: :json,
+          headers: bearer_token_header(token).merge("Mcp-Method" => "tools/call", "Mcp-Name" => "list_posts"),
+        )
+
+        assert_response :too_many_requests
+      end
+    end
+
+    test "allows older clients without MCP headers through the general tier" do
+      token = @token.plaintext_token
+
+      enable_rack_attack do
+        (Rack::Attack::MCP_GENERAL_REQUESTS_LIMIT - 1).times do
+          Rack::Attack.cache.count(
+            "limit mcp general requests per token or ip:token:#{Digest::SHA256.hexdigest(token)}",
+            Rack::Attack::MCP_REQUESTS_PERIOD,
+          )
+        end
+
+        mcp_request(method: "tools/list", token: token)
+        assert_response :ok
+
+        mcp_request(method: "tools/list", token: token)
+        assert_response :too_many_requests
+      end
+    end
+
+    test "falls back to the request ip when no bearer token is present" do
+      ip = "1.2.3.4"
+
+      enable_rack_attack do
+        exhaust_mcp_rate_limit(
+          throttle_name: "limit mcp general requests per token or ip",
+          discriminator: "ip:#{ip}",
+          limit: Rack::Attack::MCP_GENERAL_REQUESTS_LIMIT,
+        )
+
+        post(
+          "/mcp",
+          params: { jsonrpc: "2.0", id: 1, method: "tools/list" },
+          as: :json,
+          headers: { "HTTP_FLY_CLIENT_IP" => ip, "Mcp-Method" => "tools/list" },
+        )
+
+        assert_response :too_many_requests
+      end
     end
   end
 
@@ -1106,6 +1192,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   private
+
+  def exhaust_mcp_rate_limit(throttle_name:, discriminator:, limit:)
+    limit.times do
+      Rack::Attack.cache.count("#{throttle_name}:#{discriminator}", Rack::Attack::MCP_REQUESTS_PERIOD)
+    end
+  end
 
   def get_prompt(name, arguments = {}, token: nil)
     mcp_request(method: "prompts/get", params: { name: name, arguments: arguments }, token: token)
