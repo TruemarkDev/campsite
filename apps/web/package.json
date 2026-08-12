@@ -5,7 +5,7 @@
   "scripts": {
     "analyze": "ANALYZE=true next build --webpack",
     "build": "next build --webpack",
-    "build-storybook": "cd ../.. && turbo run build --filter=@campsite/config --filter=@campsite/regex --filter=@campsite/editor && cd apps/web && storybook build",
+    "build-storybook": "storybook build",
     "clean": "rm -rf .next .turbo .vercel node_modules",
     "dev": "next dev --webpack -p 3000",
     "lint": "eslint .",

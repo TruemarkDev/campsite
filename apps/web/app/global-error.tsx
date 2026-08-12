@@ -1,5 +1,7 @@
 'use client'
 
+// Catches render errors in App Router routes only (currently just app/api/*).
+// Pages Router errors are still handled by pages/_error and ErrorBoundary.
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
 

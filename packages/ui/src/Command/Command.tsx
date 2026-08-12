@@ -1309,7 +1309,10 @@ function SlottableWithNestedChildren(
   render: (child: React.ReactNode) => React.ReactElement
 ) {
   if (asChild && React.isValidElement<{ children?: React.ReactNode }>(children)) {
-    return React.cloneElement(renderChildren(children), { ref: (children as any).ref }, render(children.props.children))
+    // React 19 moved element.ref into props; fall back for older elements
+    const ref = (children.props as any).ref ?? (children as any).ref
+
+    return React.cloneElement(renderChildren(children), { ref }, render(children.props.children))
   }
   return render(children)
 }

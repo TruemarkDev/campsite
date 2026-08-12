@@ -99,9 +99,15 @@ export function useSearchQuery(options: SearchOptions) {
     }
   })
 
+  // Only advance the ref once the new org's data has arrived (mirrors the
+  // v4 onSuccess behavior) so keepPreviousData never shows another org's results
+  const hasFreshData = query.isSuccess && !query.isPlaceholderData
+
   useEffect(() => {
-    organizationRef.current = options.organization
-  }, [options.organization])
+    if (hasFreshData) {
+      organizationRef.current = options.organization
+    }
+  }, [hasFreshData, options.organization])
 
   return query
 }

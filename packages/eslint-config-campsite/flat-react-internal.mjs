@@ -9,10 +9,9 @@ export default [
       'react-hooks': reactHooks
     },
     languageOptions: {
-      globals: { React: 'writable' }
+      globals: { React: 'readonly' }
     },
     settings: {
-      next: { rootDir: ['apps/*/', 'packages/*/'] },
       react: { version: 'detect' }
     },
     rules: {
@@ -25,6 +24,9 @@ export default [
   },
   restrictedImports,
   {
+    // CSF `render:` functions call hooks but aren't recognized as components;
+    // this config is used outside Next apps where eslint-plugin-storybook
+    // (which normally handles this) isn't loaded.
     files: ['**/*.stories.tsx'],
     rules: {
       'react-hooks/rules-of-hooks': 'off'

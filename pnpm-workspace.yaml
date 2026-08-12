@@ -83,7 +83,8 @@ catalog:
   '@sanity/vision': ^6.9.2
   '@sentry/cli': ^2.30.1
   '@sentry/nextjs': ^10.70.0
-  '@sentry/node': ^7.106.1
+  '@sentry/node': ^10.70.0
+  '@sentry/react': ^10.70.0
   '@shopify/react-shortcuts': ^5.2.0
   '@storybook/addon-docs': ^10.5.7
   '@storybook/addon-links': ^10.5.7
@@ -152,7 +153,6 @@ catalog:
   '@typescript-eslint/eslint-plugin': ^8.67.0
   '@typescript-eslint/parser': ^8.67.0
   '@vitest/coverage-v8': ^4.1.10
-  '@vercel/og': ^1.0.1
   '@vercel/speed-insights': ^2.0.0
   '@vitejs/plugin-react': ^5.2.0
   '@welldone-software/why-did-you-render': ^10.0.1
@@ -219,7 +219,7 @@ catalog:
   next-mdx-remote: ^5.0.0
   next-sanity: ^13.3.2
   next-seo: ^6.0.0
-  next-themes: ^0.2.1
+  next-themes: ^0.4.6
   nextjs-cors: ^2.2.1
   node-fetch: ^3.3.0
   onchange: ^7.1.0

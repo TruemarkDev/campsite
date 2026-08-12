@@ -55,17 +55,23 @@ export function useSearchQuery(options: SearchOptions) {
     getPreviousPageParam: (firstPage) => firstPage.prev_cursor
   })
 
+  // Only advance the ref and seed the per-project cache once the new org's
+  // data has arrived (mirrors the v4 onSuccess behavior). While placeholder
+  // data is showing, query.data still belongs to the previous org and must
+  // not be written under the new org's cache keys.
+  const hasFreshData = query.isSuccess && !query.isPlaceholderData
+
   useEffect(() => {
+    if (!hasFreshData || !query.data) return
+
     organizationRef.current = options.organization
 
-    if (query.data) {
-      const projects = query.data.pages.flatMap((page) => page.data)
+    const projects = query.data.pages.flatMap((page) => page.data)
 
-      projects.forEach((project) => {
-        queryClient.setQueryData([token, 'org', options.organization, 'projects', project.id], project)
-      })
-    }
-  }, [options.organization, query.data, queryClient, token])
+    projects.forEach((project) => {
+      queryClient.setQueryData([token, 'org', options.organization, 'projects', project.id], project)
+    })
+  }, [hasFreshData, options.organization, query.data, queryClient, token])
 
   return query
 }
