@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type ReactElement } from 'react'
 import { AnimatePresence, m } from 'framer-motion'
 import Balancer from 'react-wrap-balancer'
 
@@ -15,7 +15,7 @@ interface Props {
   attachment: Attachment
 }
 
-export function FigmaTip({ attachment }: Props) {
+export function FigmaTip({ attachment }: Props): ReactElement {
   const figmaLoaded = useFigmaEmbedLoaded()
   const isDesktop = useIsDesktopApp()
   const figmaEmbedSelected = useFigmaEmbedSelected({ attachment })

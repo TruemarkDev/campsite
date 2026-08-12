@@ -1,6 +1,7 @@
 service: campsite-sync-server
 
 image: truemarkdev/campsite
+secrets_path: apps/sync-server/.env.local
 
 servers:
   web:
@@ -13,10 +14,7 @@ proxy:
   app_port: 9000
 
 registry:
-  server: ghcr.io
-  username: KAMAL_REGISTRY_USER_NAME
-  password:
-    - KAMAL_REGISTRY_PASSWORD
+  server: localhost:5555
 
 env:
   secret:
@@ -27,10 +25,6 @@ builder:
   arch: amd64
   context: .
   dockerfile: apps/sync-server/Dockerfile
-  secrets:
-    - SENTRY_AUTH_TOKEN
-    - SENTRY_ORG
-    - SENTRY_PROJECT
 
 ssh:
   user: deploy

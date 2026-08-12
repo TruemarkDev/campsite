@@ -34,7 +34,7 @@ interface LinkProps {
   [key: string]: any
 }
 
-const SettingsLink = forwardRef((props: LinkProps, ref: React.ForwardedRef<HTMLAnchorElement>) => {
+const SettingsLink = forwardRef<HTMLAnchorElement, LinkProps>((props, ref) => {
   let { href, children, ...rest } = props
 
   return (

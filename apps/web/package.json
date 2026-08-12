@@ -144,6 +144,7 @@
     "eslint": "catalog:",
     "eslint-config-next": "catalog:",
     "eslint-plugin-storybook": "catalog:",
+    "eslint": "catalog:",
     "postcss": "catalog:",
     "storybook": "catalog:",
     "tailwindcss": "catalog:",
