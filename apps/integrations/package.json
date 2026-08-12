@@ -6,7 +6,7 @@
     "build": "next build",
     "clean": "rm -rf .next .turbo .vercel node_modules",
     "dev": "next dev -p 3004",
-    "lint": "next lint",
+    "lint": "eslint .",
     "start": "next start"
   },
   "dependencies": {
@@ -20,7 +20,10 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
+    "@campsite/eslint-config": "workspace:*",
     "@campsite/tsconfig": "workspace:*",
+    "@eslint/eslintrc": "3.3.6",
+    "@eslint/js": "9.39.5",
     "@sentry/nextjs": "catalog:",
     "@types/jsdom": "^21.1.7",
     "@types/node": "catalog:",

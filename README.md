@@ -174,6 +174,8 @@ pnpm -F @campsite/web i lodash
 
 To find an app or package name, navigate to the `package.json` for each `app/` or `package/` directory.
 
+When adding a Tiptap node, mark, extension, or editor UI control, follow the [editor component integration checklist](docs/editor-component-integration.md).
+
 ## Running the Desktop App locally
 
 1. [Download the ToDesktop build macOS App](https://dl.todesktop.com/2108257l5oobyoe).

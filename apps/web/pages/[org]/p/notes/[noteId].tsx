@@ -15,7 +15,9 @@ import { useIsDesktopApp } from '@campsite/ui/src/hooks'
 import { cn } from '@campsite/ui/src/utils'
 
 import { CopyCurrentUrl } from '@/components/CopyCurrentUrl'
+import { NoteTableOfContents } from '@/components/NoteEditor/NoteTableOfContents'
 import { GlobalMetaTags } from '@/components/Providers/MetaTags'
+import { prepareRichTextContent } from '@/components/RichTextRenderer/content'
 import { ThemeProvider } from '@/components/Providers/ThemeProvider'
 import { ScrollableContainer } from '@/components/ScrollableContainer'
 import { ScopeProvider } from '@/contexts/scope'
@@ -49,6 +51,10 @@ const NotePage: PageWithLayout<any> = ({ note }) => {
   }, [note.id, createView])
 
   const extensions = useMemo(() => getNoteExtensions({ linkUnfurl: {} }), [])
+  const preparedContent = useMemo(
+    () => prepareRichTextContent(note.description_html, extensions),
+    [extensions, note.description_html]
+  )
   const options = useMemo(() => {
     return {
       mediaGallery: { onOpenAttachment: setOpenAttachmentId },
@@ -93,8 +99,9 @@ const NotePage: PageWithLayout<any> = ({ note }) => {
               {note.title || 'Untitled'}
             </UIText>
 
+            <NoteTableOfContents anchors={preparedContent.headings} />
             <div className='prose note'>
-              <RichTextRenderer content={note.description_html} extensions={extensions} options={options} />
+              <RichTextRenderer content={preparedContent.output} extensions={extensions} options={options} />
             </div>
           </div>
         </div>
@@ -196,7 +203,7 @@ export async function getStaticProps({ params }: GetStaticPropsContext) {
       },
       revalidate: 86400
     }
-  } catch (e) {
+  } catch {
     return {
       notFound: true,
       revalidate: 5

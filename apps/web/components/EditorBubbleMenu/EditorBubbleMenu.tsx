@@ -33,6 +33,7 @@ import { buildMenuItems } from '@campsite/ui/Menu'
 import { BubbleMenuSeparator } from '@/components/EditorBubbleMenu/BubbleMenuSeparator'
 
 import { BubbleMenuButton } from './BubbleMenuButton'
+import { EditorTableMenu } from './EditorTableMenu'
 import { AnyEvent, LinkEditor } from './LinkEditor'
 
 interface BubbleMenuState {
@@ -502,6 +503,8 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
           )}
         </div>
       </BubbleMenu>
+
+      <EditorTableMenu editor={editor} appendTo={parentContainer} />
     </div>
   )
 })

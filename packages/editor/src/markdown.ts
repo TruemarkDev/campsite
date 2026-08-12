@@ -103,10 +103,11 @@ export function getMarkdownExtensions(options?: GetMarkdownExtensionsOptions) {
 
     E.TaskItem.configure(options?.taskItem),
     E.TaskList,
-    E.Table,
+    E.Table.configure({ resizable: true }),
     E.TableRow,
     E.TableHeader,
     E.TableCell,
+    E.TrailingParagraphAfterTable,
     E.Mention.configure(options?.mention),
     E.Reaction,
 

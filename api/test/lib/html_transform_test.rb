@@ -448,12 +448,36 @@ class HtmlTransformTest < ActiveSupport::TestCase
       HTML
       assert_equal "", HtmlTransform.new(html).plain_text
     end
+
+    it "preserves table contents with readable row boundaries" do
+      html = <<~HTML.squish
+        <table>
+          <tbody>
+            <tr><th><p>Name</p></th><th><p>Status</p></th></tr>
+            <tr><td><p>Editor</p></td><td><p>Ready</p></td></tr>
+          </tbody>
+        </table>
+      HTML
+
+      assert_equal "Name\tStatus\nEditor\tReady", HtmlTransform.new(html).plain_text
+    end
   end
 
   describe "#markdown" do
     it "handles paragraphs" do
       html = "<p>Hello world</p>"
       expected = "Hello world"
+      assert_equal expected, HtmlTransform.new(html).markdown
+    end
+
+    it "preserves heading hierarchy while ignoring TOC attributes" do
+      html = '<h1 id="overview" data-toc-id="overview">Overview</h1><h3 id="details">Details</h3>'
+      expected = <<~MARKDOWN.strip
+        # Overview
+
+        ### Details
+      MARKDOWN
+
       assert_equal expected, HtmlTransform.new(html).markdown
     end
 
@@ -939,6 +963,24 @@ class HtmlTransformTest < ActiveSupport::TestCase
       assert_equal expected, HtmlTransform.new(html).markdown
     end
 
+    it "preserves tables as Markdown" do
+      html = <<~HTML.squish
+        <table>
+          <tbody>
+            <tr><th><p>Name</p></th><th><p>Status</p></th></tr>
+            <tr><td><p>Editor</p></td><td><p>Ready | tested</p></td></tr>
+          </tbody>
+        </table>
+      HTML
+      expected = <<~MARKDOWN.strip
+        | Name | Status |
+        | --- | --- |
+        | Editor | Ready \| tested |
+      MARKDOWN
+
+      assert_equal expected, HtmlTransform.new(html).markdown
+    end
+
     describe "export" do
       it "converts link unfurls" do
         html = <<~HTML.squish
@@ -996,6 +1038,24 @@ class HtmlTransformTest < ActiveSupport::TestCase
         expected = <<~TEXT.strip
           Check out [https://campsite.com/posts/123](https://campsite.com/posts/123) and then [https://campsite.com/posts/456](https://campsite.com/posts/456)
         TEXT
+
+        assert_equal expected, HtmlTransform.new(html, export: true).markdown
+      end
+
+      it "preserves table contents" do
+        html = <<~HTML.squish
+          <table>
+            <tbody>
+              <tr><th><p>Name</p></th><th><p>Status</p></th></tr>
+              <tr><td><p>Editor</p></td><td><p>Ready</p></td></tr>
+            </tbody>
+          </table>
+        HTML
+        expected = <<~MARKDOWN.strip
+          | Name | Status |
+          | --- | --- |
+          | Editor | Ready |
+        MARKDOWN
 
         assert_equal expected, HtmlTransform.new(html, export: true).markdown
       end
