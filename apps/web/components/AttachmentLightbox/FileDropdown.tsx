@@ -1,10 +1,12 @@
+import type { PropsWithChildren, ReactElement } from 'react'
+
 import { Attachment, PostLink } from '@campsite/types'
 import { Button, ContextMenu, DownloadIcon, ExternalLinkIcon, FigmaIcon } from '@campsite/ui'
 import { DropdownMenu } from '@campsite/ui/DropdownMenu'
 import { buildMenuItems } from '@campsite/ui/Menu'
 import { useIsDesktopApp } from '@campsite/ui/src/hooks'
 
-interface FileMenuProps extends React.PropsWithChildren {
+interface FileMenuProps extends PropsWithChildren {
   type: 'dropdown' | 'menu'
   attachment: Attachment
   links: PostLink[]
@@ -12,7 +14,7 @@ interface FileMenuProps extends React.PropsWithChildren {
 
 const openInFigmaLink = (links: PostLink[]) => links.find((link) => !!new URL(link.url)?.hostname.match(/figma.com/))
 
-export function FileMenu({ children, type, attachment, links }: FileMenuProps) {
+export function FileMenu({ children, type, attachment, links }: FileMenuProps): ReactElement {
   const isDesktop = useIsDesktopApp()
   const figmaLink = attachment.file_type !== 'link' && openInFigmaLink(links)
 
