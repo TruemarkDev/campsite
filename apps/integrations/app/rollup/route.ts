@@ -5,7 +5,7 @@ import 'dotenv/config'
 
 import { AnthropicProvider, createAnthropic } from '@ai-sdk/anthropic'
 import { createOpenAI, OpenAIProvider } from '@ai-sdk/openai'
-import { generateText, LanguageModelV1 } from 'ai'
+import { generateText, LanguageModel } from 'ai'
 import { Campsite } from 'campsite-client'
 import jsdom from 'jsdom'
 import { NextRequest, NextResponse } from 'next/server'
@@ -58,7 +58,7 @@ Your goal is to enhance the discussion and provide valuable input that helps emp
 let campsite: Campsite
 let anthropic: AnthropicProvider
 let openai: OpenAIProvider
-let model: LanguageModelV1
+let model: LanguageModel
 
 async function summarizePost(post: string) {
   // adapted from our internal post summarization prompt
@@ -80,11 +80,8 @@ async function summarizePost(post: string) {
 
   const { text } = await generateText({
     model,
-    system,
-    messages: [
-      { role: 'system', content: system },
-      { role: 'user', content: post }
-    ]
+    instructions: system,
+    prompt: post
   })
 
   return text
@@ -228,7 +225,7 @@ export async function GET(request: NextRequest) {
 
   const summary = await generateText({
     model,
-    system: DAILY_SUMMARY_SYSTEM_PROMPT,
+    instructions: DAILY_SUMMARY_SYSTEM_PROMPT,
     prompt: summarizedPosts
   })
 

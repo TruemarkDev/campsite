@@ -4,12 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  chromium-bidi>zod: 4.4.3
-
-patchedDependencies:
-  chromium-bidi@0.6.3: 580d2aeacbe3d84859b4d4f6b670f93178d8f2c221e95dcb621d11da42381554
-
 importers:
 
   .:
@@ -1248,8 +1242,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@4.4.3:
-    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
+  zod@3.23.8:
+    resolution: {integrity: sha512-XBx9AXhXktjUqnepgTiE5flcKIYWi/rme0Eaj+5Y0lftuGBq+jyRu/md4WnuxqgP1ubdpNCsYEYPxrzVHD8d6g==}
 
 snapshots:
 
@@ -1522,12 +1516,12 @@ snapshots:
     optionalDependencies:
       fsevents: 2.3.3
 
-  chromium-bidi@0.6.3(patch_hash=580d2aeacbe3d84859b4d4f6b670f93178d8f2c221e95dcb621d11da42381554)(devtools-protocol@0.0.1312386):
+  chromium-bidi@0.6.3(devtools-protocol@0.0.1312386):
     dependencies:
       devtools-protocol: 0.0.1312386
       mitt: 3.0.1
       urlpattern-polyfill: 10.0.0
-      zod: 4.4.3
+      zod: 3.23.8
 
   cliui@8.0.1:
     dependencies:
@@ -2210,7 +2204,7 @@ snapshots:
   puppeteer-core@22.15.0:
     dependencies:
       '@puppeteer/browsers': 2.3.0
-      chromium-bidi: 0.6.3(patch_hash=580d2aeacbe3d84859b4d4f6b670f93178d8f2c221e95dcb621d11da42381554)(devtools-protocol@0.0.1312386)
+      chromium-bidi: 0.6.3(devtools-protocol@0.0.1312386)
       debug: 4.4.3
       devtools-protocol: 0.0.1312386
       ws: 8.21.0
@@ -2523,4 +2517,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@4.4.3: {}
+  zod@3.23.8: {}

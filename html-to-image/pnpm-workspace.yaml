@@ -1,11 +1,9 @@
-overrides:
-  # chromium-bidi still declares Zod 3. Its generated schemas are compatible
-  # with Zod 4; the one error-reporting API difference is patched below. Keep
-  # every Campsite lockfile on the same Zod major.
-  'chromium-bidi>zod': 4.4.3
-
+# Standalone project (not part of the root pnpm workspace).
+# pnpm 11 errors on un-acknowledged dependency build scripts. puppeteer's
+# postinstall downloads Chromium, which we intentionally skip (the image uses
+# system google-chrome-stable and sets PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true).
+# Declining the build (false) records that decision and satisfies the check.
+# Note: chromium-bidi (a puppeteer dep) keeps its own Zod 3 here — this lockfile
+# is isolated, the service uses CDP (not BiDi), and server.js has no zod usage.
 allowBuilds:
-  puppeteer: true
-
-patchedDependencies:
-  chromium-bidi@0.6.3: patches/chromium-bidi@0.6.3.patch
+  puppeteer: false

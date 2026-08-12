@@ -44,7 +44,9 @@ export const postSchema = z.object({
       z.object({
         id: z.string(),
         has_replied: z.boolean(),
-        member: z.any()
+        // .optional() keeps Zod 3's behavior for any(): the key itself may be
+        // absent (e.g. a trimmed cached draft) without invalidating the form.
+        member: z.any().optional()
       })
     )
     .nullable(),

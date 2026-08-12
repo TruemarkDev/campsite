@@ -8,10 +8,9 @@ overrides:
   # which breaks cross-package type inference ("cannot be named without a
   # reference to .pnpm/@types+react@...").
   '@types/react': 18.3.31
-  # Both packages use Zod's public schema APIs that remain compatible in v4,
-  # but their published manifests still pin Zod 3. Keep the workspace on one
-  # Zod major without pulling in Sanity's unrelated Next/React major upgrades.
-  '@sanity/codegen>zod': 4.4.3
+  # Uses Zod public schema APIs that remain compatible in v4, but its published
+  # manifest still pins Zod 3. (@sanity/codegen deliberately keeps its own Zod 3:
+  # it calls ZodError.errors, which v4 removed.)
   '@team-plain/typescript-sdk>zod': 4.4.3
   'form-data@>=4.0.0 <4.0.4': 4.0.4
   re2: 1.26.1
