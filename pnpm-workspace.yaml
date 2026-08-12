@@ -154,7 +154,7 @@ catalog:
   '@typescript-eslint/parser': ^8.67.0
   '@vitest/coverage-v8': ^4.1.10
   '@vercel/speed-insights': ^2.0.0
-  '@vitejs/plugin-react': ^5.2.0
+  '@vitejs/plugin-react': ^6.0.5
   '@welldone-software/why-did-you-render': ^10.0.1
   autoprefixer: ^10.4.8
   babel-plugin-jsx-pragmatic: ^1.0.2
@@ -283,7 +283,8 @@ catalog:
   use-sound: ^5.0.0
   uuid: ^14.0.1
   vaul: ^1.1.2
-  vite: ^6.4.3
+  # 8.2.1 is younger than minimumReleaseAge; pin the newest aged release.
+  vite: 8.2.0
   vitest: ^4.1.10
   wait-on: ^7.0.1
   yjs: ^13.6.32
