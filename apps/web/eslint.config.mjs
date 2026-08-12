@@ -13,5 +13,5 @@ export default [
   ...base,
   ...next,
   ...compat.extends('plugin:storybook/recommended'),
-  { ignores: ['.*.js', '.next/**', 'node_modules/**', 'dist/**'] }
+  { ignores: ['.*.js', '.next/**', '.storybook/**', 'node_modules/**', 'dist/**', 'storybook-static/**'] }
 ]

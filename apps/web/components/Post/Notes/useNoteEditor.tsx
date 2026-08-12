@@ -131,6 +131,7 @@ export function useNoteEditor({
           onUpdate: onTableOfContents,
           scrollParent: () => {
             const noteEditor = document.querySelector('.ProseMirror.new-posts') as HTMLElement | null
+
             return noteEditor ? getImmediateScrollableNode(noteEditor) : window
           }
         }

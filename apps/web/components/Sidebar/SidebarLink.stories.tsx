@@ -1,5 +1,5 @@
 import React from 'react'
-import type { Meta, StoryObj } from '@storybook/react'
+import type { Meta, StoryObj } from '@storybook/nextjs'
 import { noop } from 'remeda'
 
 import { SidebarUnreadBadge } from '@/components/Sidebar/SidebarUnreadBadge'

@@ -20,8 +20,9 @@ export async function generateStaticParams() {
   return getBlogs().map((blog) => ({ slug: blog.slug }))
 }
 
-export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
-  const blog = getBlogs().find((blog) => blog.slug === params.slug)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params
+  const blog = getBlogs().find((blog) => blog.slug === slug)
 
   if (!blog) notFound()
 
@@ -54,10 +55,11 @@ export function generateMetadata({ params }: { params: { slug: string } }): Meta
   }
 }
 
-export default function Blog({ params }: { params: { slug: string } }) {
+export default async function Blog({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
   const blogs = getBlogs()
-  const currentBlog = blogs.find((blog) => blog.slug === params.slug)
-  const recentBlogs = blogs.filter((blog) => blog.slug !== params.slug).slice(0, 5)
+  const currentBlog = blogs.find((blog) => blog.slug === slug)
+  const recentBlogs = blogs.filter((blog) => blog.slug !== slug).slice(0, 5)
 
   if (!currentBlog) notFound()
 
