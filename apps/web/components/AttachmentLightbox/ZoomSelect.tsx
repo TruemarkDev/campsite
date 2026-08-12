@@ -42,16 +42,28 @@ export function ZoomSelect() {
       <LayeredHotkeys
         keys={['mod+Equal']}
         callback={() => onZoomOption('increase')}
-        options={{ preventDefault: true }}
+        options={{ description: 'Zoom in', metadata: { category: 'View' }, preventDefault: true }}
       />
       <LayeredHotkeys
         keys={['mod+minus']}
         callback={() => onZoomOption('decrease')}
-        options={{ preventDefault: true }}
+        options={{ description: 'Zoom out', metadata: { category: 'View' }, preventDefault: true }}
       />
-      <LayeredHotkeys keys={['shift+1']} callback={() => onZoomOption('fit')} options={{ preventDefault: true }} />
-      <LayeredHotkeys keys={['shift+2']} callback={() => onZoomOption('50%')} options={{ preventDefault: true }} />
-      <LayeredHotkeys keys={['mod+0']} callback={() => onZoomOption('100%')} options={{ preventDefault: true }} />
+      <LayeredHotkeys
+        keys={['shift+1']}
+        callback={() => onZoomOption('fit')}
+        options={{ description: 'Fit attachment to window', metadata: { category: 'View' }, preventDefault: true }}
+      />
+      <LayeredHotkeys
+        keys={['shift+2']}
+        callback={() => onZoomOption('50%')}
+        options={{ description: 'Zoom attachment to 50%', metadata: { category: 'View' }, preventDefault: true }}
+      />
+      <LayeredHotkeys
+        keys={['mod+0']}
+        callback={() => onZoomOption('100%')}
+        options={{ description: 'Zoom attachment to 100%', metadata: { category: 'View' }, preventDefault: true }}
+      />
 
       <Select
         typeAhead={false}

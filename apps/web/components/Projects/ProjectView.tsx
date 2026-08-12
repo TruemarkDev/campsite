@@ -52,16 +52,29 @@ export function ProjectView({ project }: ProjectViewProps) {
 
   return (
     <>
-      <LayeredHotkeys keys='BracketRight' callback={toggleProjectDetailsSidebar} />
-      <LayeredHotkeys keys='1' callback={() => router.push(`/${scope}/projects/${project.id}`)} />
+      <LayeredHotkeys
+        keys='BracketRight'
+        callback={toggleProjectDetailsSidebar}
+        options={{ description: 'Toggle channel details', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys='1'
+        callback={() => router.push(`/${scope}/projects/${project.id}`)}
+        options={{ description: 'Show channel posts', metadata: { category: 'View' } }}
+      />
       <LayeredHotkeys
         keys='2'
         callback={() => router.push(`/${scope}/projects/${project.id}/docs`)}
-        options={{ enabled: !isChatProject }}
+        options={{
+          description: 'Show channel docs',
+          enabled: !isChatProject,
+          metadata: { category: 'View' }
+        }}
       />
       <LayeredHotkeys
         keys={isChatProject ? '2' : '3'}
         callback={() => router.push(`/${scope}/projects/${project.id}/calls`)}
+        options={{ description: 'Show channel calls', metadata: { category: 'View' } }}
       />
 
       {isPosts && <FloatingNewPostButton />}

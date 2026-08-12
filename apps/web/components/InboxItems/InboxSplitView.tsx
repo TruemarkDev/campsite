@@ -418,17 +418,45 @@ export function InboxSplitView({ view }: InboxSplitViewProps) {
 
   return (
     <>
-      <LayeredHotkeys keys={['1']} callback={() => Router.push(updatesHref)} />
-      <LayeredHotkeys keys={['2']} callback={() => Router.push(archivedHref)} />
-      <LayeredHotkeys keys={['3']} callback={() => Router.push(laterHref)} />
-      <LayeredHotkeys keys={['j', 'ArrowDown']} callback={(e) => handleNavigate(e, 1)} options={{ repeat: true }} />
-      <LayeredHotkeys keys={['k', 'ArrowUp']} callback={(e) => handleNavigate(e, -1)} options={{ repeat: true }} />
+      <LayeredHotkeys
+        keys={['1']}
+        callback={() => Router.push(updatesHref)}
+        options={{ description: 'Show inbox updates', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys={['2']}
+        callback={() => Router.push(archivedHref)}
+        options={{ description: 'Show archived inbox items', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys={['3']}
+        callback={() => Router.push(laterHref)}
+        options={{ description: 'Show later inbox items', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys={['j', 'ArrowDown']}
+        callback={(e) => handleNavigate(e, 1)}
+        options={{ description: 'Select next inbox item', metadata: { category: 'Actions' }, repeat: true }}
+      />
+      <LayeredHotkeys
+        keys={['k', 'ArrowUp']}
+        callback={(e) => handleNavigate(e, -1)}
+        options={{ description: 'Select previous inbox item', metadata: { category: 'Actions' }, repeat: true }}
+      />
       <LayeredHotkeys keys={['h', 'ArrowLeft']} callback={(e) => handleExpandNotificationGroup(e, false)} />
       <LayeredHotkeys keys={['l', 'ArrowRight']} callback={(e) => handleExpandNotificationGroup(e, true)} />
       <LayeredHotkeys keys={['mod+ArrowDown']} callback={() => select(items.length - 1)} />
       <LayeredHotkeys keys={['mod+ArrowUp']} callback={() => select(0)} />
-      <LayeredHotkeys keys={['f']} callback={handleFollowUp} />
-      <LayeredHotkeys keys={['e', 'backspace', 'delete']} callback={handleDelete} />
+      <LayeredHotkeys
+        keys={['f']}
+        callback={handleFollowUp}
+        options={{ description: 'Set follow-up', metadata: { category: 'Actions' } }}
+      />
+      <LayeredHotkeys
+        keys={['e', 'backspace', 'delete']}
+        callback={handleDelete}
+        options={{ description: 'Archive inbox item', metadata: { category: 'Actions' } }}
+      />
       <LayeredHotkeys
         keys={['u']}
         callback={toggleUnread}

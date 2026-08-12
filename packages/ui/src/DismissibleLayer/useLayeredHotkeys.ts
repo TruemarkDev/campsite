@@ -1,8 +1,58 @@
-import { DependencyList } from 'react'
+import { DependencyList, useEffect, useId, useMemo } from 'react'
+import { atom, useAtomValue, useSetAtom } from 'jotai'
 // eslint-disable-next-line no-restricted-imports
 import { HotkeyCallback, Keys, Options, useHotkeys } from 'react-hotkeys-hook'
 
 import { useIsTopLayer } from '.'
+
+export interface RegisteredLayeredHotkey {
+  description: string
+  hotkey: string
+  metadata?: Record<string, unknown>
+}
+
+type InternalRegisteredLayeredHotkey = RegisteredLayeredHotkey & { registrationId: string }
+
+const registeredLayeredHotkeysAtom = atom<InternalRegisteredLayeredHotkey[]>([])
+
+export function useRegisteredLayeredHotkeys() {
+  return useAtomValue(registeredLayeredHotkeysAtom)
+}
+
+function useRegisterLayeredHotkeys(keys: Keys, options: Options) {
+  const registrationId = useId()
+  const setRegisteredHotkeys = useSetAtom(registeredLayeredHotkeysAtom)
+  const keysSignature = typeof keys === 'string' ? keys : keys.join(options.delimiter ?? ',')
+  const serializedMetadata = JSON.stringify(options.metadata)
+  const registrations = useMemo(() => {
+    const description = options.description
+
+    if (!description || options.enabled === false) return []
+
+    const hotkeys = keysSignature.split(options.delimiter ?? ',')
+    const metadata = serializedMetadata ? JSON.parse(serializedMetadata) : undefined
+
+    return hotkeys.map((hotkey) => ({
+      description,
+      hotkey: hotkey.trim().toLowerCase(),
+      metadata,
+      registrationId
+    }))
+  }, [keysSignature, options.delimiter, options.description, options.enabled, registrationId, serializedMetadata])
+
+  useEffect(() => {
+    if (registrations.length === 0) return
+
+    setRegisteredHotkeys((current) => [
+      ...current.filter((hotkey) => hotkey.registrationId !== registrationId),
+      ...registrations
+    ])
+
+    return () => {
+      setRegisteredHotkeys((current) => current.filter((hotkey) => hotkey.registrationId !== registrationId))
+    }
+  }, [registrationId, registrations, setRegisteredHotkeys])
+}
 
 export interface LayeredHotkeysProps {
   keys: Keys
@@ -23,6 +73,8 @@ export function useLayeredHotkeys({
   dependencies
 }: LayeredHotkeysProps) {
   const isTopLayer = useIsTopLayer()
+
+  useRegisterLayeredHotkeys(keys, options)
 
   useHotkeys(
     keys,
@@ -59,4 +111,3 @@ export function useLayeredHotkeys({
     dependencies
   )
 }
-

@@ -20,8 +20,16 @@ export function CallsIndexFilter({ fullWidth = false }: { fullWidth?: boolean })
 
   return (
     <>
-      <LayeredHotkeys keys='1' callback={() => setFilter(undefined)} />
-      <LayeredHotkeys keys='2' callback={() => setFilter('joined')} />
+      <LayeredHotkeys
+        keys='1'
+        callback={() => setFilter(undefined)}
+        options={{ description: 'Show all calls', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys='2'
+        callback={() => setFilter('joined')}
+        options={{ description: 'Show joined calls', metadata: { category: 'View' } }}
+      />
 
       <Button
         size='sm'

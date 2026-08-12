@@ -59,5 +59,6 @@ export const useIsTopLayer = () => {
 }
 
 export { DismissibleLayerDevtools } from './DismissibleLayerDevtools'
-export { useLayeredHotkeys } from './useLayeredHotkeys'
+export { useLayeredHotkeys, useRegisteredLayeredHotkeys } from './useLayeredHotkeys'
+export type { RegisteredLayeredHotkey } from './useLayeredHotkeys'
 export { LayeredHotkeys } from './LayeredHotkeys'
