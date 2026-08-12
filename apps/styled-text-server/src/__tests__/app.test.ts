@@ -89,6 +89,31 @@ describe('app', () => {
       expect(res.body).toEqual(expectedBlocks)
     })
 
+    it('converts tables to readable Slack rows', async () => {
+      const html = `<table><tbody>
+        <tr><th><p>Name</p></th><th><p>Status</p></th></tr>
+        <tr><td><p>Editor &amp; web</p></td><td><p>Ready</p></td></tr>
+      </tbody></table>`
+
+      const res = await supertest(app)
+        .post('/html_to_slack')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${process.env.AUTHTOKEN}`)
+        .send({ html })
+
+      expect(res.statusCode).toEqual(200)
+      expect(res.body).toEqual([
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: 'Name | Status\nEditor & web | Ready',
+            verbatim: true
+          }
+        }
+      ])
+    })
+
     it('converts task lists into emoji', async () => {
       const html = `<ul class="task-list" data-type="taskList">
       <li class="task-item" data-checked="false" data-type="taskItem">

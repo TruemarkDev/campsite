@@ -77,6 +77,31 @@
       @apply my-0;
     }
 
+    .rich-text-table-wrapper {
+      @apply my-[1em] max-w-full overflow-x-auto;
+    }
+
+    .rich-text-table {
+      @apply my-0 w-full border-collapse;
+
+      th,
+      td {
+        @apply border-primary min-w-24 border px-3 py-2 align-top;
+      }
+
+      th {
+        @apply bg-secondary font-semibold;
+      }
+
+      p:first-child {
+        @apply mt-0;
+      }
+
+      p:last-child {
+        @apply mb-0;
+      }
+    }
+
     a.prose-link:not(.mention) {
       @apply font-normal text-blue-500 hover:underline;
     }
@@ -364,7 +389,7 @@
   }
 }
 
-.ProseMirror:has(> *:only-child:not(ul):not(ol)) + .drag-handle {
+.ProseMirror:has(> *:only-child:not(ul):not(ol):not(.tableWrapper)) + .drag-handle {
   @apply hidden;
 }
 

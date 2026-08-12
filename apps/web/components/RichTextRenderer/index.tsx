@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import { Extensions, generateJSON, JSONContent } from '@tiptap/core'
+import { Extensions, JSONContent } from '@tiptap/core'
 
 import { ErrorBoundary } from '@campsite/ui'
 
@@ -11,6 +11,7 @@ import { InlineResourceMention } from '@/components/RichTextRenderer/handlers/In
 import { PostNoteAttachment } from '@/components/RichTextRenderer/handlers/PostNoteAttachment'
 import { RelativeTime } from '@/components/RichTextRenderer/handlers/RelativeTime'
 
+import { prepareRichTextContent } from './content'
 import { PostHandlersOptions } from './handlers'
 import { Bold } from './handlers/Bold'
 import { BulletList } from './handlers/BulletList'
@@ -29,6 +30,7 @@ import { OrderedList } from './handlers/OrderedList'
 import { Paragraph } from './handlers/Paragraph'
 import { Reaction } from './handlers/Reaction'
 import { Strike } from './handlers/Strike'
+import { Table, TableCell, TableHeader, TableRow } from './handlers/Table'
 import { TaskItem } from './handlers/TaskItem'
 import { TaskList } from './handlers/TaskList'
 import { Text } from './handlers/Text'
@@ -87,6 +89,14 @@ function RenderBlock({
       return <Paragraph {...props} />
     case 'strike':
       return <Strike {...props} />
+    case 'table':
+      return <Table {...props} />
+    case 'tableCell':
+      return <TableCell {...props} />
+    case 'tableHeader':
+      return <TableHeader {...props} />
+    case 'tableRow':
+      return <TableRow {...props} />
     case 'taskItem':
       return <TaskItem {...props} {...options?.taskItem} />
     case 'taskList':
@@ -126,12 +136,12 @@ export function RichTextRenderer({
   extensions,
   options
 }: {
-  content: string
+  content: string | JSONContent
   extensions: Extensions
   options?: PostHandlersOptions
 }) {
   const output = useMemo(() => {
-    return generateJSON(content, extensions) as JSONContent
+    return prepareRichTextContent(content, extensions).output
   }, [content, extensions])
 
   return (

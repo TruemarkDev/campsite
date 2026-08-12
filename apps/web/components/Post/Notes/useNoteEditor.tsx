@@ -8,8 +8,7 @@ import {
   ActiveEditorComment,
   BlurAtTopOptions,
   getNoteExtensions,
-  PostNoteAttachmentOptions,
-  TableOfContentData
+  PostNoteAttachmentOptions
 } from '@campsite/editor'
 import { cn } from '@campsite/ui/src/utils'
 
@@ -20,7 +19,6 @@ import { InlineRelativeTimeRenderer } from '@/components/RichTextRenderer/handle
 import { useCurrentUserOrOrganizationHasFeature } from '@/hooks/useCurrentUserOrOrganizationHasFeature'
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
 import { notEmpty } from '@/utils/notEmpty'
-import { getImmediateScrollableNode } from '@/utils/scroll'
 
 import { LinkUnfurlRenderer } from '../LinkUnfurlRenderer'
 import { NoteAttachmentRenderer } from './Attachments/NoteAttachmentRenderer'
@@ -49,7 +47,6 @@ interface NoteEditorOptions {
   onBlurAtTop?: BlurAtTopOptions['onBlur']
   provider?: HocuspocusProvider | null
   upload?: ReturnType<typeof useUploadNoteAttachments>
-  onTableOfContents?(anchors: TableOfContentData): void
 }
 
 export function useNoteEditor({
@@ -61,8 +58,7 @@ export function useNoteEditor({
   onActiveComment,
   onOpenAttachment,
   onBlurAtTop,
-  provider,
-  onTableOfContents
+  provider
 }: NoteEditorOptions) {
   const { data: currentUser } = useGetCurrentUser()
   const linkOptions = useControlClickLink()
@@ -128,12 +124,9 @@ export function useNoteEditor({
           }
         },
         tableOfContents: {
-          onUpdate: onTableOfContents,
-          scrollParent: () => {
-            const noteEditor = document.querySelector('.ProseMirror.new-posts') as HTMLElement | null
-
-            return noteEditor ? getImmediateScrollableNode(noteEditor) : window
-          }
+          // Keep the same heading schema for every collaborator, but only
+          // editors may persist the stable-ID migration.
+          updateDocument: editable === 'all'
         }
       }),
       ...(provider
@@ -177,7 +170,6 @@ export function useNoteEditor({
     onBlurAtTop,
     onHoverComment,
     onOpenAttachment,
-    onTableOfContents,
     provider,
     hasRelativeTime
   ])
