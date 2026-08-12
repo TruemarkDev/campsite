@@ -42,7 +42,7 @@ export function Badge({
           'min-h-4.5 flex flex-none items-center justify-center rounded px-1.5 pb-px pt-0.5 uppercase',
           BG_STYLE[color],
           TEXT_STYLE[color],
-          icon && 'gap-0.5 pl-1',
+          !!icon && 'gap-0.5 pl-1',
           className
         )}
       >

@@ -7,7 +7,11 @@
     "moduleResolution": "Node",
     "allowJs": true,
     "skipLibCheck": true,
-    "lib": ["es6", "dom", "es2017"],
+    // Must match packages/ui's own lib (@campsite/tsconfig/nextjs.json), since we
+    // typecheck its sources directly. A narrower lib here fails on any modern
+    // method it uses (e.g. Array.prototype.at). UI code runs in the plugin's
+    // Chromium iframe, not the Figma sandbox, so esnext lib is safe.
+    "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
     "target": "ES5",
     "typeRoots": ["node_modules/@figma", "node_modules/@types"],
