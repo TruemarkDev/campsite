@@ -85,10 +85,10 @@ catalog:
   '@sentry/nextjs': ^10.70.0
   '@sentry/node': ^7.106.1
   '@shopify/react-shortcuts': ^5.2.0
-  '@storybook/addon-docs': ^9.1.20
-  '@storybook/addon-links': ^9.1.20
-  '@storybook/nextjs': ^9.1.20
-  '@storybook/react': ^9.1.20
+  '@storybook/addon-docs': ^10.5.7
+  '@storybook/addon-links': ^10.5.7
+  '@storybook/nextjs': ^10.5.7
+  '@storybook/react': ^10.5.7
   '@swc-jotai/react-refresh': ^0.0.7
   '@tailwindcss/container-queries': ^0.1.1
   '@tailwindcss/forms': ^0.5.2
@@ -178,7 +178,7 @@ catalog:
   eslint-config-turbo: ^2.10.9
   eslint-plugin-react: ^7.37.5
   eslint-plugin-react-hooks: ^7.1.1
-  eslint-plugin-storybook: ^9.1.20
+  eslint-plugin-storybook: ^10.5.7
   eslint-plugin-turbo: ^2.10.9
   eslint-plugin-unused-imports: ^4.4.1
   express: ^4.18.2
@@ -265,7 +265,7 @@ catalog:
   schema-dts: ^1.1.2
   slugify: ^1.6.9
   sonner: ^2.0.8
-  storybook: ^9.1.20
+  storybook: ^10.5.7
   supertest: ^6.3.3
   swagger-typescript-api: ^12.0.4
   tailwind-merge: ^2.3.0
@@ -275,7 +275,7 @@ catalog:
   tailwindcss-safe-area: ^0.4.1
   tippy.js: ^6.3.7
   tsup: ^8.0.2
-  typescript: ^5.4.3
+  typescript: ^5.9.3
   turbo: 2.10.9
   use-debounce: ^10.1.1
   use-sound: ^5.0.0
