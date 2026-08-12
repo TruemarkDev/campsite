@@ -1,0 +1,12 @@
+{
+  "name": "@campsite/api-dev",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turbo wrapper for the Rails API dev processes. The api/ directory is a standalone pnpm+bundler project (own lockfile, own mise toolchain) and is deliberately NOT a workspace member; this package only exposes its dev processes as turbo tasks. `mise x --` resolves api/mise.toml (Ruby 4.0.6, Node 26) regardless of the monorepo toolchain.",
+  "scripts": {
+    "dev:css": "cd ../../api && mise x -- pnpm build:app:css --watch",
+    "dev:js": "cd ../../api && mise x -- pnpm build --watch",
+    "dev:web": "cd ../../api && mise x -- bundle exec rails server -p 3001 -b 127.0.0.1",
+    "dev:worker": "cd ../../api && mise x -- bundle exec sidekiq -C config/sidekiq.yml"
+  }
+}
