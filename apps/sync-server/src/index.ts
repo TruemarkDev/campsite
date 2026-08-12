@@ -24,7 +24,7 @@ const server = new Server<Context>({
       throw new AuthenticationError('no-token')
     }
 
-    const schemaVersion = parseInt(data.requestParameters.get('schemaVersion') || '', 10)
+    const schemaVersion = parseInt(data.requestParameters.get('schemaVersion') || '0', 10)
     const organization = data.requestParameters.get('organization')
     const type = data.requestParameters.get('type')
 

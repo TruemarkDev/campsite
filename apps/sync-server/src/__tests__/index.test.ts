@@ -1,0 +1,184 @@
+const mocks = vi.hoisted(() => ({
+  captureException: vi.fn(),
+  database: { name: 'database' },
+  dotenvConfig: vi.fn(),
+  getResource: vi.fn(),
+  init: vi.fn(),
+  listen: vi.fn(),
+  logger: { name: 'logger' },
+  sendVersionToConnections: vi.fn(),
+  serverConfiguration: undefined as Record<string, any> | undefined,
+  setContext: vi.fn()
+}))
+
+vi.mock('@hocuspocus/extension-logger', () => ({
+  Logger: class {
+    constructor() {
+      return mocks.logger
+    }
+  }
+}))
+vi.mock('@hocuspocus/server', () => ({
+  Server: class {
+    listen = mocks.listen
+
+    constructor(configuration: Record<string, any>) {
+      mocks.serverConfiguration = configuration
+    }
+  }
+}))
+vi.mock('@sentry/node', () => ({
+  captureException: mocks.captureException,
+  init: mocks.init,
+  setContext: mocks.setContext
+}))
+vi.mock('dotenv', () => ({ config: mocks.dotenvConfig }))
+vi.mock('../database', () => ({
+  database: mocks.database,
+  getResource: mocks.getResource,
+  sendVersionToConnections: mocks.sendVersionToConnections
+}))
+
+async function loadServer() {
+  await import('../index')
+
+  return mocks.serverConfiguration!
+}
+
+function authenticationData(overrides: Record<string, any> = {}) {
+  return {
+    connectionConfig: { readOnly: false },
+    documentName: 'note-1',
+    instance: { documents: new Map() },
+    requestParameters: new URLSearchParams({ organization: 'acme', schemaVersion: '3', type: 'Note' }),
+    token: 'secret',
+    ...overrides
+  }
+}
+
+describe('sync server', () => {
+  beforeEach(() => {
+    vi.resetModules()
+    vi.clearAllMocks()
+    mocks.serverConfiguration = undefined
+    process.env.NODE_ENV = 'test'
+    delete process.env.PORT
+    delete process.env.SENTRY_DSN
+  })
+
+  it('starts on the default port with database and logger extensions', async () => {
+    const configuration = await loadServer()
+
+    expect(mocks.dotenvConfig).toHaveBeenCalledOnce()
+    expect(configuration.port).toBe(9000)
+    expect(configuration.extensions).toEqual([mocks.database, mocks.logger])
+    expect(mocks.listen).toHaveBeenCalledOnce()
+    expect(mocks.init).not.toHaveBeenCalled()
+  })
+
+  it('uses configured production settings', async () => {
+    process.env.NODE_ENV = 'production'
+    process.env.PORT = '9100'
+    process.env.SENTRY_DSN = 'https://sentry.test/1'
+
+    const configuration = await loadServer()
+
+    expect(configuration.port).toBe(9100)
+    expect(mocks.init).toHaveBeenCalledWith({
+      dsn: 'https://sentry.test/1',
+      environment: 'production',
+      tracesSampleRate: 0
+    })
+  })
+
+  it('rejects authentication without a token', async () => {
+    const { onAuthenticate } = await loadServer()
+
+    await expect(onAuthenticate(authenticationData({ token: '' }))).rejects.toMatchObject({
+      reason: 'no-token'
+    })
+    expect(mocks.getResource).not.toHaveBeenCalled()
+  })
+
+  it('rejects authentication without an organization', async () => {
+    const { onAuthenticate } = await loadServer()
+    const requestParameters = new URLSearchParams({ schemaVersion: '3', type: 'Note' })
+
+    await expect(onAuthenticate(authenticationData({ requestParameters }))).rejects.toMatchObject({
+      reason: 'invalid-type'
+    })
+    expect(mocks.getResource).not.toHaveBeenCalled()
+  })
+
+  it('authenticates and makes older clients read-only', async () => {
+    const { onAuthenticate } = await loadServer()
+    const document = { name: 'note-1' }
+    const data = authenticationData({ instance: { documents: new Map([['note-1', document]]) } })
+
+    mocks.getResource.mockResolvedValueOnce({ description_schema_version: 4 })
+
+    await expect(onAuthenticate(data)).resolves.toEqual({
+      organization: 'acme',
+      schemaVersion: 3,
+      token: 'secret',
+      type: 'Note'
+    })
+    expect(mocks.getResource).toHaveBeenCalledWith({
+      id: 'note-1',
+      organization: 'acme',
+      token: 'secret',
+      type: 'Note'
+    })
+    expect(mocks.sendVersionToConnections).toHaveBeenCalledWith(document, 4)
+    expect(data.connectionConfig.readOnly).toBe(true)
+  })
+
+  it('keeps current clients writable when no document is loaded', async () => {
+    const { onAuthenticate } = await loadServer()
+    const data = authenticationData()
+
+    mocks.getResource.mockResolvedValueOnce({ description_schema_version: 3 })
+
+    await onAuthenticate(data)
+
+    expect(mocks.sendVersionToConnections).not.toHaveBeenCalled()
+    expect(data.connectionConfig.readOnly).toBe(false)
+  })
+
+  it('treats a missing schema version as version zero', async () => {
+    const { onAuthenticate } = await loadServer()
+    const requestParameters = new URLSearchParams({ organization: 'acme', type: 'Note' })
+    const data = authenticationData({ requestParameters })
+
+    mocks.getResource.mockResolvedValueOnce({ description_schema_version: 1 })
+
+    await expect(onAuthenticate(data)).resolves.toMatchObject({ schemaVersion: 0 })
+    expect(data.connectionConfig.readOnly).toBe(true)
+  })
+
+  it('reports and rejects missing resources', async () => {
+    const { onAuthenticate } = await loadServer()
+    const data = authenticationData()
+
+    mocks.getResource.mockResolvedValueOnce(undefined)
+
+    await expect(onAuthenticate(data)).rejects.toMatchObject({ reason: 'invalid-type' })
+    expect(mocks.setContext).toHaveBeenCalledWith('document', {
+      id: 'note-1',
+      organization: 'acme',
+      type: 'Note'
+    })
+    expect(mocks.setContext).toHaveBeenCalledWith('context', { schemaVersion: 3, token: 'secret' })
+    expect(mocks.captureException).toHaveBeenCalledWith(expect.objectContaining({ reason: 'invalid-type' }))
+  })
+
+  it('reports and rethrows resource request failures', async () => {
+    const { onAuthenticate } = await loadServer()
+    const error = new Error('API unavailable')
+
+    mocks.getResource.mockRejectedValueOnce(error)
+
+    await expect(onAuthenticate(authenticationData())).rejects.toBe(error)
+    expect(mocks.captureException).toHaveBeenCalledWith(error)
+  })
+})
