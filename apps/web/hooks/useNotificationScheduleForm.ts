@@ -3,21 +3,17 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import { NotificationSchedule, UsersMeNotificationSchedulePutRequest } from '@campsite/types/generated'
+import { NotificationSchedule } from '@campsite/types/generated'
 
 import { useDeleteNotificationSchedule } from '@/hooks/useDeleteNotificationSchedule'
 import { useUpdateNotificationSchedule } from '@/hooks/useUpdateNotificationSchedule'
 
-export type NotificationScheduleFormSchema = UsersMeNotificationSchedulePutRequest & {
-  type: 'none' | 'custom'
-}
-
 const notificationScheduleSchema = z
   .object({
     type: z.enum(['none', 'custom']),
-    days: z.array(z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])).optional(),
-    start_time: z.string().optional(),
-    end_time: z.string().optional()
+    days: z.array(z.enum(['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'])),
+    start_time: z.string(),
+    end_time: z.string()
   })
   .refine((data) => data.type === 'none' || (data.days && data.days?.length > 0), {
     message: 'Select at least one day',
@@ -27,6 +23,8 @@ const notificationScheduleSchema = z
     message: 'Start time must be before end time',
     path: ['start_time']
   })
+
+export type NotificationScheduleFormSchema = z.infer<typeof notificationScheduleSchema>
 
 export function useNotificationScheduleForm({ notificationSchedule }: { notificationSchedule: NotificationSchedule }) {
   return useForm<NotificationScheduleFormSchema>({

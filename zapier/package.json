@@ -16,7 +16,7 @@
     "dotenv": "^16.4.5",
     "nock": "^13.5.4",
     "zapier-platform-core": "15.5.3",
-    "zod": "^3.21.4"
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@campsite/types": "file:../packages/types",
