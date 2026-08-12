@@ -7,6 +7,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   include OauthTestHelper
 
   ALL_SCOPES = "mcp read_organization read_user read_post read_project write_post write_message write_note write_project"
+  MODERN_PROTOCOL_VERSION = "2026-07-28"
 
   setup do
     @org = create(:organization)
@@ -20,14 +21,63 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   # ---- handshake & auth (task 3.6) ----------------------------------------
 
   describe "authentication" do
-    test "initialize handshake advertises protocol version, server info, and tools capability" do
+    test "legacy initialize handshake remains supported" do
       mcp_request(method: "initialize", params: { protocolVersion: "2025-06-18", capabilities: {}, clientInfo: { name: "test", version: "1" } })
 
       assert_response :ok
       result = json_response["result"]
-      assert result["protocolVersion"].present?
+      assert_equal "2025-06-18", result["protocolVersion"]
       assert_equal "campsite", result.dig("serverInfo", "name")
       assert result["capabilities"].key?("tools")
+    end
+
+    test "initialize negotiates protocol version 2026-07-28" do
+      mcp_request(
+        method: "initialize",
+        params: { protocolVersion: MODERN_PROTOCOL_VERSION, capabilities: {}, clientInfo: { name: "test", version: "1" } },
+        headers: { "Mcp-Method" => "initialize" },
+      )
+
+      assert_response :ok
+      assert_equal MODERN_PROTOCOL_VERSION, json_response.dig("result", "protocolVersion")
+    end
+
+    test "server/discover advertises supported versions, capabilities, and identity" do
+      mcp_request(method: "server/discover", headers: { "Mcp-Method" => "server/discover" })
+
+      assert_response :ok
+      result = json_response["result"]
+      assert_includes result["supportedVersions"], MODERN_PROTOCOL_VERSION
+      assert_equal "campsite", result.dig("serverInfo", "name")
+      assert result["capabilities"].key?("tools")
+      assert_equal "complete", result["resultType"]
+      assert_equal "campsite", result.dig("_meta", "io.modelcontextprotocol/serverInfo", "name")
+    end
+
+    test "modern requests require routing headers that match the body" do
+      params = { _meta: modern_meta }
+      mcp_request(method: "tools/list", params: params)
+
+      assert_response :bad_request
+      assert_equal(-32_020, json_response.dig("error", "code"))
+
+      modern_mcp_request(method: "resources/read", params: { uri: "campsite://example/posts/abc" }, headers: { "Mcp-Name" => "wrong" })
+
+      assert_response :bad_request
+      assert_equal(-32_020, json_response.dig("error", "code"))
+
+      modern_mcp_request(method: "tools/list", headers: { "MCP-Protocol-Version" => "2025-11-25" })
+
+      assert_response :bad_request
+      assert_equal(-32_020, json_response.dig("error", "code"))
+    end
+
+    test "unsupported modern protocol versions return the MCP version error" do
+      modern_mcp_request(method: "tools/list", protocol_version: "2099-01-01")
+
+      assert_response :ok
+      assert_equal(-32_022, json_response.dig("error", "code"))
+      assert_equal [MODERN_PROTOCOL_VERSION], json_response.dig("error", "data", "supported")
     end
 
     test "missing token returns 401 with a WWW-Authenticate resource_metadata pointer" do
@@ -63,6 +113,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       names = tools.pluck("name")
       assert_includes names, "list_organizations"
       assert_includes names, "create_post"
+      assert_equal names.sort, names
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.hour.in_milliseconds)
       tools.each do |tool|
         assert tool["name"].present?
         assert tool["inputSchema"].present?
@@ -74,6 +126,16 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
       names = json_response.dig("result", "tools").pluck("name")
       assert_empty names.grep(/delete|destroy|remove/i)
+    end
+
+    test "modern lifecycle is handshake-less and adds required result metadata" do
+      modern_mcp_request(method: "tools/list")
+
+      assert_response :ok
+      result = json_response["result"]
+      assert_equal "complete", result["resultType"]
+      assert_equal "campsite", result.dig("_meta", "io.modelcontextprotocol/serverInfo", "name")
+      assert_nil response.headers["Mcp-Session-Id"]
     end
   end
 
@@ -784,6 +846,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_includes names, "triage_inbox"
       assert_includes names, "draft_standup"
       assert_includes names, "summarize_thread"
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.hour.in_milliseconds)
 
       triage = prompts.find { |p| p["name"] == "triage_inbox" }
       assert triage["title"].present?
@@ -864,6 +927,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_includes templates, "campsite://{org_slug}/posts/{public_id}"
       assert_includes templates, "campsite://{org_slug}/notes/{public_id}"
       assert_includes templates, "campsite://{org_slug}/threads/{public_id}"
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.hour.in_milliseconds)
     end
   end
 
@@ -878,6 +942,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_equal 1, contents.length
       assert_equal "campsite://#{@org.slug}/posts/#{post.public_id}", contents.first["uri"]
       assert_equal post.public_id, JSON.parse(contents.first["text"])["id"]
+      assert_cache_metadata(result, ttl_ms: 1.minute.in_milliseconds)
     end
 
     test "reads a note resource" do
@@ -944,6 +1009,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       uris = json_response.dig("result", "resources").pluck("uri")
       assert_includes uris, "campsite://#{@org.slug}/posts/#{post.public_id}"
       assert_includes uris, "campsite://#{@org.slug}/notes/#{note.public_id}"
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.minute.in_milliseconds)
     end
   end
 
@@ -1117,11 +1183,30 @@ class McpControllerTest < ActionDispatch::IntegrationTest
     json_response["result"]
   end
 
-  def mcp_request(method:, params: nil, id: 1, token: nil)
+  def mcp_request(method:, params: nil, id: 1, token: nil, headers: {})
     token ||= @token.plaintext_token
     body = { jsonrpc: "2.0", id: id, method: method }
     body[:params] = params unless params.nil?
-    post("/mcp", params: body, as: :json, headers: bearer_token_header(token))
+    post("/mcp", params: body, as: :json, headers: bearer_token_header(token).merge(headers))
+  end
+
+  def modern_mcp_request(method:, params: nil, id: 1, token: nil, protocol_version: MODERN_PROTOCOL_VERSION, headers: {})
+    params = (params || {}).deep_dup
+    params[:_meta] = modern_meta(protocol_version: protocol_version)
+
+    routing_headers = { "Mcp-Method" => method, "MCP-Protocol-Version" => protocol_version }
+    name_param = McpController::NAMED_METHOD_PARAMS[method]
+    routing_headers["Mcp-Name"] = params[name_param] if name_param
+
+    mcp_request(method: method, params: params, id: id, token: token, headers: routing_headers.merge(headers))
+  end
+
+  def modern_meta(protocol_version: MODERN_PROTOCOL_VERSION)
+    {
+      "io.modelcontextprotocol/protocolVersion" => protocol_version,
+      "io.modelcontextprotocol/clientCapabilities" => {},
+      "io.modelcontextprotocol/clientInfo" => { name: "test", version: "1" },
+    }
   end
 
   def call_tool(name, arguments = {}, token: nil)
@@ -1139,5 +1224,10 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   def structured_content(result)
     result["structuredContent"]
+  end
+
+  def assert_cache_metadata(result, ttl_ms:)
+    assert_equal(ttl_ms, result["ttlMs"])
+    assert_equal("private", result["cacheScope"])
   end
 end

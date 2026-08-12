@@ -113,4 +113,4 @@ gem "opentelemetry-instrumentation-all"
 gem "ostruct", "~> 0.6.3"
 gem "benchmark", "~> 0.5.0"
 
-gem "mcp", "~> 0.22.0"
+gem "mcp", "~> 1.1"

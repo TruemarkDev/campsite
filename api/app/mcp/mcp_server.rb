@@ -38,11 +38,15 @@ class McpServer
     # Resolve any campsite:// URI under the authenticated context, mapping our
     # resource errors onto JSON-RPC errors.
     server.resources_read_handler do |params|
-      resource.read(params[:uri])
+      {
+        contents: resource.read(params[:uri]),
+        ttlMs: CampsiteMcpServer::USER_RESOURCE_TTL_MS,
+        cacheScope: CampsiteMcpServer::PRIVATE_CACHE_SCOPE,
+      }
     rescue McpResource::ResourceError => e
       raise MCP::Server::RequestHandlerError.new(e.message, params, error_type: :invalid_params)
     rescue ActiveRecord::RecordNotFound
-      raise MCP::Server::RequestHandlerError.new("The requested resource could not be found.", params, error_type: :invalid_params)
+      raise MCP::Server::ResourceNotFoundError.new(params[:uri], params)
     rescue Pundit::NotAuthorizedError
       raise MCP::Server::RequestHandlerError.new("You are not authorized to read this resource.", params, error_type: :invalid_params)
     end
