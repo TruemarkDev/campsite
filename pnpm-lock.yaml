@@ -1131,9 +1131,6 @@ importers:
       '@eslint/js':
         specifier: ^10.0.1
         version: 10.0.1(eslint@9.39.5(jiti@2.7.0))
-      '@flydotio/dockerfile':
-        specifier: ^0.7.10
-        version: 0.7.10(@types/node@26.2.0)
       '@sentry/cli':
         specifier: ^3.6.2
         version: 3.6.2
@@ -4365,11 +4362,6 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
-
-  '@flydotio/dockerfile@0.7.10':
-    resolution: {integrity: sha512-dTXqBjCl7nFmnhlyeDjjPtX+sdfYBWFH9PUKNqAYttvBiczKcYXxr7/0A0wZ+g1FB1tmMzsOzedgr6xap/AB9g==}
-    engines: {node: '>=16.0.0'}
-    hasBin: true
 
   '@formatjs/ecma402-abstract@1.17.0':
     resolution: {integrity: sha512-6ueQTeJZtwKjmh23bdkq/DMqH4l4bmfvtQH98blOSbiXv/OUiyijSW6jU22IT8BNM1ujCaEvJfTtyCYVH38EMQ==}
@@ -19984,17 +19976,6 @@ snapshots:
   '@floating-ui/utils@0.1.1': {}
 
   '@floating-ui/utils@0.2.12': {}
-
-  '@flydotio/dockerfile@0.7.10(@types/node@26.2.0)':
-    dependencies:
-      chalk: 5.6.2
-      diff: 7.0.0
-      ejs: 3.1.10
-      inquirer: 12.11.1(@types/node@26.2.0)
-      shell-quote: 1.10.0
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@types/node'
 
   '@formatjs/ecma402-abstract@1.17.0':
     dependencies:

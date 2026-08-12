@@ -27,7 +27,6 @@
     "@campsite/tsconfig": "workspace:*",
     "@eslint/eslintrc": "3.3.6",
     "@eslint/js": "^10.0.1",
-    "@flydotio/dockerfile": "^0.7.10",
     "@sentry/cli": "^3.6.2",
     "@types/body-parser": "^1.19.6",
     "@types/express": "^5.0.6",

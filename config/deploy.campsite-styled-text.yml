@@ -22,8 +22,6 @@ builder:
   remote: ssh://debian@192.168.2.41
   context: .
   dockerfile: apps/styled-text-server/Dockerfile
-  secrets:
-    - TIPTAP_PRIVATE_REGISTRY_KEY
 
 env:
   clear:
