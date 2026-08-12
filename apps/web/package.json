@@ -38,7 +38,6 @@
     "@radix-ui/react-slot": "catalog:",
     "@radix-ui/react-tabs": "catalog:",
     "@sentry/nextjs": "catalog:",
-    "@shopify/react-shortcuts": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@tanstack/react-virtual": "catalog:",
     "@tiptap/extension-collaboration": "catalog:",

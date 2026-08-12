@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { HMSRoomProvider } from '@100mslive/react-sdk'
-import { ShortcutProvider } from '@shopify/react-shortcuts'
 import { QueryClientProvider } from '@tanstack/react-query'
 import ConfirmEmailGuard from 'components/ConfirmEmailGuard'
 import { domMax, LazyMotion } from 'framer-motion'
@@ -64,26 +63,24 @@ export const AuthAppProviders: PageWithProviders<any> = ({ children, allowLogged
                         <PusherProvider>
                           <IncomingCallRoomInvitationToast />
                           <DesktopRedirectProvider>
-                            <ShortcutProvider>
-                              <DisableZoom />
-                              <ToasterProvider />
-                              <StaffDevTools />
-                              <FeedbackDialog />
-                              <LocalCommandMenu />
-                              <BackgroundAppRefresh />
-                              <DevModeBanner />
-                              <GlobalKeyboardShortcuts />
-                              <DesktopProtocolUrlHandler />
-                              <PostComposer />
-                              <AutoTimezoneSwitcher />
-                              <ActiveModalityProvider />
+                            <DisableZoom />
+                            <ToasterProvider />
+                            <StaffDevTools />
+                            <FeedbackDialog />
+                            <LocalCommandMenu />
+                            <BackgroundAppRefresh />
+                            <DevModeBanner />
+                            <GlobalKeyboardShortcuts />
+                            <DesktopProtocolUrlHandler />
+                            <PostComposer />
+                            <AutoTimezoneSwitcher />
+                            <ActiveModalityProvider />
 
-                              <ConfirmEmailGuard allowLoggedOut={allowLoggedOut}>
-                                {children}
+                            <ConfirmEmailGuard allowLoggedOut={allowLoggedOut}>
+                              {children}
 
-                                <OrganizationUserPresenceSubscription />
-                              </ConfirmEmailGuard>
-                            </ShortcutProvider>
+                              <OrganizationUserPresenceSubscription />
+                            </ConfirmEmailGuard>
                           </DesktopRedirectProvider>
                         </PusherProvider>
                       </WebPushProvider>

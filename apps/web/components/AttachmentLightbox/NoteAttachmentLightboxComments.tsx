@@ -23,7 +23,7 @@ export function NoteLightboxComments({ note, attachment, isOpen, onOpenChange }:
 
   return (
     <>
-      <LayeredHotkeys keys='mod+.' callback={() => onOpenChange(!isOpen)} options={{ enableOnContentEditable: true }} />
+      <LayeredHotkeys keys='mod+.' callback={() => onOpenChange(!isOpen)} options={{ enableOnContentEditable: true, useKey: true }} />
 
       <OuterContainer isOpen={isOpen || !isLargeViewport} width={width}>
         <NoteAttachmentComments

@@ -88,7 +88,6 @@ catalog:
   '@sentry/nextjs': ^10.70.0
   '@sentry/node': ^10.70.0
   '@sentry/react': ^10.70.0
-  '@shopify/react-shortcuts': ^5.2.0
   '@storybook/addon-docs': ^10.5.7
   '@storybook/addon-links': ^10.5.7
   '@storybook/nextjs': ^10.5.7
@@ -243,7 +242,7 @@ catalog:
   react-error-boundary: ^4.0.13
   react-hook-form: ^7.85.0
   react-hot-toast: ^2.4.0
-  react-hotkeys-hook: ^4.5.0
+  react-hotkeys-hook: ^5.3.3
   react-image-file-resizer: ^0.4.8
   react-inlinesvg: ^4.5.0
   react-intersection-observer: ^11.0.0

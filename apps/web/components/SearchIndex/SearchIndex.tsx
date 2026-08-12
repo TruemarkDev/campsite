@@ -184,7 +184,7 @@ export function SearchField({ query, isLoading, mobile }: SearchFieldProps) {
 
   return (
     <>
-      <LayeredHotkeys keys={['/', 'meta+f']} callback={() => ref.current?.focus()} options={{ preventDefault: true }} />
+      <LayeredHotkeys keys={['/', 'meta+f']} callback={() => ref.current?.focus()} options={{ preventDefault: true, useKey: true }} />
 
       <form
         onSubmit={onSubmit}

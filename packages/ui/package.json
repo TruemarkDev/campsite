@@ -23,7 +23,6 @@
     "@radix-ui/react-tooltip": "catalog:",
     "@radix-ui/react-visually-hidden": "catalog:",
     "@sentry/react": "catalog:",
-    "@shopify/react-shortcuts": "catalog:",
     "@todesktop/client-core": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",

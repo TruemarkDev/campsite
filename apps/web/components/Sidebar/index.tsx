@@ -63,7 +63,7 @@ export function SidebarContainer() {
   return (
     <>
       <LayeredHotkeys keys='BracketLeft' callback={handleCollapseSidebar} />
-      <LayeredHotkeys keys='/' callback={goToSearchPage} />
+      <LayeredHotkeys keys='/' callback={goToSearchPage} options={{ useKey: true }} />
 
       {/* width spacer */}
       <m.div

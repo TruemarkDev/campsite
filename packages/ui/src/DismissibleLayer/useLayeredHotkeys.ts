@@ -1,8 +1,6 @@
 import { DependencyList } from 'react'
-import { useShortcut } from '@shopify/react-shortcuts'
 // eslint-disable-next-line no-restricted-imports
-import { Options, useHotkeys } from 'react-hotkeys-hook'
-import { HotkeyCallback, Keys } from 'react-hotkeys-hook/dist/types'
+import { HotkeyCallback, Keys, Options, useHotkeys } from 'react-hotkeys-hook'
 
 import { useIsTopLayer } from '.'
 
@@ -62,22 +60,3 @@ export function useLayeredHotkeys({
   )
 }
 
-export function useOrderedLayeredHotkeys({
-  keys,
-  callback,
-  options = {}
-}: {
-  keys: Parameters<typeof useShortcut>[0]
-  callback: Parameters<typeof useShortcut>[1]
-  options?: Parameters<typeof useShortcut>[2]
-}) {
-  const isTopLayer = useIsTopLayer()
-
-  // shortcut will always be disabled if the layer is not top layer,
-  // regardless of the enabled option passed into this hook
-  if (!isTopLayer) {
-    options.ignoreInput = false
-  }
-
-  useShortcut(keys, callback, options)
-}

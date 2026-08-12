@@ -147,9 +147,6 @@ catalogs:
     '@sentry/react':
       specifier: ^10.70.0
       version: 10.70.0
-    '@shopify/react-shortcuts':
-      specifier: ^5.2.0
-      version: 5.2.0
     '@storybook/addon-docs':
       specifier: ^10.5.7
       version: 10.5.7
@@ -574,8 +571,8 @@ catalogs:
       specifier: ^2.4.0
       version: 2.4.0
     react-hotkeys-hook:
-      specifier: ^4.5.0
-      version: 4.5.0
+      specifier: ^5.3.3
+      version: 5.3.3
     react-image-file-resizer:
       specifier: ^0.4.8
       version: 0.4.8
@@ -1329,9 +1326,6 @@ importers:
       '@sentry/nextjs':
         specifier: 'catalog:'
         version: 10.70.0(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(@opentelemetry/sdk-trace-base@2.10.0(@opentelemetry/api@1.9.1))(encoding@0.1.13)(next@16.3.0(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.62.1)(@types/node@24.13.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8))(react@19.2.8)(webpack@5.91.0(esbuild@0.28.2)(postcss@8.4.38))
-      '@shopify/react-shortcuts':
-        specifier: 'catalog:'
-        version: 5.2.0(react@19.2.8)
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.59.0(react@19.2.8)
@@ -1496,7 +1490,7 @@ importers:
         version: 2.4.0(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-hotkeys-hook:
         specifier: 'catalog:'
-        version: 4.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 5.3.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-image-file-resizer:
         specifier: 'catalog:'
         version: 0.4.8
@@ -1951,9 +1945,6 @@ importers:
       '@sentry/react':
         specifier: 'catalog:'
         version: 10.70.0(react@19.2.8)
-      '@shopify/react-shortcuts':
-        specifier: 'catalog:'
-        version: 5.2.0(react@19.2.8)
       '@todesktop/client-core':
         specifier: 'catalog:'
         version: 1.10.0
@@ -1998,7 +1989,7 @@ importers:
         version: 2.4.0(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-hotkeys-hook:
         specifier: 'catalog:'
-        version: 4.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        version: 5.3.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-textarea-autosize:
         specifier: 'catalog:'
         version: 8.5.3(@types/react@19.2.18)(react@19.2.8)
@@ -6617,13 +6608,6 @@ packages:
     engines: {node: '>= 18'}
     peerDependencies:
       webpack: '>=5.0.0'
-
-  '@shopify/react-shortcuts@5.2.0':
-    resolution: {integrity: sha512-qhhGvYyQG1R0+YdUPoXZzxjmMOt7SjxoM/KwEqKIf5LT2tRYsYrncrXuyhLYLYt/WpVK/e0+C6p0cEqNtLipxA==}
-    engines: {node: '>=18.12.0'}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-    peerDependencies:
-      react: '>=18.0.0 <19.0.0'
 
   '@sideway/address@4.1.4':
     resolution: {integrity: sha512-7vwq+rOHVWjyXxVlR76Agnvhy8I9rpzjosTESvmhNeXOXdZZB15Fl+TI9x1SiHZH5Jv2wTGduSxFDIaq0m3DUw==}
@@ -12966,11 +12950,11 @@ packages:
       react: '>=16'
       react-dom: '>=16'
 
-  react-hotkeys-hook@4.5.0:
-    resolution: {integrity: sha512-Samb85GSgAWFQNvVt3PS90LPPGSf9mkH/r4au81ZP1yOIFayLC3QAvqTgGtJ8YEDMXtPmaVBs6NgipHO6h4Mug==}
+  react-hotkeys-hook@5.3.3:
+    resolution: {integrity: sha512-aswgyWUnE25hmhzHTfKDmKzsaSE5DJ4LKaU/o6rQSXkDd/1Bh9TfAFQbHkf6fLy11HvlYkp+cDDarGdhmCDhoQ==}
     peerDependencies:
-      react: '>=16.8.1'
-      react-dom: '>=16.8.1'
+      react: '>=16.8.0'
+      react-dom: '>=16.8.0'
 
   react-i18next@17.0.11:
     resolution: {integrity: sha512-cDtkXgxjuFTWUH6V+aQn1Ve5vDiUztCNPWW5GtSHDccsgRXO1nE6QFWCEmc1KAutrb3OUv87wFShJL5RhUwPXg==}
@@ -21050,10 +21034,6 @@ snapshots:
       - rollup
       - supports-color
 
-  '@shopify/react-shortcuts@5.2.0(react@19.2.8)':
-    dependencies:
-      react: 19.2.8
-
   '@sideway/address@4.1.4':
     dependencies:
       '@hapi/hoek': 9.3.0
@@ -28831,7 +28811,7 @@ snapshots:
     transitivePeerDependencies:
       - csstype
 
-  react-hotkeys-hook@4.5.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
+  react-hotkeys-hook@5.3.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
       react: 19.2.8
       react-dom: 19.2.8(react@19.2.8)
