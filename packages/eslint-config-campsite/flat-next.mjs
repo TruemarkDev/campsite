@@ -1,7 +1,9 @@
 import query from '@tanstack/eslint-plugin-query'
+import typescriptParser from '@typescript-eslint/parser'
 import nextVitals from 'eslint-config-next/core-web-vitals'
 import react from 'eslint-plugin-react'
-import typescriptParser from '@typescript-eslint/parser'
+import * as espree from 'espree'
+
 import restrictedImports from './rules/no-restricted-imports.js'
 
 export default [
@@ -15,7 +17,9 @@ export default [
       globals: { React: 'writable' }
     },
     settings: {
-      react: { version: 'detect' }
+      // The workspace pins React 19.2. Avoid eslint-plugin-react's legacy
+      // auto-detection path, which calls an API removed by ESLint 10.
+      react: { version: '19.2' }
     },
     rules: {
       'no-console': 'error',
@@ -40,6 +44,19 @@ export default [
     }
   },
   restrictedImports,
+  {
+    // eslint-config-next's JavaScript parser does not yet implement ESLint 10's
+    // ScopeManager#addGlobals contract. Keep Next's rules, but parse JS with
+    // the Espree version shipped with ESLint 10.
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: {
+      parser: espree,
+      parserOptions: {
+        project: false,
+        ecmaFeatures: { jsx: true }
+      }
+    }
+  },
   {
     files: ['**/*.{ts,tsx,mts,cts}'],
     languageOptions: {

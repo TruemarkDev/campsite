@@ -120,7 +120,7 @@
     "@campsite/tsconfig": "workspace:*",
     "@campsite/types": "workspace:*",
     "@eslint/eslintrc": "3.3.6",
-    "@eslint/js": "9.39.5",
+    "@eslint/js": "10.0.1",
     "@playwright/test": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",

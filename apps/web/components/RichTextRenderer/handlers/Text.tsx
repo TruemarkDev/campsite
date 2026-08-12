@@ -24,7 +24,6 @@ export const Text: NodeHandler = ({ node }) => {
 
   let Element: React.ElementType = 'span'
   let markAttrs: Record<string, any> = { ...(currentMark.attrs ?? {}) }
-  let hasHref = false
 
   switch (currentMark.type) {
     case 'bold':
@@ -40,8 +39,7 @@ export const Text: NodeHandler = ({ node }) => {
       break
     case 'link':
       Element = 'a'
-      hasHref = !!markAttrs.href
-      if (hasHref) {
+      if (markAttrs.href) {
         Element = Link
       }
       break

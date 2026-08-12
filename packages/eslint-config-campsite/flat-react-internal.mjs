@@ -12,7 +12,9 @@ export default [
       globals: { React: 'readonly' }
     },
     settings: {
-      react: { version: 'detect' }
+      // The workspace pins React 19.2. Avoid eslint-plugin-react's legacy
+      // auto-detection path, which calls an API removed by ESLint 10.
+      react: { version: '19.2' }
     },
     rules: {
       'no-console': 'error',

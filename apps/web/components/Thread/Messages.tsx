@@ -88,15 +88,12 @@ function insertTimestampsBetweenGroups(groups: MessageGroup[], hasNextPage: bool
       const nextGroupDay = dateToGroupDay(nextGroupDate)
 
       if (nextGroupDay !== thisGroupDay) {
-        let dayLabel = ''
-
-        if (todayGroupDay === nextGroupDay) {
-          dayLabel = 'Today'
-        } else if (yesterdayGroupDay === nextGroupDay) {
-          dayLabel = 'Yesterday'
-        } else {
-          dayLabel = nextGroupDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-        }
+        const dayLabel =
+          todayGroupDay === nextGroupDay
+            ? 'Today'
+            : yesterdayGroupDay === nextGroupDay
+              ? 'Yesterday'
+              : nextGroupDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
         groupsWithTimestamps.push({ day: dayLabel })
       }

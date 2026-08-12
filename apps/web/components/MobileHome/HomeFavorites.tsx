@@ -46,34 +46,28 @@ export function HomeFavorites() {
       {!collapsed && (
         <div className='flex flex-col gap-0.5'>
           {filterReadOnly.map((fav) => {
-            let children: React.ReactNode = null
-
-            if (fav.project) {
-              children = (
-                <HomeNavigationItem
-                  unread={fav.project.unread_for_viewer}
-                  href={`/${scope}/projects/${fav.project.id}`}
-                  icon={
-                    fav.project.accessory ? (
-                      <UIText className='font-["emoji"] text-[17px]'>{fav.project.accessory}</UIText>
-                    ) : (
-                      <ProjectIcon size={24} className='text-tertiary' />
-                    )
-                  }
-                  label={fav.project.name}
-                />
-              )
-            } else if (fav.message_thread) {
-              children = <ChatThread thread={fav.message_thread} />
-            } else {
-              children = (
-                <HomeNavigationItem
-                  href={fav.url}
-                  icon={iconForFavoritableType(fav.favoritable_type, 24)}
-                  label={fav.name ?? fallbackNameForFavoritableType(fav.favoritable_type)}
-                />
-              )
-            }
+            const children = fav.project ? (
+              <HomeNavigationItem
+                unread={fav.project.unread_for_viewer}
+                href={`/${scope}/projects/${fav.project.id}`}
+                icon={
+                  fav.project.accessory ? (
+                    <UIText className='font-["emoji"] text-[17px]'>{fav.project.accessory}</UIText>
+                  ) : (
+                    <ProjectIcon size={24} className='text-tertiary' />
+                  )
+                }
+                label={fav.project.name}
+              />
+            ) : fav.message_thread ? (
+              <ChatThread thread={fav.message_thread} />
+            ) : (
+              <HomeNavigationItem
+                href={fav.url}
+                icon={iconForFavoritableType(fav.favoritable_type, 24)}
+                label={fav.name ?? fallbackNameForFavoritableType(fav.favoritable_type)}
+              />
+            )
 
             return (
               <div key={fav.id} id={fav.id} className='group/reorder-item relative'>

@@ -23,7 +23,7 @@ export function useFilteredProjects({
   const { filteredProjects } = useMemo(() => {
     const selectedProject = projects?.find((p) => p.id === selectedProjectId)
 
-    let filteredProjects: SyncProject[] = []
+    let filteredProjects: SyncProject[]
 
     if (!query) {
       // by default, sort by how often the viewer used the project
