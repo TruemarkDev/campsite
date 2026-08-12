@@ -16,7 +16,7 @@ if (process.env.NODE_ENV === 'production') {
 
 dotenv.config()
 
-const server = new Server({
+const server = new Server<Context>({
   port: parseInt(process.env.PORT || '9000', 10),
 
   async onAuthenticate(data): Promise<Context> {
@@ -46,7 +46,9 @@ const server = new Server({
 
       return {
         token: data.token,
-        schemaVersion
+        schemaVersion,
+        organization,
+        type
       }
     } catch (error) {
       Sentry.setContext('document', {

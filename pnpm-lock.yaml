@@ -40,20 +40,20 @@ catalogs:
       specifier: ^0.4.11
       version: 0.4.11
     '@hocuspocus/extension-database':
-      specifier: ^3.4.4
-      version: 3.4.4
+      specifier: ^4.6.0
+      version: 4.6.0
     '@hocuspocus/extension-logger':
-      specifier: ^3.4.4
-      version: 3.4.4
+      specifier: ^4.6.0
+      version: 4.6.0
     '@hocuspocus/provider':
-      specifier: ^3.4.4
-      version: 3.4.4
+      specifier: ^4.6.0
+      version: 4.6.0
     '@hocuspocus/server':
-      specifier: ^3.4.4
-      version: 3.4.4
+      specifier: ^4.6.0
+      version: 4.6.0
     '@hocuspocus/transformer':
-      specifier: ^3.4.4
-      version: 3.4.4
+      specifier: ^4.6.0
+      version: 4.6.0
     '@hookform/resolvers':
       specifier: ^5.7.1
       version: 5.7.1
@@ -550,8 +550,8 @@ catalogs:
       specifier: ^2.4.14
       version: 2.4.14
     prettier-plugin-tailwindcss:
-      specifier: ^0.6.8
-      version: 0.6.8
+      specifier: ^0.6.14
+      version: 0.6.14
     pusher-js:
       specifier: ^8.3.0
       version: 8.3.0
@@ -746,7 +746,7 @@ importers:
         version: 2.4.14(prettier@3.3.3)
       prettier-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 0.6.8(@ianvs/prettier-plugin-sort-imports@4.2.1(@vue/compiler-sfc@3.5.12)(prettier@3.3.3))(prettier@3.3.3)
+        version: 0.6.14(@ianvs/prettier-plugin-sort-imports@4.2.1(@vue/compiler-sfc@3.5.12)(prettier@3.3.3))(prettier@3.3.3)
       swagger-typescript-api:
         specifier: 'catalog:'
         version: 12.0.4(encoding@0.1.13)
@@ -1186,16 +1186,16 @@ importers:
         version: link:../../packages/types
       '@hocuspocus/extension-database':
         specifier: 'catalog:'
-        version: 3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
+        version: 4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
       '@hocuspocus/extension-logger':
         specifier: 'catalog:'
-        version: 3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
+        version: 4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
       '@hocuspocus/server':
         specifier: 'catalog:'
-        version: 3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
+        version: 4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
       '@hocuspocus/transformer':
         specifier: 'catalog:'
-        version: 3.4.4(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))(@tiptap/pm@3.29.2)(y-prosemirror@1.2.12(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.2)(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32))(yjs@13.6.32)
+        version: 4.6.0(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))(@tiptap/pm@3.29.2)(y-prosemirror@1.2.12(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.2)(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32))(yjs@13.6.32)
       '@sentry/node':
         specifier: 'catalog:'
         version: 7.106.1
@@ -1262,7 +1262,7 @@ importers:
         version: 1.1.2
       '@hocuspocus/provider':
         specifier: 'catalog:'
-        version: 3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
+        version: 4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
       '@hookform/resolvers':
         specifier: 'catalog:'
         version: 5.7.1(@standard-schema/spec@1.1.0)(ajv-formats@2.1.1(ajv@6.15.0))(ajv@6.15.0)(joi@17.10.1)(react-hook-form@7.85.0(react@18.2.0))(valibot@0.31.1)(zod@4.4.3)
@@ -4410,31 +4410,32 @@ packages:
   '@hapi/topo@5.1.0':
     resolution: {integrity: sha512-foQZKJig7Ob0BMAYBfcJk8d77QtOe7Wo4ox7ff1lQYoNNAb6jwcY1ncdoy2e9wQZzvNy7ODZCYJkK8kzmcAnAg==}
 
-  '@hocuspocus/common@3.4.4':
-    resolution: {integrity: sha512-RykIJ0tsHHMP4Xk+4UCbc7SO5LgGxGUSTdbh6anJEsaALAyqinf1Nn5HYuMjLPolAmsar1v++m9zufR09NLpXA==}
+  '@hocuspocus/common@4.6.0':
+    resolution: {integrity: sha512-OotSE6HHmQzA9KH5xElZTaps4KY96CPnOJ15Pph6EpFzbZV86vkwghZP/u7zxibPr5NVK+h9hXQ+OVeN9Pl/LQ==}
 
-  '@hocuspocus/extension-database@3.4.4':
-    resolution: {integrity: sha512-z7iq2Dw+GOp4aQq7ys3PD0BA++7tQdXBsSHZ+8mkAbxfTDzjzQ576TphxPiXXC1WQ7yjeFXq03xp/KLIhg3Pyg==}
+  '@hocuspocus/extension-database@4.6.0':
+    resolution: {integrity: sha512-RXkaH56cwM+bApCv3Qwx/feIbGANyOwQJZB6UeMQbmn+vEMbtZfqlaw71PE6xpeLzqKZGkwsadc5HRvJvxeZBg==}
     peerDependencies:
       yjs: ^13.6.8
 
-  '@hocuspocus/extension-logger@3.4.4':
-    resolution: {integrity: sha512-GEnjmvQlrDlr5hoTQ8NHStZkzpL42wkwZ5XOBMkEX/TgqcnEtKCK1SOK0xj+px9tEHaflDLtCq6f5oy4gOCkPQ==}
+  '@hocuspocus/extension-logger@4.6.0':
+    resolution: {integrity: sha512-WhJH0MCbp+JxFSNCPEBD7UUg0QLjE6rOR2ZOBNznEUpzECJrVSl1fsIdIgrMK1hhTAonkNonPylrZK/jfD9HzA==}
 
-  '@hocuspocus/provider@3.4.4':
-    resolution: {integrity: sha512-KbsMAfdYcIJD8eMU/5QnpXcSOvIWAcCNI33FSRSaKCIpYBFtAwkYIwWnZJmPZ8a1BMAtqQc+uvy9+UQf7GHnGQ==}
-    peerDependencies:
-      y-protocols: ^1.0.6
-      yjs: ^13.6.8
-
-  '@hocuspocus/server@3.4.4':
-    resolution: {integrity: sha512-UV+oaONAejOzeYgUygNcgsc8RdZvSokVvAxluZJIisLACpRO/VsseQ5lWKDRwLd7Fn6+rHWDH3hGuQ1fdX1Ycg==}
+  '@hocuspocus/provider@4.6.0':
+    resolution: {integrity: sha512-twKgZb1PbDSapfdghvLWR1zQEvSiQLCH7DjKL4QmSoG2P1a0D7p5MUrm/RzXKscPpzVjHyGzHPlIWAXEEcvfxQ==}
     peerDependencies:
       y-protocols: ^1.0.6
       yjs: ^13.6.8
 
-  '@hocuspocus/transformer@3.4.4':
-    resolution: {integrity: sha512-X0EJ863LV97YbL5m8WTt4NDSC6uHi6ZCq/teIH5aholdjdhdTmFrzMemdhha/ZqPUZyaKhOoAmZzwR55HZLPpQ==}
+  '@hocuspocus/server@4.6.0':
+    resolution: {integrity: sha512-Ex4tka1vsm9NycHU1vPwxj3weQj+L2+736U8uentRyykAefUcYkHEh7Gfxiy9PHBholWcw1H+oYgZ3LP0ShTWQ==}
+    engines: {node: '>=22'}
+    peerDependencies:
+      y-protocols: ^1.0.6
+      yjs: ^13.6.8
+
+  '@hocuspocus/transformer@4.6.0':
+    resolution: {integrity: sha512-QzjR+3vjfufPCx3skAHl1N0qiBX1RlH8BOBxOP5Fa3Yauxavo+sQ8ezn2CW5krnauwimlbCyK2AthYPrFBITag==}
     peerDependencies:
       '@tiptap/core': ^3.0.1
       '@tiptap/pm': ^3.0.1
@@ -5062,8 +5063,8 @@ packages:
   '@lezer/lr@1.4.2':
     resolution: {integrity: sha512-pu0K1jCIdnQ12aWNaAVU5bzi7Bd1w54J3ECgANPmYLtQKP0HBj2cE/5coBD66MT10xbtIuUr7tg0Shbsvk0mDA==}
 
-  '@lifeomic/attempt@3.0.3':
-    resolution: {integrity: sha512-GlM2AbzrErd/TmLL3E8hAHmb5Q7VhDJp35vIbyPVA5Rz55LZuRr8pwL3qrwwkVNo05gMX1J44gURKb4MHQZo7w==}
+  '@lifeomic/attempt@3.1.0':
+    resolution: {integrity: sha512-QZqem4QuAnAyzfz+Gj5/+SLxqwCAw2qmt7732ZXodr6VDWGeYLG6w1i/vYLa55JQM9wRuBKLmXmiZ2P0LtE5rw==}
 
   '@marijn/find-cluster-break@1.0.3':
     resolution: {integrity: sha512-FY+MKLBoTsLNJF/eLWaOsXGdz6uh3Iu1axjPf6TUq92IYumcTcXWHoS747JARLkcdlJ/Waiaxc5wQfFO8jC6NA==}
@@ -9198,9 +9199,6 @@ packages:
     resolution: {integrity: sha512-LElXdjswlqjWrPpJFg1Fx4wpkOCxj1TDHlSV4PlaRxHGWko024xICaa97ZkMfs6DRKlCguiAI+rbXv5GWwXIkg==}
     hasBin: true
 
-  async-lock@1.4.0:
-    resolution: {integrity: sha512-coglx5yIWuetakm3/1dsX9hxCNox22h7+V80RQOu2XUUMidtArxKoZoOtHUPuR84SycKTXzgGzAUR5hJxujyJQ==}
-
   async-memoize-one@1.2.1:
     resolution: {integrity: sha512-t3pUWXo3p+eC+Q5s7QhwJ0ppH1MZ4BqjT6I66Ps8UHFIxYNkmRdgr25opWBHTKekaNNKPaRqHU1qhIN6xCte7Q==}
     engines: {node: '>= 12'}
@@ -9945,6 +9943,14 @@ packages:
   cross-spawn@7.0.6:
     resolution: {integrity: sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA==}
     engines: {node: '>= 8'}
+
+  crossws@0.4.10:
+    resolution: {integrity: sha512-pz3oubH/dt12KjqsUB0IuXW4nwRDQ583iDsP4555Cpdqx0NoU7pGlWBcayyFI8f/l/idRpgjMEfwuOxSWJYlIA==}
+    peerDependencies:
+      srvx: '>=0.11.5'
+    peerDependenciesMeta:
+      srvx:
+        optional: true
 
   crypto-browserify@3.12.0:
     resolution: {integrity: sha512-fz4spIh+znjO2VjL+IdhEpRJ3YN6sMzITSBijk6FK2UvTqruSQW+/cCZTSNsMiZNvUeq0CqurF+dAbyiGOY6Wg==}
@@ -14087,15 +14093,17 @@ packages:
       prettier:
         optional: true
 
-  prettier-plugin-tailwindcss@0.6.8:
-    resolution: {integrity: sha512-dGu3kdm7SXPkiW4nzeWKCl3uoImdd5CTZEJGxyypEPL37Wj0HT2pLqjrvSei1nTeuQfO4PUfjeW5cTUNRLZ4sA==}
+  prettier-plugin-tailwindcss@0.6.14:
+    resolution: {integrity: sha512-pi2e/+ZygeIqntN+vC573BcW5Cve8zUB0SSAGxqpB4f96boZF4M3phPVoOFCeypwkpRYdi7+jQ5YJJUwrkGUAg==}
     engines: {node: '>=14.21.3'}
     peerDependencies:
       '@ianvs/prettier-plugin-sort-imports': '*'
+      '@prettier/plugin-hermes': '*'
+      '@prettier/plugin-oxc': '*'
       '@prettier/plugin-pug': '*'
       '@shopify/prettier-plugin-liquid': '*'
       '@trivago/prettier-plugin-sort-imports': '*'
-      '@zackad/prettier-plugin-twig-melody': '*'
+      '@zackad/prettier-plugin-twig': '*'
       prettier: ^3.0
       prettier-plugin-astro: '*'
       prettier-plugin-css-order: '*'
@@ -14111,13 +14119,17 @@ packages:
     peerDependenciesMeta:
       '@ianvs/prettier-plugin-sort-imports':
         optional: true
+      '@prettier/plugin-hermes':
+        optional: true
+      '@prettier/plugin-oxc':
+        optional: true
       '@prettier/plugin-pug':
         optional: true
       '@shopify/prettier-plugin-liquid':
         optional: true
       '@trivago/prettier-plugin-sort-imports':
         optional: true
-      '@zackad/prettier-plugin-twig-melody':
+      '@zackad/prettier-plugin-twig':
         optional: true
       prettier-plugin-astro:
         optional: true
@@ -20124,55 +20136,47 @@ snapshots:
     dependencies:
       '@hapi/hoek': 9.3.0
 
-  '@hocuspocus/common@3.4.4':
+  '@hocuspocus/common@4.6.0':
     dependencies:
       lib0: 0.2.117
 
-  '@hocuspocus/extension-database@3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
+  '@hocuspocus/extension-database@4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
     dependencies:
-      '@hocuspocus/server': 3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
+      '@hocuspocus/server': 4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
       yjs: 13.6.32
     transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+      - srvx
       - y-protocols
 
-  '@hocuspocus/extension-logger@3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
+  '@hocuspocus/extension-logger@4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
     dependencies:
-      '@hocuspocus/server': 3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
+      '@hocuspocus/server': 4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)
     transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+      - srvx
       - y-protocols
       - yjs
 
-  '@hocuspocus/provider@3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
+  '@hocuspocus/provider@4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
     dependencies:
-      '@hocuspocus/common': 3.4.4
-      '@lifeomic/attempt': 3.0.3
+      '@hocuspocus/common': 4.6.0
+      '@lifeomic/attempt': 3.1.0
       lib0: 0.2.117
-      ws: 8.21.3
       y-protocols: 1.0.6(yjs@13.6.32)
       yjs: 13.6.32
-    transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
 
-  '@hocuspocus/server@3.4.4(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
+  '@hocuspocus/server@4.6.0(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32)':
     dependencies:
-      '@hocuspocus/common': 3.4.4
-      async-lock: 1.4.0
+      '@hocuspocus/common': 4.6.0
       async-mutex: 0.5.0
+      crossws: 0.4.10
       kleur: 4.1.5
       lib0: 0.2.117
-      ws: 8.21.3
       y-protocols: 1.0.6(yjs@13.6.32)
       yjs: 13.6.32
     transitivePeerDependencies:
-      - bufferutil
-      - utf-8-validate
+      - srvx
 
-  '@hocuspocus/transformer@3.4.4(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))(@tiptap/pm@3.29.2)(y-prosemirror@1.2.12(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.2)(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32))(yjs@13.6.32)':
+  '@hocuspocus/transformer@4.6.0(@tiptap/core@3.29.2(@tiptap/pm@3.29.2))(@tiptap/pm@3.29.2)(y-prosemirror@1.2.12(prosemirror-model@1.25.11)(prosemirror-state@1.4.4)(prosemirror-view@1.42.2)(y-protocols@1.0.6(yjs@13.6.32))(yjs@13.6.32))(yjs@13.6.32)':
     dependencies:
       '@tiptap/core': 3.29.2(@tiptap/pm@3.29.2)
       '@tiptap/pm': 3.29.2
@@ -20666,7 +20670,7 @@ snapshots:
     dependencies:
       '@lezer/common': 1.2.1
 
-  '@lifeomic/attempt@3.0.3': {}
+  '@lifeomic/attempt@3.1.0': {}
 
   '@marijn/find-cluster-break@1.0.3': {}
 
@@ -24204,7 +24208,7 @@ snapshots:
       flat-cache: 3.0.4
       micromatch: 4.0.5
       react-docgen-typescript: 2.2.2(typescript@5.4.3)
-      tslib: 2.6.2
+      tslib: 2.8.1
       typescript: 5.4.3
       webpack: 5.91.0(esbuild@0.25.12)(lightningcss@1.33.0)(postcss@8.4.38)
     transitivePeerDependencies:
@@ -25935,8 +25939,6 @@ snapshots:
 
   astring@1.9.0: {}
 
-  async-lock@1.4.0: {}
-
   async-memoize-one@1.2.1:
     dependencies:
       fast-deep-equal: 3.1.3
@@ -26776,6 +26778,8 @@ snapshots:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+
+  crossws@0.4.10: {}
 
   crypto-browserify@3.12.0:
     dependencies:
@@ -32008,7 +32012,7 @@ snapshots:
     optionalDependencies:
       prettier: 3.3.3
 
-  prettier-plugin-tailwindcss@0.6.8(@ianvs/prettier-plugin-sort-imports@4.2.1(@vue/compiler-sfc@3.5.12)(prettier@3.3.3))(prettier@3.3.3):
+  prettier-plugin-tailwindcss@0.6.14(@ianvs/prettier-plugin-sort-imports@4.2.1(@vue/compiler-sfc@3.5.12)(prettier@3.3.3))(prettier@3.3.3):
     dependencies:
       prettier: 3.3.3
     optionalDependencies:
@@ -32470,7 +32474,7 @@ snapshots:
     dependencies:
       react: 18.2.0
       react-style-singleton: 2.2.3(@types/react@18.3.31)(react@18.2.0)
-      tslib: 2.6.2
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.31
 
@@ -32549,7 +32553,7 @@ snapshots:
     dependencies:
       get-nonce: 1.0.1
       react: 18.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.31
 
@@ -34150,7 +34154,7 @@ snapshots:
   synckit@0.8.5:
     dependencies:
       '@pkgr/utils': 2.3.1
-      tslib: 2.6.2
+      tslib: 2.8.1
 
   synckit@0.9.0:
     dependencies:
@@ -34961,7 +34965,7 @@ snapshots:
   use-callback-ref@1.3.3(@types/react@18.3.31)(react@18.2.0):
     dependencies:
       react: 18.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.31
 
@@ -35010,7 +35014,7 @@ snapshots:
     dependencies:
       detect-node-es: 1.1.0
       react: 18.2.0
-      tslib: 2.6.2
+      tslib: 2.8.1
     optionalDependencies:
       '@types/react': 18.3.31
 
