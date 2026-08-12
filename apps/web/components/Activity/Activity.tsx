@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, type ReactElement } from 'react'
 import { useSetAtom } from 'jotai'
 import Router from 'next/router'
 import { useInView } from 'react-intersection-observer'
@@ -29,7 +29,7 @@ export function useTrackActivityView(isLoading: boolean = false) {
   return ref
 }
 
-export function Activity() {
+export function Activity(): ReactElement {
   const getNotifications = useGetNotifications({ filter: 'activity' })
   const notifications = useMemo(() => flattenInfiniteData(getNotifications.data), [getNotifications.data])
   const hasNotifications = !!notifications?.length

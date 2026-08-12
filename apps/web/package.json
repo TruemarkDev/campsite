@@ -145,6 +145,7 @@
     "@welldone-software/why-did-you-render": "catalog:",
     "autoprefixer": "catalog:",
     "eslint-plugin-storybook": "catalog:",
+    "eslint": "catalog:",
     "postcss": "catalog:",
     "storybook": "catalog:",
     "tailwindcss": "catalog:",

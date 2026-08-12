@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { memo, MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { Editor, findParentNode, isList, isTextSelection, useEditorState } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
