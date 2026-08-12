@@ -47,6 +47,7 @@
     "@tailwindcss/forms": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@types/react": "catalog:",
+    "eslint": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "catalog:",
     "tailwind-scrollbar-hide": "catalog:",
@@ -59,9 +60,9 @@
     "@sentry/nextjs": "^10.70.0",
     "jotai": "^2.0.3",
     "jotai-scope": "^0.4.1",
-    "next": "^15.5.23",
+    "next": "^16.3.0",
     "next-themes": "^0.2.1",
-    "react": "^18.3.1",
+    "react": "^19.2.8",
     "react-hot-toast": "^2.4.0"
   }
 }

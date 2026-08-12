@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import { apiClient } from '@/utils/queryClient'
 
-type CreateProps = {
+interface CreateProps {
   slug: string
 }
 

@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getPostsPollOptionsVoters()
 
-type Props = {
+interface Props {
   postId: string
   pollOptionId: string
   enabled?: boolean

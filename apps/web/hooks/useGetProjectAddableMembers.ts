@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getProjectsAddableMembers()
 
-type Options = {
+interface Options {
   projectId: string
   enabled?: boolean
 }

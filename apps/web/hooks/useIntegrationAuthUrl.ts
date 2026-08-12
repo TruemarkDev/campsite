@@ -1,7 +1,7 @@
 import { RAILS_AUTH_URL } from '@campsite/config'
 import { useIsDesktopApp } from '@campsite/ui/src/hooks'
 
-type IntegrationAuthParams = {
+interface IntegrationAuthParams {
   auth_url: string
   success_path?: string
   enable_notifications?: boolean

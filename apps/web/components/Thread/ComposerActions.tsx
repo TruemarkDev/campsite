@@ -19,7 +19,7 @@ import { chatThreadPlacementAtom, editModeAtom, shouldMinimizeComposerActionsAto
 import { ReactionPicker } from '../Reactions/ReactionPicker'
 
 interface ComposerActionsProps {
-  editorRef: React.RefObject<ComposerEditorRef>
+  editorRef: React.RefObject<ComposerEditorRef | null>
   onUpload: (files: File[]) => void
   dropzone: ReturnType<typeof useDropzone>
 }

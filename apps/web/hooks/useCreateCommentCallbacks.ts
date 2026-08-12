@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { InfiniteData, useQueryClient } from '@tanstack/react-query'
 import { CookieValueTypes } from 'cookies-next'
 import { atom, useSetAtom } from 'jotai'

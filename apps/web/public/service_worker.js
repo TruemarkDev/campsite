@@ -71,12 +71,13 @@ self.addEventListener('notificationclick', function (event) {
 
     // See: https://developer.mozilla.org/en-US/docs/Web/API/Clients/openWindow#examples
     event.waitUntil(
-      clients.matchAll({ type: 'window' }).then((clientsArr) => {
+      self.clients.matchAll({ type: 'window' }).then((clientsArr) => {
         // If a Window tab matching the targeted URL already exists, focus that;
         const hadWindowToFocus = clientsArr.some((windowClient) =>
           windowClient.url === target_url ? (windowClient.focus(), true) : false
         )
         // Otherwise, open a new tab to the applicable URL and focus it.
+
         if (!hadWindowToFocus) {
           const firstUrlClient = clientsArr.find((client) => client.url)
 
@@ -85,7 +86,7 @@ self.addEventListener('notificationclick', function (event) {
             firstUrlClient.focus()
             firstUrlClient.navigate(target_url)
           } else {
-            clients.openWindow(target_url).then((windowClient) => (windowClient ? windowClient.focus() : null))
+            self.clients.openWindow(target_url).then((windowClient) => (windowClient ? windowClient.focus() : null))
           }
         }
       })
@@ -104,10 +105,10 @@ self.addEventListener('pushsubscriptionchange', function (event) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          old_endpoint: changeEvent.oldSubscription ? changeEvent.oldSubscription.endpoint : null,
-          new_endpoint: changeEvent.newSubscription ? changeEvent.newSubscription.endpoint : null,
-          p256dh: changeEvent.newSubscription ? conv(changeEvent.newSubscription.getKey('p256dh')) : null,
-          auth: changeEvent.newSubscription ? conv(changeEvent.newSubscription.getKey('auth')) : null
+          old_endpoint: event.oldSubscription ? event.oldSubscription.endpoint : null,
+          new_endpoint: event.newSubscription ? event.newSubscription.endpoint : null,
+          p256dh: event.newSubscription ? conv(event.newSubscription.getKey('p256dh')) : null,
+          auth: event.newSubscription ? conv(event.newSubscription.getKey('auth')) : null
         })
       })
     )

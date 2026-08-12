@@ -114,8 +114,6 @@ const ContentSecurityPolicy = Object.keys(cspResourcesByDirective).reduce((prevP
 const moduleExports = {
   output: 'standalone',
   experimental: {
-    // https://nextjs.org/docs/messages/import-esm-externals
-    esmExternals: 'loose',
     externalDir: true,
     clientRouterFilter: false
   },
@@ -130,7 +128,7 @@ const moduleExports = {
   reactStrictMode: true,
   images: {
     unoptimized: true,
-    domains: [
+    remotePatterns: [
       ...deploymentImageDomains,
       'app.campsite.design',
       'app.campsite.co',
@@ -141,7 +139,7 @@ const moduleExports = {
       'campsite-dev.imgix.net',
       'lh3.googleusercontent.com',
       'uploads.linear.app'
-    ]
+    ].map((hostname) => ({ hostname }))
   },
   async redirects() {
     return [

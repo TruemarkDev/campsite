@@ -1,25 +1,15 @@
 import { InfiniteData } from '@tanstack/react-query'
 
-type Identifiable = { id: string }
-type DataPage<T> = {
+interface Identifiable { id: string }
+interface DataPage<T> {
   data: T[]
 }
-type Page<T> = {
-  [key: string]: T[]
-}
 
-export function flattenInfiniteData<T extends { id: string }>(data?: InfiniteData<DataPage<T>>) {
-  return _flattenInfiniteData('data', data)
-}
-
-function _flattenInfiniteData<T extends Identifiable, K extends keyof Page<T>>(
-  dataKey: K,
-  data?: InfiniteData<Page<T>>
-) {
+export function flattenInfiniteData<T extends Identifiable>(data?: InfiniteData<DataPage<T>>) {
   const ids = new Set()
 
   return data?.pages
-    .map((page) => page[dataKey])
+    .map((page) => page.data)
     .flat(2)
     .filter((obj) => {
       if (ids.has(obj.id)) {

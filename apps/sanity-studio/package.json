@@ -23,6 +23,7 @@
     "@campsite/eslint-config": "workspace:*",
     "@sanity/eslint-config-studio": "catalog:",
     "@types/react": "catalog:",
+    "esbuild": "catalog:",
     "eslint": "catalog:",
     "typescript": "catalog:"
   }

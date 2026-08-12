@@ -11,7 +11,7 @@ import {
 
 const deletePostsResolution = apiClient.organizations.deletePostsResolution()
 
-type Props = {
+interface Props {
   postId: string
 }
 

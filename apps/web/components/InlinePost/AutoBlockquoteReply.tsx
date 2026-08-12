@@ -64,7 +64,7 @@ function InnerAutoBlockquoteReply({
   const [selectionRange, setSelectionRange] = useState<Range | null>(null)
   const [selectionHtml, setSelectionHtml] = useState<string>('')
   const [popoverContent, setPopoverContent] = useState<'menu' | 'composer' | 'closed'>('closed')
-  const pendingTextSelectionRef = useRef<NodeJS.Timeout>()
+  const pendingTextSelectionRef = useRef<NodeJS.Timeout | undefined>(undefined)
   const selectionRectRef = useRef<{ getBoundingClientRect(): DOMRect } | null>(null)
 
   const closePopover = useCallback(() => {

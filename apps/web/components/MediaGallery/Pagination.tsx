@@ -152,7 +152,7 @@ function useLocalSortOrder(attachments: MediaGalleryItemAttributes[]) {
   return [sortedAttachments, updateSortedAttachments] as const
 }
 
-function useScrollThumbnailIntoView(activeIndex: number, containerRef: React.RefObject<HTMLDivElement>) {
+function useScrollThumbnailIntoView(activeIndex: number, containerRef: React.RefObject<HTMLDivElement | null>) {
   useExecuteOnChange(activeIndex, () => {
     if (!containerRef.current) return
 

@@ -44,8 +44,8 @@ function RenderBlock({
   node: JSONContent
   extensions: Extensions
   options?: PostHandlersOptions
-}): JSX.Element {
-  const children: JSX.Element[] = []
+}): React.ReactElement {
+  const children: React.ReactElement[] = []
 
   node.content &&
     node.content.forEach((child, ix) => {

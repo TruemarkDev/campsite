@@ -5,7 +5,7 @@ import { useIsDesktopApp } from '@campsite/ui/hooks'
 
 import { useCurrentUserChannel } from '@/hooks/useCurrentUserChannel'
 
-type Options = {
+interface Options {
   onceId: string
   eventName: string
   callback: Function

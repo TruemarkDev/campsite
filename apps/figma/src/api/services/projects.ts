@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
+import { keepPreviousData, useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useToken } from 'src/core/tokens'
 
 import { client } from '../client'
@@ -31,7 +31,7 @@ export function useSearchQuery(options: SearchOptions) {
 
   const organizationRef = useRef(options.organization)
 
-  return useInfiniteQuery({
+  const query = useInfiniteQuery({
     queryKey: [token, 'org', options.organization, 'projects', 'search', options.query],
     queryFn: ({ signal, pageParam }) =>
       client.organizations.getProjects().request(
@@ -48,17 +48,24 @@ export function useSearchQuery(options: SearchOptions) {
           }
         }
       ),
-    keepPreviousData: organizationRef.current === options.organization,
+    placeholderData: organizationRef.current === options.organization ? keepPreviousData : undefined,
     enabled: !!token && !!options.organization,
+    initialPageParam: undefined as string | undefined,
     getNextPageParam: (lastPage) => lastPage.next_cursor,
-    getPreviousPageParam: (firstPage) => firstPage.prev_cursor,
-    onSuccess(data) {
-      organizationRef.current = options.organization
-      const projects = data.pages.flatMap((page) => page.data)
+    getPreviousPageParam: (firstPage) => firstPage.prev_cursor
+  })
+
+  useEffect(() => {
+    organizationRef.current = options.organization
+
+    if (query.data) {
+      const projects = query.data.pages.flatMap((page) => page.data)
 
       projects.forEach((project) => {
         queryClient.setQueryData([token, 'org', options.organization, 'projects', project.id], project)
       })
     }
-  })
+  }, [options.organization, query.data, queryClient, token])
+
+  return query
 }

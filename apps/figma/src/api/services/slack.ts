@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
+import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useToken } from 'src/core/tokens'
 
 import { ALL_SLACK_SCOPES } from '@campsite/config/src/slack'
@@ -62,7 +62,7 @@ export function useIntegrationQuery(organization: string | undefined) {
     enabled: !!organization,
     refetchOnWindowFocus: 'always',
     staleTime: 1000 * 60, // 1 minute
-    cacheTime: 1000 * 60 * 60 // 1 hour
+    gcTime: 1000 * 60 * 60 // 1 hour
   })
 }
 
@@ -76,9 +76,9 @@ export function useSearchQuery(options: SearchOptions) {
 
   const organizationRef = useRef(options.organization)
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [token, 'org', options.organization, 'integrations', 'slack', options.query],
-    queryFn: ({ signal, pageParam }) =>
+    queryFn: ({ signal }) =>
       client.organizations.getIntegrationsSlackChannels().request(
         {
           orgSlug: options.organization ?? '',
@@ -92,13 +92,16 @@ export function useSearchQuery(options: SearchOptions) {
           }
         }
       ),
-    keepPreviousData: organizationRef.current === options.organization,
+    placeholderData: organizationRef.current === options.organization ? keepPreviousData : undefined,
     enabled: !!token && !!options.organization,
-    onSuccess() {
-      organizationRef.current = options.organization
-    },
     select(data) {
       return data.data
     }
   })
+
+  useEffect(() => {
+    organizationRef.current = options.organization
+  }, [options.organization])
+
+  return query
 }

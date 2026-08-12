@@ -27,7 +27,7 @@ export function EnableSSODialog({ open, onOpenChange, onComplete }: Props) {
     if (!open) {
       setDomains([])
     }
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [open])
 
   async function handleSubmit(e: any) {
     e.preventDefault()

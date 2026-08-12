@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getCallRoomsById()
 
-type Props = {
+interface Props {
   callRoomId: string
 }
 

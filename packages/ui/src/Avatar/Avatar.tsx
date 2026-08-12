@@ -147,7 +147,7 @@ const DND_SIZE = {
     alt?: string;
     href?: string;
   ``` */
-function _Avatar(props: Props) {
+function AvatarComponent(props: Props) {
   const {
     online = false,
     notificationsPaused = false,
@@ -288,4 +288,4 @@ function ClipComponent({ size = 'base', ...props }: Props) {
   return undefined
 }
 
-export const Avatar = memo(_Avatar)
+export const Avatar = memo(AvatarComponent)

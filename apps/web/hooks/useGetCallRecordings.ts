@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getCallsRecordings()
 
-type Props = {
+interface Props {
   callId: string
   enabled?: boolean
 }

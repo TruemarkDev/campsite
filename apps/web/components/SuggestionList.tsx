@@ -26,7 +26,7 @@ import {
 
 const DEFAULT_ALLOWED_PREFIXES = [' ', '(']
 
-const SuggestionRangeContext = React.createContext<React.RefObject<Range>>({ current: null })
+const SuggestionRangeContext = React.createContext<React.RefObject<Range | null>>({ current: null })
 const useSuggestionRange = () => React.useContext(SuggestionRangeContext)
 
 const SuggestionEmptyContext = React.createContext<boolean>(true)

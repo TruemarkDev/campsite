@@ -3,7 +3,7 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useScope } from '@/contexts/scope'
 import { apiClient } from '@/utils/queryClient'
 
-type Props = {
+interface Props {
   query: string
 }
 

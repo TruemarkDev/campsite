@@ -24,7 +24,7 @@ export function SidebarFavoritesGroup() {
   const [collapsed, setCollapsed] = useScopedStorage('sidebar-favorites-collapsed', false)
   const [draggingId, setDraggingId] = useState<undefined | string>()
   const [hoveredId, setHoveredId] = useState<undefined | string>()
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLUListElement>(null)
 
   if (isLoading) return null
 

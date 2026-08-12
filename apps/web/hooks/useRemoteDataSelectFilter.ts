@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 
 import { SelectOption } from '@campsite/ui'
 
-type Props = {
+interface Props {
   loading: boolean
   query: string | undefined
 }

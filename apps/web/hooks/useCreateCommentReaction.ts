@@ -14,7 +14,7 @@ import { createPendingReaction, pendingReactionMutations } from '@/utils/reactio
 
 const postCommentsReactions = apiClient.organizations.postCommentsReactions()
 
-type Props = {
+interface Props {
   reaction: StandardReaction | SyncCustomReaction
 }
 

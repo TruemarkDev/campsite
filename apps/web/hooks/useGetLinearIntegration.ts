@@ -5,7 +5,7 @@ import { ApiError, LinearIntegration } from '@campsite/types'
 import { useScope } from '@/contexts/scope'
 import { apiClient } from '@/utils/queryClient'
 
-type Props = {
+interface Props {
   enabled?: boolean
 }
 

@@ -6,7 +6,7 @@ import { desktopJoinCall } from '@campsite/ui/Link'
 
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
 
-type Props = {
+interface Props {
   thread?: MessageThread
 }
 

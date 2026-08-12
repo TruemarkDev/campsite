@@ -59,13 +59,11 @@ export default function ChangelogListItem(props: Props) {
       </div>
 
       {changelog.content && (
-        <ReactMarkdown
-          className='prose prose-lg prose-changelog w-full max-w-full'
-          rehypePlugins={[rehypeRaw]}
-          remarkPlugins={[remarkGfm]}
-        >
-          {changelog.content}
-        </ReactMarkdown>
+        <div className='prose prose-lg prose-changelog w-full max-w-full'>
+          <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
+            {changelog.content}
+          </ReactMarkdown>
+        </div>
       )}
     </li>
   )

@@ -57,7 +57,7 @@ export function useSignInMutation() {
     },
 
     onSuccess: () => {
-      queryClient.prefetchQuery({})
+      queryClient.invalidateQueries()
     }
   })
 }
