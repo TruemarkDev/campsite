@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { z } from 'zod'
 
 import { OauthApplication } from '@campsite/types/generated'
 import { Button } from '@campsite/ui/Button'
@@ -16,12 +15,9 @@ import { useUpdateOauthApplication } from '@/hooks/useUpdateOauthApplication'
 import { apiErrorToast } from '@/utils/apiErrorToast'
 import { TransformedFile } from '@/utils/types'
 
-const generalSettingsSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
-  avatar_path: z.string().optional()
-})
+import { OauthApplicationFormSchema, oauthApplicationFormSchema } from './schema'
 
-type FormSchema = z.infer<typeof generalSettingsSchema>
+type FormSchema = OauthApplicationFormSchema
 
 function useGeneralSettingsForm(initialValues?: OauthApplication) {
   return useForm<FormSchema>({
@@ -29,7 +25,7 @@ function useGeneralSettingsForm(initialValues?: OauthApplication) {
       name: initialValues?.name || '',
       avatar_path: initialValues?.avatar_path || ''
     },
-    resolver: zodResolver(generalSettingsSchema)
+    resolver: zodResolver(oauthApplicationFormSchema)
   })
 }
 

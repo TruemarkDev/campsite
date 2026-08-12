@@ -15,11 +15,11 @@ const notificationScheduleSchema = z
     start_time: z.string(),
     end_time: z.string()
   })
-  .refine((data) => data.type === 'none' || (data.days && data.days?.length > 0), {
+  .refine((data) => data.type === 'none' || data.days.length > 0, {
     message: 'Select at least one day',
     path: ['days']
   })
-  .refine((data) => data.type === 'none' || (data.start_time && data.end_time && data?.start_time < data?.end_time), {
+  .refine((data) => data.type === 'none' || data.start_time < data.end_time, {
     message: 'Start time must be before end time',
     path: ['start_time']
   })

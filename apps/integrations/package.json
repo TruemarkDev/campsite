@@ -10,9 +10,9 @@
     "start": "next start"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^0.0.51",
-    "@ai-sdk/openai": "^0.0.67",
-    "ai": "^3.4.10",
+    "@ai-sdk/anthropic": "^4.0.37",
+    "@ai-sdk/openai": "^4.0.37",
+    "ai": "^7.0.59",
     "campsite-client": "0.1.0-alpha.1",
     "jsdom": "^25.0.1",
     "next": "catalog:",
