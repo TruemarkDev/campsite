@@ -2,49 +2,39 @@
 
 FROM node:24.19.0-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS base
 
-# configure pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-LABEL fly_launch_runtime="Node.js"
-
-# Throw-away build stage to reduce size of final image
-FROM base AS builder
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-  apt-get install -y build-essential pkg-config python-is-python3 ca-certificates
+FROM base AS pruner
 WORKDIR /app
 COPY . .
 RUN pnpm dlx turbo@2.10.9 prune @campsite/sync-server --docker
+
+FROM base AS builder
 WORKDIR /app
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
+RUN --mount=type=cache,id=campsite-sync-pnpm,target=/pnpm/store \
+  pnpm install --frozen-lockfile
 
-FROM base AS installer
-WORKDIR /app
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pruner /app/out/full/ .
 
-RUN pnpm install --frozen-lockfile
-
-COPY --from=builder /app/out/full/ .
-
-RUN npx turbo run build --filter=@campsite/sync-server
+RUN pnpm turbo run build --filter=@campsite/sync-server && \
+  CI=true pnpm install --prod --offline --frozen-lockfile
 
 FROM base AS runner
 
-# Set production environment
-ENV NODE_ENV="production"
+ENV NODE_ENV=production
+ENV PORT=9000
 
 WORKDIR /app/apps/sync-server
 
-# Copy built application
-COPY --from=installer --chown=node:node /app /app
+COPY --from=builder --chown=node:node /app /app
 
 USER node
 
-# Start the server by default, this can be overwritten at runtime
 EXPOSE 9000
-ENV PORT=9000
 
-ENTRYPOINT [ "node", "dist/index.mjs" ]
+CMD ["node", "dist/index.mjs"]
