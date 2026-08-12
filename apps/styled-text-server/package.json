@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsup",
     "clean": "rm -rf .turbo dist node_modules",
-    "dev": "tsup --watch --onSuccess \"node dist/index.mjs\"",
+    "dev": "PORT=${PORT:-3002} AUTHTOKEN=${AUTHTOKEN:-d8c0a2827589659ff292a8999b024f24a185ed82} tsup --watch --onSuccess \"node dist/index.mjs\"",
     "lint": "eslint . --ext .ts,.tsx",
     "sentry:sourcemaps": "sentry-cli --url https://glitchtip.allbrainy.com sourcemaps inject --org camp-site --project campsite-styled-text-server ./dist && sentry-cli --url https://glitchtip.allbrainy.com sourcemaps upload --org camp-site --project campsite-styled-text-server --log-level=debug ./dist",
     "start": "node dist/index.mjs",

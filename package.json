@@ -6,6 +6,8 @@
     "build": "turbo run build",
     "clean": "turbo run clean && rm -rf .turbo node_modules",
     "dev": "turbo run dev --parallel",
+    "dev:core": "turbo run dev dev:web dev:worker dev:js dev:css --filter=@campsite/api-dev --filter=@campsite/web --filter=@campsite/styled-text-server --filter=@campsite/sync-server",
+    "dev:setup": "cd api && mise x -- script/pre-dev",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "lint": "turbo run lint",
     "lint:fix": "turbo run lint -- --fix",

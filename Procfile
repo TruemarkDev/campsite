@@ -1,7 +1,7 @@
 api-web: cd api && bundle exec rails server -p 3001 -b '127.0.0.1'
-api-js: cd api && yarn build --watch
-api-app-css: cd api && yarn build:app:css --watch
-api-mailer-css: cd api && yarn build:mailer:css --watch
+api-js: cd api && mise x -- pnpm build --watch
+api-app-css: cd api && mise x -- pnpm build:app:css --watch
+api-mailer-css: cd api && mise x -- pnpm build:mailer:css --watch
 api-worker: cd api && bundle exec sidekiq -C config/sidekiq.yml
 redis: cd api && redis-server
 ngrok: cd api && USER_CONFIG=`ngrok config check | sed -n -e 's/Valid configuration file at //p'` && ngrok start campsite campsite-api campsite-sync --config "$USER_CONFIG" --config ngrok.yaml

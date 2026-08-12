@@ -1,8 +1,25 @@
 {
   "$schema": "https://turbo.build/schema.json",
+  "ui": "tui",
   "globalDependencies": [".env.*"],
   "tasks": {
     "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:web": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:worker": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:js": {
+      "cache": false,
+      "persistent": true
+    },
+    "dev:css": {
       "cache": false,
       "persistent": true
     },
