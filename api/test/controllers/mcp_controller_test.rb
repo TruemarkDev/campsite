@@ -113,6 +113,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       names = tools.pluck("name")
       assert_includes names, "list_organizations"
       assert_includes names, "create_post"
+      assert_equal names.sort, names
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.hour.in_milliseconds)
       tools.each do |tool|
         assert tool["name"].present?
         assert tool["inputSchema"].present?
@@ -844,6 +846,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_includes names, "triage_inbox"
       assert_includes names, "draft_standup"
       assert_includes names, "summarize_thread"
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.hour.in_milliseconds)
 
       triage = prompts.find { |p| p["name"] == "triage_inbox" }
       assert triage["title"].present?
@@ -924,6 +927,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_includes templates, "campsite://{org_slug}/posts/{public_id}"
       assert_includes templates, "campsite://{org_slug}/notes/{public_id}"
       assert_includes templates, "campsite://{org_slug}/threads/{public_id}"
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.hour.in_milliseconds)
     end
   end
 
@@ -938,6 +942,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_equal 1, contents.length
       assert_equal "campsite://#{@org.slug}/posts/#{post.public_id}", contents.first["uri"]
       assert_equal post.public_id, JSON.parse(contents.first["text"])["id"]
+      assert_cache_metadata(result, ttl_ms: 1.minute.in_milliseconds)
     end
 
     test "reads a note resource" do
@@ -1004,6 +1009,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       uris = json_response.dig("result", "resources").pluck("uri")
       assert_includes uris, "campsite://#{@org.slug}/posts/#{post.public_id}"
       assert_includes uris, "campsite://#{@org.slug}/notes/#{note.public_id}"
+      assert_cache_metadata(json_response["result"], ttl_ms: 1.minute.in_milliseconds)
     end
   end
 
@@ -1218,5 +1224,10 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   def structured_content(result)
     result["structuredContent"]
+  end
+
+  def assert_cache_metadata(result, ttl_ms:)
+    assert_equal(ttl_ms, result["ttlMs"])
+    assert_equal("private", result["cacheScope"])
   end
 end

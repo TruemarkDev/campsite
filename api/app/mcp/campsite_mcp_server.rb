@@ -8,6 +8,10 @@
 # to an actual `resources/list` call. The handler the server binds at construction
 # (`method(:list_resources)`) resolves to this override.
 class CampsiteMcpServer < MCP::Server
+  STATIC_CATALOG_TTL_MS = 1.hour.in_milliseconds
+  USER_RESOURCE_TTL_MS = 1.minute.in_milliseconds
+  PRIVATE_CACHE_SCOPE = "private"
+
   MODERN_PROTOCOL_VERSION = "2026-07-28"
   PROTOCOL_VERSION_META_KEY = "io.modelcontextprotocol/protocolVersion"
   CLIENT_INFO_META_KEY = "io.modelcontextprotocol/clientInfo"
@@ -39,7 +43,19 @@ class CampsiteMcpServer < MCP::Server
 
   def list_resources(request)
     self.resources = @resources_provider.call
-    super
+    super.merge(ttlMs: USER_RESOURCE_TTL_MS, cacheScope: PRIVATE_CACHE_SCOPE)
+  end
+
+  def list_tools(request)
+    super.merge(ttlMs: STATIC_CATALOG_TTL_MS, cacheScope: PRIVATE_CACHE_SCOPE)
+  end
+
+  def list_prompts(request)
+    super.merge(ttlMs: STATIC_CATALOG_TTL_MS, cacheScope: PRIVATE_CACHE_SCOPE)
+  end
+
+  def list_resource_templates(request)
+    super.merge(ttlMs: STATIC_CATALOG_TTL_MS, cacheScope: PRIVATE_CACHE_SCOPE)
   end
 
   def modern_request?(params)

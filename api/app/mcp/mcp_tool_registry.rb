@@ -48,6 +48,6 @@ module McpToolRegistry
   ].freeze
 
   def tools
-    READ_TOOLS + WRITE_TOOLS
+    (READ_TOOLS + WRITE_TOOLS).sort_by(&:name_value)
   end
 end

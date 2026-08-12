@@ -38,7 +38,11 @@ class McpServer
     # Resolve any campsite:// URI under the authenticated context, mapping our
     # resource errors onto JSON-RPC errors.
     server.resources_read_handler do |params|
-      resource.read(params[:uri])
+      {
+        contents: resource.read(params[:uri]),
+        ttlMs: CampsiteMcpServer::USER_RESOURCE_TTL_MS,
+        cacheScope: CampsiteMcpServer::PRIVATE_CACHE_SCOPE,
+      }
     rescue McpResource::ResourceError => e
       raise MCP::Server::RequestHandlerError.new(e.message, params, error_type: :invalid_params)
     rescue ActiveRecord::RecordNotFound
