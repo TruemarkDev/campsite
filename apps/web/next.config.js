@@ -114,8 +114,6 @@ const ContentSecurityPolicy = Object.keys(cspResourcesByDirective).reduce((prevP
 const moduleExports = {
   output: 'standalone',
   experimental: {
-    // https://nextjs.org/docs/messages/import-esm-externals
-    esmExternals: 'loose',
     externalDir: true,
     clientRouterFilter: false
   },
@@ -130,7 +128,7 @@ const moduleExports = {
   reactStrictMode: true,
   images: {
     unoptimized: true,
-    domains: [
+    remotePatterns: [
       ...deploymentImageDomains,
       'app.campsite.design',
       'app.campsite.co',
@@ -141,7 +139,7 @@ const moduleExports = {
       'campsite-dev.imgix.net',
       'lh3.googleusercontent.com',
       'uploads.linear.app'
-    ]
+    ].map((hostname) => ({ hostname }))
   },
   async redirects() {
     return [
@@ -232,7 +230,20 @@ const moduleExports = {
   },
   // This is required to support PostHog trailing slash API requests
   skipTrailingSlashRedirect: true,
-  webpack(config, { dev, isServer, webpack }) {
+  webpack(config, { dev, isServer, nextRuntime, webpack }) {
+    if (isServer && nextRuntime === 'nodejs') {
+      // Sentry exposes its opt-in diagnostics-channel implementation from a
+      // CommonJS index. The synchronous ESM hook is unused unless that
+      // experimental API is enabled, and Next's webpack build cannot parse
+      // its require() call. Keep the normal Sentry runtime bundled and omit
+      // only this optional hook entry.
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^@apm-js-collab\/tracing-hooks\/hook-sync\.mjs$/
+        })
+      )
+    }
+
     if (dev && !isServer) {
       const originalEntry = config.entry
 

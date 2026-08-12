@@ -1,18 +1,11 @@
-import { FlatCompat } from '@eslint/eslintrc'
-import js from '@eslint/js'
 import query from '@tanstack/eslint-plugin-query'
+import nextVitals from 'eslint-config-next/core-web-vitals'
 import react from 'eslint-plugin-react'
 import typescriptParser from '@typescript-eslint/parser'
 import restrictedImports from './rules/no-restricted-imports.js'
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-  recommendedConfig: js.configs.recommended,
-  allConfig: js.configs.all
-})
-
 export default [
-  ...compat.extends('next', 'next/core-web-vitals'),
+  ...nextVitals,
   {
     plugins: {
       '@tanstack/query': query,

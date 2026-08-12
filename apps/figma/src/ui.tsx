@@ -1,7 +1,7 @@
 import '!../build/global.css'
 
 import { useEffect, useState } from 'react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryCache, QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { createRoot } from 'react-dom/client'
 import { useStore } from 'zustand'
 
@@ -15,6 +15,13 @@ import { createTokenStore, TokenStoreContext } from './core/tokens'
 import { LaunchCommand } from './types'
 
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      if (error instanceof ApiError && error.name === ApiErrorTypes.AuthenticationError) {
+        $figma.emit('signout')
+      }
+    }
+  }),
   defaultOptions: {
     queries: {
       retry(failureCount, error) {
@@ -22,11 +29,6 @@ const queryClient = new QueryClient({
           return false
         }
         return failureCount < 3
-      },
-      onError: (error) => {
-        if (error instanceof ApiError && error.name === ApiErrorTypes.AuthenticationError) {
-          $figma.emit('signout')
-        }
       }
     }
   }

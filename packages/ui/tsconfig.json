@@ -1,5 +1,13 @@
 {
   "extends": "@campsite/tsconfig/nextjs.json",
+  "compilerOptions": {
+    // Storybook 10 ships ESM-only packages whose types only resolve with
+    // the bundler strategy (same overrides apps/web uses). Declaration
+    // emit is disabled to avoid non-portable inferred type errors (TS2742).
+    "moduleResolution": "bundler",
+    "declaration": false,
+    "declarationMap": false
+  },
   "include": ["."],
   "exclude": ["dist", "build", "node_modules"]
 }

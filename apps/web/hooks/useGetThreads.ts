@@ -5,7 +5,7 @@ import { PublicOrganization } from '@campsite/types/generated'
 import { useScope } from '@/contexts/scope'
 import { apiClient } from '@/utils/queryClient'
 
-type Options = {
+interface Options {
   enabled?: boolean
   organization?: PublicOrganization
 }

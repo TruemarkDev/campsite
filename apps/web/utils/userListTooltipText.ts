@@ -1,6 +1,6 @@
 import { User } from '@campsite/types'
 
-type Props = {
+interface Props {
   users: User[]
   limit?: number
   prefix?: string

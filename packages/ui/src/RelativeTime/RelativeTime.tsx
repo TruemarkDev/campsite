@@ -34,11 +34,13 @@ export const RelativeTime = React.forwardRef<RelativeTimeElement, RelativeTimePr
     const [currentTime, setCurrentTime] = useState(Date.now())
 
     useEffect(() => {
-      const interval = setInterval(() => {
+      // window.* keeps the browser timer types regardless of which runtime
+      // type packages (node/bun) are in scope
+      const interval = window.setInterval(() => {
         setCurrentTime(Date.now())
       }, 60000)
 
-      return () => clearInterval(interval)
+      return () => window.clearInterval(interval)
     }, [])
 
     const timeDiffInDays = Math.floor((currentTime - new Date(time).getTime()) / (1000 * 60 * 60 * 24))

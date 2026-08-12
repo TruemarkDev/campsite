@@ -381,7 +381,7 @@ function Comments({
 
 interface ReplyComposerProps {
   post: Post
-  endOfCommentsRef: RefObject<HTMLDivElement>
+  endOfCommentsRef: RefObject<HTMLDivElement | null>
   endOfCommentsInView: boolean
   setReplyingToCommentId: (id: string | null) => void
   replyingToComment: Comment | undefined

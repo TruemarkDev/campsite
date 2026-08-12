@@ -1,13 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 /* eslint-disable jsx-a11y/alt-text */
-import { ImageResponse } from '@vercel/og'
+import { ImageResponse } from 'next/og'
 import { DEFAULT_SEO } from '@campsite/config'
 
-export const config = {
-  runtime: 'edge'
-}
+export const runtime = 'nodejs'
 
-export default async function handler(request: Request) {
+export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
 
   const title = searchParams.get('title') || DEFAULT_SEO.title

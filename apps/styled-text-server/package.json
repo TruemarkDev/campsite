@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "@campsite/editor": "workspace:*",
-    "@sentry/node": "^10.70.0",
+    "@sentry/node": "catalog:",
     "@tiptap/pm": "catalog:",
     "body-parser": "^2.3.0",
     "cheerio": "^1.2.0",

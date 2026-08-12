@@ -65,16 +65,19 @@ const CodeBlock = (props: ComponentPropsWithoutRef<'pre'>) => {
   const preElement = props
 
   if (!preElement.children) return <></>
-  const codeElement =
-    typeof preElement.children === 'object' && 'type' in preElement.children && preElement.children.type === 'code'
-      ? preElement.children
-      : null
+  const codeElement = React.isValidElement<{ className?: string; children?: string }>(preElement.children)
+    ? preElement.children
+    : null
 
   if (!codeElement) return <>{preElement}</>
   const language = codeElement.props.className?.replace('language-', '')
+  const value = codeElement.props.children
 
-  if (!language && !Object.keys(ALIAS_TO_LANGUAGE).includes(language)) return <>{preElement}</>
-  return <Refractor language={language} plainText={false} value={codeElement.props.children} />
+  if (!language || typeof value !== 'string' || !Object.keys(ALIAS_TO_LANGUAGE).includes(language)) {
+    return <>{preElement}</>
+  }
+
+  return <Refractor language={language} plainText={false} value={value} />
 }
 
 let components: MDXRemoteProps['components'] = {

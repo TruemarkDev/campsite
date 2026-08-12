@@ -43,7 +43,8 @@ export default [
   },
   {
     files: ['**/__tests__/**/*'],
-    languageOptions: { globals: globals.jest }
+    languageOptions: { globals: globals.jest },
+    rules: { 'max-lines': 'off' }
   },
   {
     files: ['**/*.{ts,tsx,mts,cts}'],

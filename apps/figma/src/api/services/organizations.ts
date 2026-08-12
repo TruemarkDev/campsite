@@ -36,6 +36,6 @@ export function useGetQuery(organization?: string) {
       }),
     enabled: !!token && !!organization,
     staleTime: 1000 * 60, // 1 minute
-    cacheTime: 1000 * 60 * 60 // 1 hour
+    gcTime: 1000 * 60 * 60 // 1 hour
   })
 }

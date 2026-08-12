@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getTagsPosts()
 
-type Props = {
+interface Props {
   tagName: string
   enabled?: boolean
 }

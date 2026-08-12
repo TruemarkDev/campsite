@@ -10,7 +10,7 @@ export const ANIMATIONS = {
   initial: { scale: 1 },
   animate: { scale: 1 },
   transition: {
-    type: 'spring',
+    type: 'spring' as const,
     stiffness: 600,
     damping: 30
   }

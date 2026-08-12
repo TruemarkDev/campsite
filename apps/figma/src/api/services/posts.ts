@@ -1,5 +1,5 @@
-import { useRef } from 'react'
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useEffect, useRef } from 'react'
+import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query'
 import { useToken } from 'src/core/tokens'
 
 import { OrganizationPostSharesPostRequest, OrganizationsOrgSlugPostsPostRequest } from '@campsite/types/generated'
@@ -18,7 +18,7 @@ export function useSearchQuery(options: SearchOptions) {
 
   const organizationRef = useRef(options.organization)
 
-  return useQuery({
+  const query = useQuery({
     queryKey: [token, 'org', options.organization, 'posts', 'search', options.query, me?.username],
     queryFn: ({ signal }) =>
       client.organizations.getSearchPosts().request(
@@ -34,12 +34,21 @@ export function useSearchQuery(options: SearchOptions) {
           }
         }
       ),
-    keepPreviousData: organizationRef.current === options.organization,
-    enabled: !!token && !!options.organization && !!me,
-    onSuccess() {
+    placeholderData: organizationRef.current === options.organization ? keepPreviousData : undefined,
+    enabled: !!token && !!options.organization && !!me
+  })
+
+  // Only advance the ref once the new org's data has arrived (mirrors the
+  // v4 onSuccess behavior) so keepPreviousData never shows another org's results
+  const hasFreshData = query.isSuccess && !query.isPlaceholderData
+
+  useEffect(() => {
+    if (hasFreshData) {
       organizationRef.current = options.organization
     }
-  })
+  }, [hasFreshData, options.organization])
+
+  return query
 }
 
 interface CreateOptions {

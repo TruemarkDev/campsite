@@ -10,6 +10,10 @@
       "dependsOn": ["^build"],
       "outputs": ["dist/**", ".next/**"]
     },
+    "build-storybook": {
+      "dependsOn": ["^build"],
+      "outputs": ["storybook-static/**"]
+    },
     "test": {
       "dependsOn": ["^build", "^test"],
       "outputs": []

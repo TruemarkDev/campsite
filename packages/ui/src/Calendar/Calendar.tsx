@@ -12,7 +12,6 @@ import { cn } from '../utils'
 
 export type CalendarProps = React.ComponentProps<typeof DayPicker>
 
-// eslint-disable-next-line react/prop-types
 export function Calendar({ className, classNames, showOutsideDays = true, ...props }: CalendarProps) {
   return (
     <DayPicker
@@ -35,8 +34,12 @@ export function Calendar({ className, classNames, showOutsideDays = true, ...pro
       }}
       components={{
         Day: ({ date, ...props }) => {
-          const buttonRef = useRef(null)
-          const { buttonProps, activeModifiers } = useDayRender(date, props.displayMonth, buttonRef)
+          const buttonRef = useRef<HTMLButtonElement & HTMLAnchorElement>(null)
+          const { buttonProps, activeModifiers } = useDayRender(
+            date,
+            props.displayMonth,
+            buttonRef as React.RefObject<HTMLButtonElement>
+          )
           const buttonVariant = useMemo(() => {
             if (activeModifiers.selected) return 'important'
             if (activeModifiers.today) return 'flat'

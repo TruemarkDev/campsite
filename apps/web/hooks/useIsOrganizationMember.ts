@@ -3,7 +3,7 @@ import { useScope } from '@/contexts/scope'
 import { useGetCurrentUser } from './useGetCurrentUser'
 import { useGetOrganizationMemberships } from './useGetOrganizationMemberships'
 
-type Options = {
+interface Options {
   orgSlug: string
 }
 

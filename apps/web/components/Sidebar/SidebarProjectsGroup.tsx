@@ -31,7 +31,7 @@ export function SidebarProjectsGroup() {
   const [collapsed, setCollapsed] = useScopedStorage('sidebar-projects-collapsed', false)
   const hasJoinedSpaces = !!filteredProjectMemberships?.length
   const [draggingId, setDraggingId] = useState<undefined | string>()
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLUListElement>(null)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const [dropdownOpen, setDropdownOpen] = useState(false)
   const { data: organization } = useGetCurrentOrganization()

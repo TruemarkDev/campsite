@@ -22,7 +22,7 @@ export function SidebarOrgSwitcher() {
   const collapsed = useAtomValue(sidebarCollapsedAtom)
   const { onReorder, mutation: reorder } = useReorderOrganizationMemberships()
   const [draggingId, setDraggingId] = useState<undefined | string>()
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLUListElement>(null)
   const organizationMembershipIds = memberships?.map((membership) => membership.id)
 
   if (collapsed || !organizationMembershipIds) return null
