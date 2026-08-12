@@ -1,6 +1,7 @@
 service: campsite-styled-text-server
 
 image: truemarkdev/campsite
+secrets_path: apps/styled-text-server/.env.local
 
 servers:
   web:
@@ -18,20 +19,11 @@ proxy:
   app_port: 9000
 
 registry:
-  server: ghcr.io
-  username: KAMAL_REGISTRY_USER_NAME
-  password:
-    - KAMAL_REGISTRY_PASSWORD
+  server: localhost:5555
 
 builder:
   arch: amd64
-  remote: ssh://deploy@51.91.240.88
   context: .
   dockerfile: apps/styled-text-server/Dockerfile
-  secrets:
-    - SENTRY_AUTH_TOKEN
-    - SENTRY_ORG
-    - SENTRY_PROJECT
-
 ssh:
   user: deploy
