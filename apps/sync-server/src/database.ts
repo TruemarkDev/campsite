@@ -14,14 +14,14 @@ import { Context } from './types'
 const extensions = getNoteExtensions()
 
 export function sendVersionToConnections(document: Document, version: number) {
-  document.connections.forEach((connection) => {
-    const connectionSchemaVersion = connection.connection.context.schemaVersion ?? 0
+  document.getConnections().forEach((connection) => {
+    const connectionSchemaVersion = connection.context.schemaVersion ?? 0
 
     // Update connections to readOnly if the schema version is lower than the current version
-    connection.connection.readOnly = connectionSchemaVersion < version
+    connection.readOnly = connectionSchemaVersion < version
 
     // Send the schema version to the client
-    connection.connection.sendStateless(
+    connection.sendStateless(
       JSON.stringify({
         type: 'schema',
         version
@@ -54,8 +54,7 @@ export const database = new Database({
     const context: Context = data.context
 
     const id = data.documentName
-    const organization = data.requestParameters.get('organization')
-    const type = data.requestParameters.get('type')
+    const { organization, type } = context
 
     try {
       if (!organization) return new Uint8Array()
@@ -97,11 +96,10 @@ export const database = new Database({
    * Store the document state in Campsite.
    */
   async store(data) {
-    const context: Context = data.context
+    const context: Context = data.lastContext
 
     const id = data.documentName
-    const organization = data.requestParameters.get('organization')
-    const type = data.requestParameters.get('type')
+    const { organization, type } = context
 
     try {
       if (!organization) return
