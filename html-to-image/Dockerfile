@@ -7,7 +7,7 @@ FROM node:24.19.0-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba
 # FROM --platform=linux/amd64 node:18
 
 # We don't need the standalone Chromium
-ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+ENV PUPPETEER_SKIP_DOWNLOAD=true
 
 RUN apt-get update && apt-get install -y curl gnupg ca-certificates dumb-init --no-install-recommends \
   && curl --location --silent https://dl-ssl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \

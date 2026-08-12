@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { z } from 'zod'
 
-import { OauthApplication, OrganizationsOrgSlugOauthApplicationsIdPutRequest } from '@campsite/types/generated'
+import { OauthApplication } from '@campsite/types/generated'
 import { Button } from '@campsite/ui/Button'
 import { FormError } from '@campsite/ui/FormError'
 import { UIText } from '@campsite/ui/Text'
@@ -16,7 +16,12 @@ import { useUpdateOauthApplication } from '@/hooks/useUpdateOauthApplication'
 import { apiErrorToast } from '@/utils/apiErrorToast'
 import { TransformedFile } from '@/utils/types'
 
-type FormSchema = OrganizationsOrgSlugOauthApplicationsIdPutRequest
+const generalSettingsSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  avatar_path: z.string().optional()
+})
+
+type FormSchema = z.infer<typeof generalSettingsSchema>
 
 function useGeneralSettingsForm(initialValues?: OauthApplication) {
   return useForm<FormSchema>({
@@ -24,12 +29,7 @@ function useGeneralSettingsForm(initialValues?: OauthApplication) {
       name: initialValues?.name || '',
       avatar_path: initialValues?.avatar_path || ''
     },
-    resolver: zodResolver(
-      z.object({
-        name: z.string().min(1, 'Name is required'),
-        avatar_path: z.string().optional()
-      })
-    )
+    resolver: zodResolver(generalSettingsSchema)
   })
 }
 

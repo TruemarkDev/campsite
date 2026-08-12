@@ -1,0 +1,13 @@
+diff --git a/lib/cjs/protocol-parser/protocol-parser.js b/lib/cjs/protocol-parser/protocol-parser.js
+index 875928d..a382ddb 100644
+--- a/lib/cjs/protocol-parser/protocol-parser.js
++++ b/lib/cjs/protocol-parser/protocol-parser.js
+@@ -54,7 +54,7 @@ function parseObject(obj, schema) {
+     if (parseResult.success) {
+         return parseResult.data;
+     }
+-    const errorMessage = parseResult.error.errors
++    const errorMessage = parseResult.error.issues
+         .map((e) => `${e.message} in ` +
+         `${e.path.map((p) => JSON.stringify(p)).join('/')}.`)
+         .join(' ');
