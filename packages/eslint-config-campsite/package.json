@@ -3,6 +3,8 @@
   "version": "0.0.0",
   "private": true,
   "devDependencies": {
+    "@eslint/eslintrc": "3.3.6",
+    "@eslint/js": "9.39.5",
     "@tanstack/eslint-plugin-query": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
@@ -11,6 +13,8 @@
     "eslint-config-turbo": "catalog:",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-turbo": "catalog:",
+    "globals": "catalog:",
     "eslint-plugin-unused-imports": "catalog:"
   }
 }
