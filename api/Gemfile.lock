@@ -285,7 +285,7 @@ GEM
       net-pop
       net-smtp
     marcel (1.2.1)
-    mcp (0.22.0)
+    mcp (1.1.0)
       json_schemer (>= 2.4)
     method_source (1.1.0)
     mini_mime (1.1.5)
@@ -826,7 +826,7 @@ DEPENDENCIES
   json-schema
   jwt
   letter_opener_web
-  mcp (~> 0.22.0)
+  mcp (~> 1.1)
   minitest-focus
   minitest-spec-rails (~> 7.1)
   minitest-stub-const

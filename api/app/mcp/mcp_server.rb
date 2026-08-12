@@ -42,7 +42,7 @@ class McpServer
     rescue McpResource::ResourceError => e
       raise MCP::Server::RequestHandlerError.new(e.message, params, error_type: :invalid_params)
     rescue ActiveRecord::RecordNotFound
-      raise MCP::Server::RequestHandlerError.new("The requested resource could not be found.", params, error_type: :invalid_params)
+      raise MCP::Server::ResourceNotFoundError.new(params[:uri], params)
     rescue Pundit::NotAuthorizedError
       raise MCP::Server::RequestHandlerError.new("You are not authorized to read this resource.", params, error_type: :invalid_params)
     end
