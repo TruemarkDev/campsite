@@ -25,11 +25,11 @@ export function parseVtt(text: string): VttLine[][] {
   let index = 0
   let start = 0
   let end = 0
-  let gap = 0
+  let gap: number
   let lastEnd = 0
   const speakerRegex = /^(?<speaker>.+):/
   let speaker: string | undefined = undefined
-  let lastSpeaker: string | undefined = undefined
+  let lastSpeaker: string | undefined
 
   for (let line of lines) {
     line = line.replace(/\suh\.?\s/gi, ' ')

@@ -1,5 +1,3 @@
-const path = require('path')
-
 /**
  * @type {import('next').NextConfig}
  */
@@ -229,45 +227,7 @@ const moduleExports = {
     ]
   },
   // This is required to support PostHog trailing slash API requests
-  skipTrailingSlashRedirect: true,
-  webpack(config, { dev, isServer, nextRuntime, webpack }) {
-    if (isServer && nextRuntime === 'nodejs') {
-      // Sentry exposes its opt-in diagnostics-channel implementation from a
-      // CommonJS index. The synchronous ESM hook is unused unless that
-      // experimental API is enabled, and Next's webpack build cannot parse
-      // its require() call. Keep the normal Sentry runtime bundled and omit
-      // only this optional hook entry.
-      config.plugins.push(
-        new webpack.IgnorePlugin({
-          resourceRegExp: /^@apm-js-collab\/tracing-hooks\/hook-sync\.mjs$/
-        })
-      )
-    }
-
-    if (dev && !isServer) {
-      const originalEntry = config.entry
-
-      config.entry = async () => {
-        const wdrPath = path.resolve(__dirname, './wdyr.ts')
-        const entries = await originalEntry()
-
-        if (entries['main.js'] && !entries['main.js'].includes(wdrPath)) {
-          // Comment out this line if you are debugging Sentry issues locally
-          // Loading WDYR breaks Sentry debugging
-          entries['main.js'].push(wdrPath)
-        }
-        return entries
-      }
-    }
-
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA': JSON.stringify(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA)
-      })
-    )
-
-    return config
-  }
+  skipTrailingSlashRedirect: true
 }
 
 const sentryWebpackPluginOptions = {
