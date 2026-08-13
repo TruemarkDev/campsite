@@ -1,53 +1,111 @@
-# Agent Instructions
+# Project instructions for AI agents
 
-This project uses **bd** (beads) for issue tracking. Run `bd prime` for full workflow context.
+Canonical project context for ALL harnesses (Claude Code, Codex, opencode).
+`CLAUDE.md` is just an `@AGENTS.md` import — edit THIS file.
 
-> **Architecture in one line:** Issues live in a local Dolt database
-> (`.beads/dolt/`); cross-machine sync uses `bd dolt push/pull` (a
-> git-compatible protocol), stored under `refs/dolt/data` on your git
-> remote — separate from `refs/heads/*` where your code lives.
-> `.beads/issues.jsonl` is a passive export, not the wire protocol.
->
-> See [SYNC_CONCEPTS.md](https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md)
-> for the one-screen overview and anti-patterns (don't treat JSONL as the
-> source of truth; don't `bd import` during normal operation; don't
-> reach for third-party Dolt hosting before trying the default).
+**Stewardship mode** (see `MAINTENANCE.md`): no new features or dependencies;
+agents may only merge patch/minor security bumps with CI green. Change
+proposals live in `openspec/changes/`.
 
-## Quick Reference
+## Build & Test
+
+Toolchain: node 24.19.0 + ruby 4.0.6 + pnpm 11.9.0 via mise (`mise.toml`).
+🟡 Version drift exists: `.nvmrc` says 20.19.4 and `api/mise.toml` says node
+26.4.0 — `MAINTENANCE.md` declares node 24.x / ruby 4.0.6 the baseline.
 
 ```bash
-bd ready              # Find available work
-bd show <id>          # View issue details
-bd update <id> --claim  # Claim work atomically
-bd close <id>         # Complete work
-bd dolt push          # Push beads data to remote
+# First-time setup
+script/setup            # brew deps, api setup, elasticsearch container, pnpm install
+pnpm dev:setup          # api db:setup/db:migrate via mise
+
+# Dev servers (overmind, all procs in Procfile)
+script/dev              # everything; `overmind connect <proc>` for logs
+pnpm dev:core           # just api-dev + web + styled-text-server + sync-server
+# Ports: rails api 3001, web 3000, styled-text 3002, site 3003, sync 9000,
+#        html-to-image 9222, elasticsearch 9200 (docker), redis 6379
+
+# Tests — Rails is MINITEST, not RSpec
+cd api && bin/rails test                          # full suite
+cd api && bin/rails test test/models/post_test.rb # single file
+pnpm test                                         # turbo run test (JS packages)
+pnpm -F @campsite/web test                        # vitest
+pnpm -F @campsite/sync-server test
+
+# Lint / format (CI auto-commits fixes)
+pnpm lint && pnpm format
+cd api && bundle exec rubocop        # -A to autofix; shopify style, line max 240
+
+# API client codegen — run after changing serializers/controllers
+script/gen-client       # rake apigen/openapi → packages/types/generated.ts
 ```
 
-## Non-Interactive Shell Commands
+CI truth: `.github/workflows/api-tests.yml` (rubocop + schema:load +
+assets:precompile + rails test against MySQL 8/Redis/Elasticsearch) and
+`client-build.yml` (`pnpm turbo run test --filter=@campsite/web`).
 
-**ALWAYS use non-interactive flags** with file operations to avoid hanging on confirmation prompts.
+## Architecture Overview
 
-Shell commands like `cp`, `mv`, and `rm` may be aliased to include `-i` (interactive) mode on some systems, causing the agent to hang indefinitely waiting for y/n input.
+Slack-alternative: Rails 8.1 API + Next.js web app + realtime services.
 
-**Use these forms instead:**
-```bash
-# Force overwrite without prompting
-cp -f source dest           # NOT: cp source dest
-mv -f source dest           # NOT: mv source dest
-rm -f file                  # NOT: rm file
+| Path | What |
+|---|---|
+| `api/` | Rails 8.1 API/admin/auth — MySQL (trilogy), Sidekiq 8 + sidekiq-scheduler, searchkick/Elasticsearch, Devise + Doorkeeper + Pundit, Blueprinter serializers, Flipper flags, Pusher realtime, `ruby_llm`, MCP server in `app/mcp/` (`mcp` gem, docs at `api/docs/mcp_server.md`) |
+| `apps/web/` | Next.js 16 / React 19 main app (`app.campsite.test:3000`) |
+| `apps/site/` | Marketing site (Next.js + Sanity) |
+| `apps/sync-server/` | Hocuspocus/Yjs collaborative-editing WebSocket server |
+| `apps/styled-text-server/` | Express service: Tiptap JSON ↔ HTML ↔ Markdown |
+| `apps/integrations/`, `apps/figma/`, `apps/sanity-studio/` | integration surfaces, Figma plugin, CMS studio |
+| `packages/` | shared libs; `types` holds the GENERATED API client (never hand-edit) |
+| `html-to-image/` | Puppeteer screenshot service — own workspace, not in pnpm workspace |
+| `config/deploy.campsite-*.yml`, `.kamal/` | Kamal deploy configs (homelab) |
 
-# For recursive operations
-rm -rf directory            # NOT: rm -r directory
-cp -rf source dest          # NOT: cp -r source dest
-```
+Data flow: browser → Next.js → REST to Rails via generated `@campsite/types`
+client; realtime via Pusher; collaborative docs via WebSocket to sync-server
+(persists Yjs docs back to the Rails API); Rails calls styled-text-server and
+html-to-image. External: S3 + Imgix, 100ms, Postmark, Slack/Linear/Figma/
+Cal.com/Zapier, OpenAI.
 
-**Other commands that may prompt:**
-- `scp` - use `-o BatchMode=yes` for non-interactive
-- `ssh` - use `-o BatchMode=yes` to fail instead of prompting
-- `apt-get` - use `-y` flag
-- `brew` - use `HOMEBREW_NO_AUTO_UPDATE=1` env var
+Deployment: **Kamal to the homelab** — Odin `192.168.2.41` (apps, MySQL,
+Redis), Shuri `192.168.2.14` (Elasticsearch), Cloudflare Tunnel ingress; full
+design in `docs/deployment/homelab-production.md`. Worker deploys separately
+from API by design (writer custody). Secrets preflight:
+`mise exec -- script/check-campsite-kamal-secrets`. ⚠️ `api/CLAUDE.md` still
+says Hatchbox and Fly leftovers exist (`api/fly.toml`, `script/prod-*`) — all
+`deploy-*.yml` workflows are `.disabled`; deploys are operator-run Kamal.
 
-<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:970c3bf2 -->
+## Conventions & Patterns
+
+Rails:
+- Minitest + minitest-spec-rails, FactoryBot, VCR, `Sidekiq.testing!(:fake)`;
+  tests mirror `app/` (controllers are the bulk of coverage). Committed
+  `focus` is blocked by the custom cop `api/test/custom_cops/no_focus.rb`.
+- **No `app/services`** — logic lives in models + concerns
+  (`commentable`, `eventable`, …), namespaced model dirs
+  (`event_processors/`, `organization/`), jobs, and clients in `api/lib/`.
+- Serializers: Blueprinter subclasses of `ApiSerializer` with the
+  `api_field`/`api_association` DSL — this metadata FEEDS the OpenAPI/TS
+  codegen, so run `script/gen-client` after changes.
+- Controllers: `Api::V1::BaseController` + `extend Apigen::Controller`
+  (`response model:`, `request_params do`); Pundit `verify_authorized`
+  enforced; cursor pagination via `render_page`.
+
+Frontend:
+- TanStack Query v5 over the generated client (module-level query object +
+  `useMutation`/invalidate pattern — see `apps/web/hooks/useArchiveProject.ts`);
+  jotai atoms in `apps/web/atoms/`; `@/` alias = `apps/web`.
+- One hook per file in `hooks/`; tests colocated in `__tests__/` or sibling
+  `*.test.ts(x)`; Playwright specs in `apps/web/playwright/`.
+- Prettier: no semicolons, single quotes, no trailing commas, width 120,
+  sorted imports (builtins → react → third-party → `@campsite/*` → `@/*` →
+  relative). ESLint flat configs from `packages/eslint-config-campsite`.
+- pnpm workspace = `apps/*` + `packages/*`; dependency versions centralized
+  in the **pnpm catalog** (`pnpm-workspace.yaml`) with `overrides` and
+  `minimumReleaseAge` supply-chain policy — bump versions there.
+
+Key docs: `MAINTENANCE.md`, `docs/deployment/homelab-production.md`,
+`docs/editor-component-integration.md`, `api/docs/mcp_server.md`.
+
+<!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
 ## Beads Issue Tracker
 
 This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
@@ -102,27 +160,3 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 - Do not commit or push without clear authority from the active profile or the current user request.
 - If a required sync or push is blocked, stop and report the exact command and error.
 <!-- END BEADS INTEGRATION -->
-
-<!-- BEGIN BEADS CODEX SETUP: generated by bd setup codex -->
-## Beads Issue Tracker
-
-Use Beads (`bd`) for durable task tracking in repositories that include it. Use the `beads` skill at `.agents/skills/beads/SKILL.md` (project install) or `~/.agents/skills/beads/SKILL.md` (global install) for Beads workflow guidance, then use the `bd` CLI for issue operations.
-
-### Quick Reference
-
-```bash
-bd ready                # Find available work
-bd show <id>            # View issue details
-bd update <id> --claim  # Claim work
-bd close <id>           # Complete work
-bd prime                # Refresh Beads context
-```
-
-### Rules
-
-- Use `bd` for all task tracking; do not create markdown TODO lists.
-- Run `bd prime` when Beads context is missing or stale. Codex 0.129.0+ can load Beads context automatically through native hooks; use `/hooks` to inspect or toggle them.
-- Keep persistent project memory in Beads via `bd remember`; do not create ad hoc memory files.
-
-**Architecture in one line:** issues live in a local Dolt DB; sync uses `refs/dolt/data` on your git remote; `.beads/issues.jsonl` is a passive export. See https://github.com/gastownhall/beads/blob/main/docs/SYNC_CONCEPTS.md for details and anti-patterns.
-<!-- END BEADS CODEX SETUP -->
