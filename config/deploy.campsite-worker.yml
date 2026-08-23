@@ -9,7 +9,7 @@ primary_role: worker
 servers:
   worker:
     hosts:
-      - 192.168.2.41
+      - 192.168.10.7
     cmd: bundle exec sidekiq
     options:
       no-healthcheck: true
@@ -19,7 +19,7 @@ registry:
 
 builder:
   arch: amd64
-  remote: ssh://debian@192.168.2.41
+  remote: ssh://debian@192.168.10.7
   context: api
   dockerfile: api/Dockerfile
   args:

@@ -65,8 +65,8 @@ client; realtime via Pusher; collaborative docs via WebSocket to sync-server
 html-to-image. External: S3 + Imgix, 100ms, Postmark, Slack/Linear/Figma/
 Cal.com/Zapier, OpenAI.
 
-Deployment: **Kamal to the homelab** — Odin `192.168.2.41` (apps, MySQL,
-Redis), Shuri `192.168.2.14` (Elasticsearch), Cloudflare Tunnel ingress; full
+Deployment: **Kamal to the homelab** — Odin `192.168.10.7` (apps, MySQL,
+Redis), Shuri `192.168.20.14` (Elasticsearch), Cloudflare Tunnel ingress; full
 design in `docs/deployment/homelab-production.md`. Worker deploys separately
 from API by design (writer custody). Secrets preflight:
 `mise exec -- script/check-campsite-kamal-secrets`. ⚠️ `api/CLAUDE.md` still

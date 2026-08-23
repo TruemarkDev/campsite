@@ -12,7 +12,7 @@ deployments.
 
 | Component                  | Kamal unit  | Host                 | Ceiling           | Persistence                 | Health signal                   |
 | -------------------------- | ----------- | -------------------- | ----------------- | --------------------------- | ------------------------------- |
-| Next.js web                | application | Odin `192.168.2.41`  | 512 MiB           | none                        | HTTP `/up`                      |
+| Next.js web                | application | Odin `192.168.10.7`  | 512 MiB           | none                        | HTTP `/up`                      |
 | Rails API/auth             | application | Odin                 | 768 MiB           | none                        | HTTP `/up`                      |
 | Sidekiq                    | application | Odin                 | 512 MiB           | none                        | process plus queue latency      |
 | Sync server                | application | Odin                 | 256 MiB           | none                        | HTTP `/up` and WebSocket probe  |
@@ -21,7 +21,7 @@ deployments.
 | MySQL 8                    | accessory   | Odin                 | 1 GiB             | local named volume          | `mysqladmin ping`               |
 | Redis                      | accessory   | Odin                 | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
 | S3-compatible object store | accessory   | Odin                 | 512 MiB           | local named volume          | readiness endpoint              |
-| Elasticsearch 8.8          | accessory   | Shuri `192.168.2.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
+| Elasticsearch 8.8          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
 
 Odin is the application and primary-data host. Shuri is the search host because
 Elasticsearch's measured footprint fits its 2 GiB cap while Asgard has only

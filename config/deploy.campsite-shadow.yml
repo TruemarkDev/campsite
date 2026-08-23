@@ -7,7 +7,7 @@ secrets_path: .kamal/campsite-secrets
 
 servers:
   web:
-    - 192.168.2.41
+    - 192.168.10.7
 
 proxy:
   ssl: false
@@ -24,7 +24,7 @@ registry:
 
 builder:
   arch: amd64
-  remote: ssh://debian@192.168.2.41
+  remote: ssh://debian@192.168.10.7
   context: html-to-image
   dockerfile: html-to-image/Dockerfile
 
@@ -37,7 +37,7 @@ accessories:
   elasticsearch:
     service: campsite-shadow-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0@sha256:9aaa38551b4d9e655c54d9dc6a1dad24ee568c41952dc8cf1d4808513cfb5f65
-    host: shuri@192.168.2.14
+    host: shuri@192.168.20.14
     port: "127.0.0.1:9200:9200"
     env:
       clear:

@@ -4,7 +4,7 @@ secrets_path: .kamal/campsite-secrets
 
 servers:
   web:
-    - 192.168.2.41
+    - 192.168.10.7
 
 proxy:
   ssl: false
@@ -19,7 +19,7 @@ registry:
 
 builder:
   arch: amd64
-  remote: ssh://debian@192.168.2.41
+  remote: ssh://debian@192.168.10.7
   context: html-to-image
   dockerfile: html-to-image/Dockerfile
 
