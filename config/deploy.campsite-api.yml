@@ -8,6 +8,7 @@ servers:
 
 proxy:
   ssl: false
+  deploy_timeout: 90
   hosts:
     - camp-api.tokdio.com
     - camp-auth.tokdio.com
