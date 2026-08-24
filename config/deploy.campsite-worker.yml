@@ -33,9 +33,11 @@ env:
     MARKETING_SITE_URL: http://camp.home
     STYLED_TEXT_API_URL: http://styled-text.camp.home
     HTML_TO_IMAGE_URL: http://html-to-image.camp.home
-    API_SUBDOMAIN: api.camp
-    AUTH_SUBDOMAIN: auth.camp
-    ADMIN_SUBDOMAIN: admin.camp
+    API_SUBDOMAIN: api
+    AUTH_SUBDOMAIN: auth
+    AUTH_SUBDOMAINS: auth,camp-auth
+    ADMIN_SUBDOMAIN: admin
+    ADMIN_SUBDOMAINS: admin,camp-admin
     MAILER_HOST: auth.camp.home
     MAILER_PROTOCOL: http
     REDIS_URL: redis://campsite-api-tokdio-redis:6379/0

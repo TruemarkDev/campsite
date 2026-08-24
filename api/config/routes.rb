@@ -6,13 +6,16 @@ require "sidekiq-scheduler/web"
 Rails.application.routes.draw do
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
+  auth_subdomains = ENV.fetch("AUTH_SUBDOMAINS", ENV.fetch("AUTH_SUBDOMAIN", "auth")).split(",").map(&:strip)
+  admin_subdomains = ENV.fetch("ADMIN_SUBDOMAINS", ENV.fetch("ADMIN_SUBDOMAIN", "admin")).split(",").map(&:strip)
+
   get "/up", to: proc { [200, { "Content-Type" => "text/plain" }, ["OK"]] }
 
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/preview-emails"
   end
 
-  constraints subdomain: ENV.fetch("AUTH_SUBDOMAIN", "auth") do
+  constraints ->(request) { auth_subdomains.include?(request.subdomain) } do
     devise_for :users,
       controllers: {
         omniauth_callbacks: "users/omniauth_callbacks",
@@ -53,7 +56,7 @@ Rails.application.routes.draw do
     end
   end
 
-  constraints subdomain: ENV.fetch("ADMIN_SUBDOMAIN", "admin") do
+  constraints ->(request) { admin_subdomains.include?(request.subdomain) } do
     scope module: "admin", path: "admin" do
       authenticate :user, lambda { |u| u.staff? } do
         mount Sidekiq::Web => "/sidekiq"

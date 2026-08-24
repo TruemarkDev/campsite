@@ -65,15 +65,15 @@ class CampsiteConfigurationTest < Minitest::Test
       "STYLED_TEXT_API_URL" => "http://styled-text.camp.home",
       "HTML_TO_IMAGE_URL" => "http://html-to-image.camp.home",
       "MARKETING_SITE_URL" => "http://camp.home",
-      "API_SUBDOMAIN" => "api.camp",
-      "ADMIN_SUBDOMAIN" => "admin.camp",
+      "API_SUBDOMAIN" => "api",
+      "ADMIN_SUBDOMAIN" => "admin",
     )
 
     assert_equal("http://camp.home", Campsite.base_app_url.to_s)
     assert_equal("http://styled-text.camp.home", Campsite.base_styled_text_api_url.to_s)
     assert_equal("http://html-to-image.camp.home", Campsite.base_html_to_image_url.to_s)
-    assert_equal("api.camp", Campsite.api_subdomain)
-    assert_equal("admin.camp", Campsite.admin_subdomain)
+    assert_equal("api", Campsite.api_subdomain)
+    assert_equal("admin", Campsite.admin_subdomain)
   end
 
   private
