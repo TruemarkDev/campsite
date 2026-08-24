@@ -1,6 +1,8 @@
 # Campsite homelab production platform
 
-Status: declared design; no production cutover is implied by this document.
+Status: partially deployed. The Rails API/auth and Sidekiq services are live on
+Odin; sections below retain explicit gap markers for unverified or unbuilt
+parts of the wider platform.
 
 This is the target platform for the `camp.tokdio.com` migration. Kamal is the
 deployment control plane for every Campsite application runtime and stateful
@@ -142,7 +144,7 @@ Cloudflare terminates public TLS. Kamal proxy routes by preserved Host header.
 No old API, OAuth, webhook, POST, or WebSocket hostname is implemented as an
 HTTP redirect during the rollback window.
 
-## Outbound mail (❌ not yet deployed)
+## Outbound mail (✅ deployed)
 
 Mail is delivered by the homelab Stalwart service on `vyas` (192.168.10.9), not
 by Postmark. Its runbook lives in the `homelab` repository at
@@ -174,6 +176,12 @@ Both `config/deploy.campsite-api.yml` and `config/deploy.campsite-worker.yml`
 carry these variables; the worker sends the asynchronous mail and must stay in
 step with the API. No SMTP secret is required, so `.kamal/campsite-secrets`
 is unchanged.
+
+The live API and worker run revision
+`369fe930a93377845320e93a8a7d3d1755aa8df1` with matching mail settings. The
+API `/up` health gate passes, the worker is running without restarts, and a
+production Action Mailer message from `campsite@agents.home` was accepted by
+SMTP and found in `prakash@agents.home` through Stalwart JMAP.
 
 ## Durable storage and backups
 
