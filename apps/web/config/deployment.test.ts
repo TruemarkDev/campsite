@@ -44,7 +44,7 @@ describe('web deployment origins', () => {
       NEXT_PUBLIC_SYNC_URL: 'ws://sync.camp.home',
       NEXT_PUBLIC_CDN_URL: 'http://cdn.camp.home',
       NEXT_PUBLIC_IMGIX_URL: 'http://cdn.camp.home',
-      NEXT_PUBLIC_OBJECT_STORAGE_URL: 'http://cdn.camp.home'
+      NEXT_PUBLIC_OBJECT_STORAGE_URL: 'http://s3.camp.home'
     } as unknown as NodeJS.ProcessEnv)
 
     expect(JSON.stringify(config)).not.toContain('https://')
@@ -54,6 +54,7 @@ describe('web deployment origins', () => {
       'http://auth.camp.home',
       'http://camp.home',
       'http://cdn.camp.home',
+      'http://s3.camp.home',
       'ws://sync.camp.home'
     ])
   })

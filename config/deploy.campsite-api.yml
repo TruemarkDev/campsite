@@ -59,7 +59,7 @@ env:
     RACK_ATTACK_REDIS_URL: redis://campsite-api-tokdio-redis:6379/2
     SIDEKIQ_SCHEDULER_ENABLED: "false"
     S3_REGION: us-east-1
-    S3_ENDPOINT: http://campsite-api-tokdio-objects:9000
+    S3_ENDPOINT: http://s3.camp.home
     S3_BUCKET: campsite-media
     S3_FORCE_PATH_STYLE: "true"
   secret:
