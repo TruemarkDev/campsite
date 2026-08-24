@@ -11,7 +11,7 @@ proxy:
   host: camp.tokdio.com
   app_port: 3000
   healthcheck:
-    path: /
+    path: /robots.txt
     interval: 10
 
 registry:
