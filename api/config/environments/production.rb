@@ -116,4 +116,9 @@ Rails.application.configure do
       config.hosts << host.strip
     end
   end
+
+  # Kamal Proxy addresses the container directly while deciding whether to
+  # route production traffic. Keep the dependency-free health endpoint
+  # reachable without weakening host authorization for application routes.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end
