@@ -83,6 +83,19 @@ RUN SECRET_KEY_BASE=dummy \
     S3_BUCKET=dummy \
     bundle exec rails assets:precompile
 
+# JavaScript tooling is build-only. Keeping npm/corepack and node_modules in
+# the Rails runtime needlessly expands the production attack surface.
+RUN rm -rf /app/node_modules /usr/local/lib/node_modules && \
+    rm -f \
+      /usr/local/bin/corepack \
+      /usr/local/bin/node \
+      /usr/local/bin/npm \
+      /usr/local/bin/npx \
+      /usr/local/bin/pnpm \
+      /usr/local/bin/pnpx \
+      /usr/local/bin/yarn \
+      /usr/local/bin/yarnpkg
+
 RUN groupadd --system rails && \
     useradd --system --gid rails --create-home rails && \
     chown -R rails:rails /app
