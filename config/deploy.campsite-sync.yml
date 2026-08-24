@@ -21,7 +21,7 @@ registry:
 
 builder:
   arch: amd64
-  remote: ssh://debian@192.168.10.7
+  remote: ssh://prakash@builder.home
   context: .
   dockerfile: apps/sync-server/Dockerfile
 
