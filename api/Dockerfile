@@ -24,7 +24,7 @@ RUN mkdir -p tmp/pids
 SHELL ["/bin/bash", "-c"]
 
 COPY --from=node_runtime /usr/local/ /usr/local/
-RUN corepack enable
+RUN corepack enable pnpm
 
 FROM base AS build_deps
 
