@@ -33,9 +33,6 @@ builder:
     NEXT_PUBLIC_IMGIX_URL: https://camp-cdn.tokdio.com
     NEXT_PUBLIC_OBJECT_STORAGE_URL: https://camp-objects.tokdio.com
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: <%= `git rev-parse HEAD`.strip %>
-  secrets:
-    - TIPTAP_PRIVATE_REGISTRY_KEY
-
 env:
   clear:
     NODE_ENV: production
