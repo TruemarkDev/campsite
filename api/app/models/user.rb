@@ -134,6 +134,16 @@ class User < ApplicationRecord
 
   alias_attribute :otp_required_for_login, :otp_enabled
 
+  # Devise delivers its notifications inline by default, which puts the SMTP
+  # round trip inside the signup request: a slow or unavailable mail server
+  # then raises out of the controller (raise_delivery_errors is on in
+  # production) and 500s the request with the user row already committed, so
+  # retrying the same address fails validation as taken. Deliver through
+  # Sidekiq instead — the worker carries the same SMTP configuration.
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
+  end
+
   def self.from_omniauth(access_token)
     found = where(omniauth_provider: access_token.provider, omniauth_uid: access_token.uid).first
 
