@@ -75,7 +75,7 @@ ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
 
 COPY . .
 
-RUN SECRET_KEY_BASE=dummy bundle exec rails assets:precompile
+RUN SECRET_KEY_BASE=dummy S3_REGION=us-east-1 bundle exec rails assets:precompile
 
 RUN groupadd --system rails && \
     useradd --system --gid rails --create-home rails && \
