@@ -75,7 +75,13 @@ ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
 
 COPY . .
 
-RUN SECRET_KEY_BASE=dummy S3_REGION=us-east-1 bundle exec rails assets:precompile
+RUN SECRET_KEY_BASE=dummy \
+    S3_REGION=us-east-1 \
+    S3_ENDPOINT=http://127.0.0.1:9000 \
+    S3_ACCESS_KEY_ID=dummy \
+    S3_SECRET_ACCESS_KEY=dummy \
+    S3_BUCKET=dummy \
+    bundle exec rails assets:precompile
 
 RUN groupadd --system rails && \
     useradd --system --gid rails --create-home rails && \
