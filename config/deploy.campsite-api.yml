@@ -41,6 +41,7 @@ env:
     RAILS_SERVE_STATIC_FILES: "true"
     RAILS_LOG_TO_STDOUT: "true"
     PORT: "8080"
+    SESSION_COOKIE_SECURE: "false"
     APP_URL: http://camp.home
     MARKETING_SITE_URL: http://camp.home
     STYLED_TEXT_API_URL: http://styled-text.camp.home

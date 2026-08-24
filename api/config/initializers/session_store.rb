@@ -6,5 +6,5 @@ Rails.application.config.session_store(
   domain: :all,
   same_site: :lax,
   expire_after: 1.month,
-  secure: Rails.env.production?,
+  secure: ENV.fetch("SESSION_COOKIE_SECURE", Rails.env.production?.to_s) == "true",
 )
