@@ -76,12 +76,25 @@ jobs:
       - name: Install system packages the gems and asset build need
         run: |
           set -euo pipefail
+          # git.home serves a certificate from Caddy's internal CA, so the job
+          # container has to keep whatever CA bundle it starts with. Installing
+          # or upgrading ca-certificates triggers update-ca-certificates, which
+          # regenerates this file from the public store alone and drops the
+          # internal CA — actions/checkout then dies with
+          # "server certificate verification failed". Snapshot it, let apt do
+          # what it likes, then put the original back.
+          echo "CA-DIAG: caddy references in starting bundle: $(grep -ci caddy /etc/ssl/certs/ca-certificates.crt || true)"
+          cp /etc/ssl/certs/ca-certificates.crt /tmp/ca-at-job-start.crt
+
           apt-get update
           apt-get install -y --no-install-recommends \
-            build-essential default-libmysqlclient-dev pkg-config git curl ca-certificates ffmpeg
+            build-essential default-libmysqlclient-dev pkg-config git curl ffmpeg
           curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
           apt-get install -y --no-install-recommends nodejs
           npm install --global pnpm@11.9.0
+
+          cat /tmp/ca-at-job-start.crt > /etc/ssl/certs/ca-certificates.crt
+          echo "CA-DIAG: caddy references after restore: $(grep -ci caddy /etc/ssl/certs/ca-certificates.crt || true)"
 
       - name: Check out the committed source
         uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
