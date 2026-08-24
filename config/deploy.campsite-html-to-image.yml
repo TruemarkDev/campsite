@@ -8,7 +8,9 @@ servers:
 
 proxy:
   ssl: false
-  host: camp-html-to-image.tokdio.com
+  hosts:
+    - camp-html-to-image.tokdio.com
+    - html-to-image.camp.home
   app_port: 9222
   healthcheck:
     path: /up

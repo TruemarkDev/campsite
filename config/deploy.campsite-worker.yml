@@ -29,15 +29,15 @@ env:
   clear:
     RAILS_ENV: production
     RAILS_LOG_TO_STDOUT: "true"
-    APP_URL: https://camp.tokdio.com
-    MARKETING_SITE_URL: https://camp.tokdio.com
-    STYLED_TEXT_API_URL: https://camp-styled-text.tokdio.com
-    HTML_TO_IMAGE_URL: https://camp-html-to-image.tokdio.com
-    API_SUBDOMAIN: camp-api
-    AUTH_SUBDOMAIN: camp-auth
-    ADMIN_SUBDOMAIN: camp-admin
-    MAILER_HOST: camp-auth.tokdio.com
-    MAILER_PROTOCOL: https
+    APP_URL: http://camp.home
+    MARKETING_SITE_URL: http://camp.home
+    STYLED_TEXT_API_URL: http://styled-text.camp.home
+    HTML_TO_IMAGE_URL: http://html-to-image.camp.home
+    API_SUBDOMAIN: api.camp
+    AUTH_SUBDOMAIN: auth.camp
+    ADMIN_SUBDOMAIN: admin.camp
+    MAILER_HOST: auth.camp.home
+    MAILER_PROTOCOL: http
     REDIS_URL: redis://campsite-api-tokdio-redis:6379/0
     REDIS_SIDEKIQ_URL: redis://campsite-api-tokdio-redis:6379/1
     RACK_ATTACK_REDIS_URL: redis://campsite-api-tokdio-redis:6379/2

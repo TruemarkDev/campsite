@@ -1,0 +1,45 @@
+service: campsite-web-home
+image: truemarkdev/campsite-web-home
+secrets_path: .kamal/campsite-secrets
+
+servers:
+  web:
+    - 192.168.10.7
+
+proxy:
+  ssl: false
+  host: camp.home
+  app_port: 3000
+  healthcheck:
+    path: /robots.txt
+    interval: 10
+
+registry:
+  server: localhost:5555
+
+builder:
+  arch: amd64
+  remote: ssh://debian@192.168.10.7
+  context: .
+  dockerfile: apps/web/Dockerfile
+  args:
+    NEXT_PUBLIC_WEB_URL: http://camp.home
+    NEXT_PUBLIC_SITE_URL: http://camp.home
+    NEXT_PUBLIC_SYNC_URL: ws://sync.camp.home
+    NEXT_PUBLIC_API_URL: http://api.camp.home
+    NEXT_PUBLIC_AUTH_URL: http://auth.camp.home
+    NEXT_PUBLIC_ADMIN_URL: http://admin.camp.home
+    NEXT_PUBLIC_CDN_URL: http://cdn.camp.home
+    NEXT_PUBLIC_IMGIX_URL: http://cdn.camp.home
+    NEXT_PUBLIC_OBJECT_STORAGE_URL: http://cdn.camp.home
+    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: <%= `git rev-parse HEAD`.strip %>
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "3000"
+  secret:
+    - REVALIDATE_STATIC_CACHE_TOKEN
+
+ssh:
+  user: debian

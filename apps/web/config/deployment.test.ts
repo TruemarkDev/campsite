@@ -34,4 +34,27 @@ describe('web deployment origins', () => {
       'wss://camp-sync.tokdio.com'
     ])
   })
+
+  it('renders the private HTTP camp.home origin set', () => {
+    const config = buildDeploymentConfig({
+      NEXT_PUBLIC_WEB_URL: 'http://camp.home',
+      NEXT_PUBLIC_API_URL: 'http://api.camp.home',
+      NEXT_PUBLIC_AUTH_URL: 'http://auth.camp.home',
+      NEXT_PUBLIC_ADMIN_URL: 'http://admin.camp.home',
+      NEXT_PUBLIC_SYNC_URL: 'ws://sync.camp.home',
+      NEXT_PUBLIC_CDN_URL: 'http://cdn.camp.home',
+      NEXT_PUBLIC_IMGIX_URL: 'http://cdn.camp.home',
+      NEXT_PUBLIC_OBJECT_STORAGE_URL: 'http://cdn.camp.home'
+    } as unknown as NodeJS.ProcessEnv)
+
+    expect(JSON.stringify(config)).not.toContain('https://')
+    expect(config.deploymentOrigins.sort()).toEqual([
+      'http://admin.camp.home',
+      'http://api.camp.home',
+      'http://auth.camp.home',
+      'http://camp.home',
+      'http://cdn.camp.home',
+      'ws://sync.camp.home'
+    ])
+  })
 })

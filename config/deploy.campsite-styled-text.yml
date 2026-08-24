@@ -8,7 +8,9 @@ servers:
 
 proxy:
   ssl: false
-  host: camp-styled-text.tokdio.com
+  hosts:
+    - camp-styled-text.tokdio.com
+    - styled-text.camp.home
   app_port: 9000
   healthcheck:
     path: /up

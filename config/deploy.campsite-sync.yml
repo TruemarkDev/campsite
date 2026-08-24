@@ -8,7 +8,9 @@ servers:
 
 proxy:
   ssl: false
-  host: camp-sync.tokdio.com
+  hosts:
+    - camp-sync.tokdio.com
+    - sync.camp.home
   app_port: 9000
   healthcheck:
     path: /up
@@ -27,6 +29,6 @@ env:
   clear:
     NODE_ENV: production
     PORT: "9000"
-    API_BASE_URL: https://camp-api.tokdio.com
+    API_BASE_URL: http://api.camp.home
 ssh:
   user: debian
