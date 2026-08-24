@@ -29,7 +29,6 @@ env:
     PORT: "9000"
   secret:
     - AUTHTOKEN
-    - SENTRY_DSN
 
 ssh:
   user: debian

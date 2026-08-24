@@ -73,11 +73,11 @@ Rails.application.configure do
   config.action_mailer.delivery_method = :smtp
 
   config.action_mailer.smtp_settings = {
-    address: "smtp.gmail.com",
-    port: "587",
-    domain: "google.com",
-    user_name: Rails.application.credentials.dig(:smtp, :user),
-    password: Rails.application.credentials.dig(:smtp, :password),
+    address: ENV.fetch("SMTP_ADDRESS", "smtp.postmarkapp.com"),
+    port: ENV.fetch("SMTP_PORT", "587"),
+    domain: ENV.fetch("SMTP_DOMAIN", "tokdio.com"),
+    user_name: ENV["SMTP_USER"] || Rails.application.credentials.dig(:smtp, :user),
+    password: ENV["SMTP_PASSWORD"] || Rails.application.credentials.dig(:smtp, :password),
     authentication: "plain",
     enable_starttls_auto: true,
   }

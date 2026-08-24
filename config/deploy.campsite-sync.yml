@@ -28,8 +28,5 @@ env:
     NODE_ENV: production
     PORT: "9000"
     API_BASE_URL: https://camp-api.tokdio.com
-  secret:
-    - SENTRY_DSN
-
 ssh:
   user: debian

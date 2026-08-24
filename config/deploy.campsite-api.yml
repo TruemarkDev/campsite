@@ -61,11 +61,64 @@ env:
     - ELASTICSEARCH_URL
     - S3_ACCESS_KEY_ID
     - S3_SECRET_ACCESS_KEY
-    - GEMINI_API_KEY
-    - OPENAI_API_KEY
-    - ANTHROPIC_API_KEY
 
 accessories:
+  mysql:
+    service: campsite-api-tokdio-mysql
+    image: mysql:8.4@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
+    host: 192.168.10.7
+    env:
+      clear:
+        MYSQL_DATABASE: campsite_production
+        MYSQL_USER: campsite
+      secret:
+        - MYSQL_ROOT_PASSWORD
+        - MYSQL_PASSWORD
+    volumes:
+      - campsite-api-tokdio_mysql-data:/var/lib/mysql
+    options:
+      restart: unless-stopped
+      memory: 1g
+      health-cmd: mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 20
+      health-start-period: 30s
+
+  redis:
+    service: campsite-api-tokdio-redis
+    image: redis:8.2-alpine@sha256:30abb90e62f14b737010746def3ba99cc79fe19dcdb3d37b41f21fc62e7da19d
+    host: 192.168.10.7
+    cmd: redis-server --appendonly yes --appendfsync everysec --maxmemory 256mb --maxmemory-policy noeviction
+    volumes:
+      - campsite-api-tokdio_redis-data:/data
+    options:
+      restart: unless-stopped
+      memory: 384m
+      health-cmd: redis-cli ping
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 12
+
+  objects:
+    service: campsite-api-tokdio-objects
+    image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z@sha256:064117214caceaa8d8a90ef7caa58f2b2aeb316b5156afe9ee8da5b4d83e12c8
+    host: 192.168.10.7
+    cmd: server /data --console-address :9001
+    env:
+      secret:
+        - MINIO_ROOT_USER
+        - MINIO_ROOT_PASSWORD
+    volumes:
+      - campsite-api-tokdio_objects-data:/data
+    options:
+      restart: unless-stopped
+      memory: 512m
+      health-cmd: curl --fail --silent http://127.0.0.1:9000/minio/health/live
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 12
+
   elasticsearch:
     service: campsite-api-tokdio-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0@sha256:9aaa38551b4d9e655c54d9dc6a1dad24ee568c41952dc8cf1d4808513cfb5f65
