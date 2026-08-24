@@ -68,9 +68,11 @@ jobs:
       ELASTICSEARCH_URL: http://elasticsearch:9200
 
     steps:
-      - name: Check out the committed source
-        uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-
+      # Runs BEFORE the checkout on purpose. actions/checkout is a JavaScript
+      # action, so the runner execs `node` inside the job container — and the
+      # Ruby image has none. Installing the toolchain first puts node on PATH
+      # before any JS action runs. (The node-* labels the other repositories
+      # use do not hit this, because their images already ship node.)
       - name: Install system packages the gems and asset build need
         run: |
           set -euo pipefail
@@ -80,6 +82,9 @@ jobs:
           curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
           apt-get install -y --no-install-recommends nodejs
           npm install --global pnpm@11.9.0
+
+      - name: Check out the committed source
+        uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Install gems
         working-directory: api
