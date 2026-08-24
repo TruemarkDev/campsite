@@ -51,7 +51,10 @@ jobs:
         env:
           discovery.type: single-node
           xpack.security.enabled: "false"
-          ES_JAVA_OPTS: -Xms1g -Xmx1g
+          # 512m, not the 1g dev/production use: the CI dataset is a few
+          # hundred documents, and this container shares a capacity-1 VM with
+          # MySQL, Redis and the Rails workers.
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
         options: >-
           --health-cmd "curl --fail --silent http://127.0.0.1:9200/_cluster/health"
           --health-interval 10s
@@ -61,6 +64,12 @@ jobs:
 
     env:
       RAILS_ENV: test
+      # test_helper parallelizes with :number_of_processors. On this shared,
+      # capacity-1 runner that spawns a full Rails process per core alongside
+      # MySQL, Elasticsearch and Redis, and the box thrashes — the first run
+      # was still in the suite at 25 minutes with the host's own sshd timing
+      # out. Cap the workers so the suite is memory-bound by choice.
+      PARALLEL_WORKERS: "2"
       # Service containers resolve by service name, never 127.0.0.1.
       DATABASE_HOST: mysql
       MYSQL_USER: root
