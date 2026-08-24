@@ -12,7 +12,7 @@ import { Cluster } from 'puppeteer-cluster'
     puppeteerOptions: {
       headless: 'shell',
       executablePath: process.env.NODE_ENV === 'production' ? '/usr/bin/google-chrome' : undefined,
-      args: ['--disable-gpu']
+      args: ['--disable-gpu', '--no-sandbox', '--disable-setuid-sandbox']
     }
   })
 
