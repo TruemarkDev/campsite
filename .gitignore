@@ -108,3 +108,6 @@ posthog_migration_batches
 *.db
 .beads-credential-key
 .beads/proxieddb/
+
+# bd (beads) inter-process lock — runtime state, never committed
+.beads.gate.lock
