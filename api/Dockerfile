@@ -23,9 +23,6 @@ RUN mkdir -p tmp/pids
 
 SHELL ["/bin/bash", "-c"]
 
-COPY --from=node_runtime /usr/local/ /usr/local/
-RUN corepack enable pnpm
-
 FROM base AS build_deps
 
 ARG DEV_PACKAGES="git build-essential libpq-dev wget vim curl gzip xz-utils libsqlite3-dev default-libmysqlclient-dev ruby-mysql2"
@@ -45,7 +42,10 @@ COPY Gemfile* ./
 COPY .ruby-version ./
 RUN bundle install &&  rm -rf vendor/bundle/ruby/*/cache
 
-FROM build_deps AS node_modules
+FROM node_runtime AS node_modules
+
+WORKDIR /app
+RUN corepack enable pnpm
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 
@@ -54,6 +54,23 @@ RUN if [ -f "pnpm-lock.yaml" ]; then \
     else \
     mkdir node_modules; \
     fi
+
+FROM build_deps AS assets
+
+COPY --from=node_runtime /usr/local/ /usr/local/
+RUN corepack enable pnpm
+
+COPY --from=gems /app /app
+COPY --from=node_modules /app/node_modules /app/node_modules
+COPY . .
+
+RUN SECRET_KEY_BASE=dummy \
+    S3_REGION=us-east-1 \
+    S3_ENDPOINT=http://127.0.0.1:9000 \
+    S3_ACCESS_KEY_ID=dummy \
+    S3_SECRET_ACCESS_KEY=dummy \
+    S3_BUCKET=dummy \
+    bundle exec rails assets:precompile
 
 FROM base
 
@@ -68,33 +85,11 @@ RUN --mount=type=cache,id=prod-apt-cache,sharing=locked,target=/var/cache/apt \
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
 COPY --from=gems /app /app
-COPY --from=node_modules /app/node_modules /app/node_modules
+COPY . .
+COPY --from=assets /app/public/assets /app/public/assets
 
 ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
-
-COPY . .
-
-RUN SECRET_KEY_BASE=dummy \
-    S3_REGION=us-east-1 \
-    S3_ENDPOINT=http://127.0.0.1:9000 \
-    S3_ACCESS_KEY_ID=dummy \
-    S3_SECRET_ACCESS_KEY=dummy \
-    S3_BUCKET=dummy \
-    bundle exec rails assets:precompile
-
-# JavaScript tooling is build-only. Keeping npm/corepack and node_modules in
-# the Rails runtime needlessly expands the production attack surface.
-RUN rm -rf /app/node_modules /usr/local/lib/node_modules && \
-    rm -f \
-      /usr/local/bin/corepack \
-      /usr/local/bin/node \
-      /usr/local/bin/npm \
-      /usr/local/bin/npx \
-      /usr/local/bin/pnpm \
-      /usr/local/bin/pnpx \
-      /usr/local/bin/yarn \
-      /usr/local/bin/yarnpkg
 
 RUN groupadd --system rails && \
     useradd --system --gid rails --create-home rails && \
