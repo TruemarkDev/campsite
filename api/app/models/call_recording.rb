@@ -6,7 +6,7 @@ class CallRecording < ApplicationRecord
     IN_PROGRESS_TRANSCRIPTION_STATUS = "IN_PROGRESS",
     COMPLETED_TRANSCRIPTION_STATUS = "COMPLETED",
     FAILED_TRANSCRIPTION_STATUS = "FAILED",
-  ]
+  ].freeze
 
   include PublicIdGenerator
   include MediaUrlBuilder

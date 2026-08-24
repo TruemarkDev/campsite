@@ -26,7 +26,7 @@ module Reactable
         custom_reactions = CustomReaction.where(id: scope.map(&:third).compact.uniq).index_by(&:id)
 
         grouped_reactions = {}
-        scope.map do |subject_id, content, custom_reaction_id, viewer_reaction_id, reactions_count, users_json| # rubocop:disable Metrics/ParameterLists
+        scope.map do |subject_id, content, custom_reaction_id, viewer_reaction_id, reactions_count, users_json|
           users_array = JSON.parse(users_json)
           visible_users = users_array[0..9]
           overflow_count = users_array.size - visible_users.size

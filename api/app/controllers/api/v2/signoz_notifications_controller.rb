@@ -39,8 +39,6 @@ module Api
         return "No alerts found" if alerts.empty?
 
         markdown_blocks = alerts.map do |alert|
-          alert = alert
-
           labels = (alert[:labels] || {}).to_unsafe_h.with_indifferent_access
           annotations = (alert[:annotations] || {}).to_unsafe_h.with_indifferent_access
 

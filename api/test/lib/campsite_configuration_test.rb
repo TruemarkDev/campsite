@@ -3,14 +3,22 @@
 require "minitest/autorun"
 require "uri"
 
-module Rails
-  def self.env
-    Environment.new
-  end
+# This test runs both standalone (`ruby test/lib/campsite_configuration_test.rb`,
+# where Rails is not loaded) and as part of the Rails suite. Only define the Rails
+# stub in the standalone case — redefining `Rails.env` for real would break every
+# test file loaded after this one.
+REAL_RAILS = defined?(Rails) ? true : false
 
-  class Environment
-    def production?
-      true
+unless REAL_RAILS
+  module Rails
+    def self.env
+      Environment.new
+    end
+
+    class Environment
+      def production?
+        true
+      end
     end
   end
 end
@@ -25,9 +33,24 @@ class CampsiteConfigurationTest < Minitest::Test
     ADMIN_SUBDOMAIN
   ].freeze
 
+  def setup
+    @original_env_values = URL_ENV_NAMES.index_with { |name| ENV[name] }
+
+    return unless REAL_RAILS
+
+    @original_rails_env = Rails.env
+    Rails.env = "production"
+  end
+
   def teardown
-    URL_ENV_NAMES.each { |name| ENV.delete(name) }
-    Object.send(:remove_const, :Campsite) if Object.const_defined?(:Campsite)
+    @original_env_values.each do |name, value|
+      value.nil? ? ENV.delete(name) : ENV[name] = value
+    end
+
+    Rails.env = @original_rails_env if REAL_RAILS && @original_rails_env
+
+    # Restore the real Campsite constant for the rest of the suite.
+    reload_campsite
   end
 
   def test_current_production_defaults_are_preserved
@@ -81,6 +104,10 @@ class CampsiteConfigurationTest < Minitest::Test
   def load_campsite(overrides = {})
     URL_ENV_NAMES.each { |name| ENV.delete(name) }
     overrides.each { |name, value| ENV[name] = value }
+    reload_campsite
+  end
+
+  def reload_campsite
     Object.send(:remove_const, :Campsite) if Object.const_defined?(:Campsite)
     load File.expand_path("../../lib/campsite.rb", __dir__)
   end

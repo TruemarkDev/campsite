@@ -15,7 +15,7 @@ class FigmaPluginAccess
     "api/v1/integrations/slack/channels" => [:index], # GET /v1/organizations/:org_slug/integrations/slack/channels
     "api/v1/figma/files" => [:create], # POST /v1/organizations/:org_slug/figma/files
     "api/v1/organization_memberships" => [:index, :show], # GET /v1/organizations, GET /v1/organizations/:org_slug
-  }
+  }.freeze
 
   def self.allowed?(controller:, action:)
     action = action.to_sym

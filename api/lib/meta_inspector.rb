@@ -16,10 +16,11 @@ class MetaInspector
     def favicon
       @favicon ||= begin
         href = parsed.xpath('//link[@rel="icon" or contains(@rel, "shortcut")]').first&.attributes&.dig("href")&.value
-        return unless href
 
-        parsed_href = URI.parse(href)
-        parsed_href.absolute? ? href : URI.join(base_url, parsed_href).to_s
+        if href
+          parsed_href = URI.parse(href)
+          parsed_href.absolute? ? href : URI.join(base_url, parsed_href).to_s
+        end
       rescue URI::InvalidURIError
         nil
       end
@@ -80,10 +81,12 @@ class MetaInspector
       base_element_href = parsed.search("base").first&.attributes&.dig("href")&.value
       response_root_url = "#{response.env.url.scheme}://#{response.env.url.host}"
 
-      return URI(response_root_url) unless base_element_href
-
-      base_element_uri = URI(base_element_href)
-      base_element_uri.absolute? ? base_element_uri : URI.join(response_root_url, base_element_href)
+      if base_element_href
+        base_element_uri = URI(base_element_href)
+        base_element_uri.absolute? ? base_element_uri : URI.join(response_root_url, base_element_href)
+      else
+        URI(response_root_url)
+      end
     end
   end
 

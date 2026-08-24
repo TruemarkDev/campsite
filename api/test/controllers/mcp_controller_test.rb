@@ -10,6 +10,8 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
   ALL_SCOPES = "mcp read_organization read_user read_post read_project write_post write_message write_note write_project"
   MODERN_PROTOCOL_VERSION = "2026-07-28"
+  # The version `initialize` falls back to when asked for a modern one (SEP-2575).
+  LATEST_HANDSHAKE_PROTOCOL_VERSION = MCP::Configuration::LATEST_HANDSHAKE_PROTOCOL_VERSION
 
   setup do
     @org = create(:organization)
@@ -33,7 +35,10 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert result["capabilities"].key?("tools")
     end
 
-    test "initialize negotiates protocol version 2026-07-28" do
+    # SEP-2575: a modern version is carried per-request in `_meta`, never negotiated
+    # through the `initialize` handshake. Asking `initialize` for 2026-07-28 gets a
+    # counter-offer of the latest handshake version instead of an echo.
+    test "initialize counter-offers the latest handshake version for a modern version" do
       mcp_request(
         method: "initialize",
         params: { protocolVersion: MODERN_PROTOCOL_VERSION, capabilities: {}, clientInfo: { name: "test", version: "1" } },
@@ -41,16 +46,18 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       )
 
       assert_response :ok
-      assert_equal MODERN_PROTOCOL_VERSION, json_response.dig("result", "protocolVersion")
+      assert_equal LATEST_HANDSHAKE_PROTOCOL_VERSION, json_response.dig("result", "protocolVersion")
+      assert_not_equal MODERN_PROTOCOL_VERSION, json_response.dig("result", "protocolVersion")
     end
 
+    # The server identity rides in the result `_meta` as `io.modelcontextprotocol/serverInfo`
+    # per the finalized SEP-2575 spec (PR #3002) — there is no top-level `serverInfo`.
     test "server/discover advertises supported versions, capabilities, and identity" do
       mcp_request(method: "server/discover", headers: { "Mcp-Method" => "server/discover" })
 
       assert_response :ok
       result = json_response["result"]
       assert_includes result["supportedVersions"], MODERN_PROTOCOL_VERSION
-      assert_equal "campsite", result.dig("serverInfo", "name")
       assert result["capabilities"].key?("tools")
       assert_equal "complete", result["resultType"]
       assert_equal "campsite", result.dig("_meta", "io.modelcontextprotocol/serverInfo", "name")

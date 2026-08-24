@@ -3,7 +3,7 @@
 class ExternalRecord < ApplicationRecord
   include Referenceable
 
-  REFERENCEABLE_METADATA_FIELDS = [:description, :body]
+  REFERENCEABLE_METADATA_FIELDS = [:description, :body].freeze
 
   has_many :timeline_events, as: :reference, dependent: :destroy_async
   has_many :children, class_name: "ExternalRecord", foreign_key: :parent_id, dependent: :nullify

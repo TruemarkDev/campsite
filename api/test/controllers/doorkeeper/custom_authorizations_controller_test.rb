@@ -27,7 +27,12 @@ module Doorkeeper
         assert_not_includes response.body, "Organization"
       end
 
-      test "redirects with code if matching access token exists" do
+      # Doorkeeper >= 5.7 refuses to auto-approve an authorization when
+      # `custom_access_token_attributes` is configured (`can_authorize_response?`), because a
+      # pre-existing token may carry different attribute values than the ones this authorization
+      # would produce. We configure `[:resource_owner_type, :resource_owner_id]`, so a matching
+      # token no longer short-circuits to a redirect — the consent screen is rendered instead.
+      test "renders the consent screen even when a matching access token exists" do
         oauth_application = create(:oauth_application)
         access_token = create(:access_token, application: oauth_application, resource_owner_id: @user.id)
 
@@ -39,8 +44,8 @@ module Doorkeeper
           scope: access_token.scopes,
         }
 
-        assert_response :redirect
-        assert_includes response.redirect_url, native_oauth_authorization_path
+        assert_response :ok
+        assert_not_includes response.body, "Organization"
       end
 
       test "includes the organization picker when creating an AccessGrant for an organization" do

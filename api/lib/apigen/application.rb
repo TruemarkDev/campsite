@@ -482,7 +482,7 @@ module Apigen
       end
     end
 
-    API_METHODS = ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"]
+    API_METHODS = ["GET", "POST", "PUT", "PATCH", "OPTIONS", "DELETE"].freeze
 
     def format_routes(rails_routes)
       rails_routes.map { |rails_route| format_route(rails_route) }

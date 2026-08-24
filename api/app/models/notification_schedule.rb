@@ -9,7 +9,7 @@ class NotificationSchedule < ApplicationRecord
     4 => :thursday?,
     5 => :friday?,
     6 => :saturday?,
-  }
+  }.freeze
 
   belongs_to :user
 

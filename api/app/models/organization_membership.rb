@@ -8,7 +8,7 @@ class OrganizationMembership < ApplicationRecord
   include PublicIdGenerator
 
   SEEN_RECENTLY_THRESHOLD = 30.days
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at, :last_seen_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at, :last_seen_at].freeze
 
   belongs_to :organization
   belongs_to :user
@@ -81,7 +81,7 @@ class OrganizationMembership < ApplicationRecord
   scope :seen_recently, -> { where(last_seen_at: SEEN_RECENTLY_THRESHOLD.ago..) }
   scope :role_counted, -> { where(role_name: Role.counted.map(&:name)) }
 
-  SERIALIZER_EAGER_LOAD = [:user, :latest_status]
+  SERIALIZER_EAGER_LOAD = [:user, :latest_status].freeze
   scope :serializer_eager_load, -> { eager_load(*SERIALIZER_EAGER_LOAD) }
 
   counter_culture :organization,
