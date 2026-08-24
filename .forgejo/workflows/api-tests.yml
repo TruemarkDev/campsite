@@ -68,33 +68,44 @@ jobs:
       ELASTICSEARCH_URL: http://elasticsearch:9200
 
     steps:
-      # Runs BEFORE the checkout on purpose. actions/checkout is a JavaScript
-      # action, so the runner execs `node` inside the job container — and the
-      # Ruby image has none. Installing the toolchain first puts node on PATH
-      # before any JS action runs. (The node-* labels the other repositories
-      # use do not hit this, because their images already ship node.)
+      # Must precede the checkout: git.home serves a certificate from Caddy's
+      # internal CA, which no public image trusts, so actions/checkout cannot
+      # clone over HTTPS without it. This is the same root forge carries at
+      # /usr/local/share/ca-certificates/caddy-home.crt (valid to 2036-07-01) —
+      # it is a public certificate, not a secret. Re-copy it here if the Caddy
+      # CA is ever rotated (see ansible/trust_forgejo_registry_ca.yml).
+      - name: Trust the homelab certificate authority
+        run: |
+          set -euo pipefail
+          install -d /usr/local/share/ca-certificates
+          cat > /usr/local/share/ca-certificates/caddy-home.crt <<'CERT'
+          -----BEGIN CERTIFICATE-----
+          MIIBozCCAUqgAwIBAgIRAOF2Ev87LWhNZmE59B8vZG0wCgYIKoZIzj0EAwIwMDEu
+          MCwGA1UEAxMlQ2FkZHkgTG9jYWwgQXV0aG9yaXR5IC0gMjAyNiBFQ0MgUm9vdDAe
+          Fw0yNjA4MjMxMzI5MDNaFw0zNjA3MDExMzI5MDNaMDAxLjAsBgNVBAMTJUNhZGR5
+          IExvY2FsIEF1dGhvcml0eSAtIDIwMjYgRUNDIFJvb3QwWTATBgcqhkjOPQIBBggq
+          hkjOPQMBBwNCAARfSePicKBkWIPAUU1v14KbqIx+cyqPBr5dCvBUP+2dPpru2V+y
+          fzU7XGyMds3/TnRCSyIrOvOWCLA1J5XDsuUUo0UwQzAOBgNVHQ8BAf8EBAMCAQYw
+          EgYDVR0TAQH/BAgwBgEB/wIBATAdBgNVHQ4EFgQU1RRhYAdlV3/nH7FjvOvKWs6S
+          EpEwCgYIKoZIzj0EAwIDRwAwRAIgXHoBqPxbEwKSvW1XdEiHhebTiZXn/tyGe1k2
+          vEBRUUACICxNWQzbpomVum19Q94mK+S1HCP05HGTwFbSlhlROkH9
+          -----END CERTIFICATE-----
+          CERT
+          sed -i 's/^          //' /usr/local/share/ca-certificates/caddy-home.crt
+          update-ca-certificates
+          echo "CA-DIAG: caddy references now: $(grep -ci caddy /etc/ssl/certs/ca-certificates.crt || true)"
+
+      # node must exist before any JavaScript action runs (actions/checkout is
+      # one); the Ruby image the campsite-ruby40 label resolves to ships none.
       - name: Install system packages the gems and asset build need
         run: |
           set -euo pipefail
-          # git.home serves a certificate from Caddy's internal CA, so the job
-          # container has to keep whatever CA bundle it starts with. Installing
-          # or upgrading ca-certificates triggers update-ca-certificates, which
-          # regenerates this file from the public store alone and drops the
-          # internal CA — actions/checkout then dies with
-          # "server certificate verification failed". Snapshot it, let apt do
-          # what it likes, then put the original back.
-          echo "CA-DIAG: caddy references in starting bundle: $(grep -ci caddy /etc/ssl/certs/ca-certificates.crt || true)"
-          cp /etc/ssl/certs/ca-certificates.crt /tmp/ca-at-job-start.crt
-
           apt-get update
           apt-get install -y --no-install-recommends \
             build-essential default-libmysqlclient-dev pkg-config git curl ffmpeg
           curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
           apt-get install -y --no-install-recommends nodejs
           npm install --global pnpm@11.9.0
-
-          cat /tmp/ca-at-job-start.crt > /etc/ssl/certs/ca-certificates.crt
-          echo "CA-DIAG: caddy references after restore: $(grep -ci caddy /etc/ssl/certs/ca-certificates.crt || true)"
 
       - name: Check out the committed source
         uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
