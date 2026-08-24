@@ -2,7 +2,7 @@
 # deploy this service until writer custody has moved away from the legacy
 # production worker and queue consumption has been explicitly authorized.
 service: campsite-worker-tokdio
-image: truemarkdev/campsite-api
+image: truemarkdev/campsite-worker
 secrets_path: .kamal/campsite-secrets
 
 primary_role: worker
