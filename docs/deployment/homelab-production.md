@@ -157,6 +157,8 @@ by Postmark. Its runbook lives in the `homelab` repository at
 | `SMTP_DOMAIN` | `agents.home` |
 | `SMTP_AUTHENTICATION` | `none` |
 | `SMTP_STARTTLS` | `false` |
+| `SMTP_OPEN_TIMEOUT` | `15` |
+| `SMTP_READ_TIMEOUT` | `25` |
 | `MAILER_FROM` | `Campsite <campsite@agents.home>` |
 
 The endpoint is unauthenticated and plaintext, and is reachable only inside the
@@ -167,21 +169,49 @@ unchanged: Postmark on 587 with plain authentication and STARTTLS.
 
 Stalwart runs with `MtaStageRcpt.allowRelaying` disabled, so it accepts
 `@agents.home` recipients only and returns `550` for anything else. Signup
-confirmations therefore succeed only for `@agents.home` addresses. Because
-`config.action_mailer.raise_delivery_errors` is `true` and Devise delivers the
-confirmation inline, a rejected recipient surfaces as a 500 on the signup POST
-after the user row has been committed.
+confirmations therefore reach only `@agents.home` addresses; any other address
+fails in the background instead of reaching the user.
+
+Devise no longer delivers inline. `User#send_devise_notification` queues through
+Sidekiq, so a rejected recipient, a slow relay, or an unavailable one can no
+longer 500 the signup request — `raise_delivery_errors` stays `true`, but it now
+fails a job rather than a controller action. Mail failures surface in the worker
+log and in Sidekiq retries, not in the browser.
+
+`ActionMailer::MailDeliveryJob.enqueue_after_transaction_commit` is `true`
+(`config/initializers/mail_delivery_job.rb`). `send_devise_notification` runs
+inside the record's transaction and Rails 8.1 defaults this to `false`, so
+without it Sidekiq can dequeue the job before the user row is visible and fail
+to find it. The setting is per-job, so only mail delivery is affected.
+
+The timeouts above exist because Stalwart's spam scan once held the SMTP DATA
+phase for 12s, past Action Mailer's 5s default `read_timeout`. Inbound spam
+filtering is now disabled on the server (see the runbook), so delivery settles
+in well under a second; the headroom is retained deliberately.
 
 Both `config/deploy.campsite-api.yml` and `config/deploy.campsite-worker.yml`
 carry these variables; the worker sends the asynchronous mail and must stay in
 step with the API. No SMTP secret is required, so `.kamal/campsite-secrets`
 is unchanged.
 
-The live API and worker run revision
-`369fe930a93377845320e93a8a7d3d1755aa8df1` with matching mail settings. The
-API `/up` health gate passes, the worker is running without restarts, and a
-production Action Mailer message from `campsite@agents.home` was accepted by
-SMTP and found in `prakash@agents.home` through Stalwart JMAP.
+As built, the live API runs `2cb0ce8455c90241c60328afc8a8ad0e847e1a01` and the
+worker `b955395ae56b4b52032b60fa7959ce846f175a84`; both carry the same mail
+settings, and both revisions include the deferred-delivery change. Verified in
+the running API container: `smtp_settings` resolves to `smtp.home:25` with
+`open_timeout: 15`, `read_timeout: 25` and no credential keys; the
+`send_devise_notification` override is active; and the mail job's
+after-commit flag is set. A production Action Mailer message from
+`campsite@agents.home` was accepted by SMTP in 0.75s and ingested to the
+`prakash@agents.home` inbox.
+
+⚠️ **`config/deploy.campsite-api.yml` cannot deploy the Elasticsearch
+accessory.** Its `host:` is `shuri@192.168.20.14`; Kamal 2.12 has no
+per-accessory SSH user, so it resolves that whole string as a hostname and the
+registry port-forward step fails with `Socket::ResolutionError`. The global
+`ssh.user` is `debian`, which Shuri refuses — `shuri` and `prakash` are
+accepted. Deploys currently work around it with `--hosts 192.168.10.7`, which
+excludes the accessory host. The fix is `host: 192.168.20.14` plus a
+`~/.ssh/config` `User shuri` entry for that address.
 
 ## Durable storage and backups
 
