@@ -77,6 +77,11 @@ Rails.application.configure do
   }
   config.action_mailer.delivery_method = :smtp
 
+  # Environment files are evaluated before the Zeitwerk autoloaders are set up,
+  # so both files are required explicitly. lib/campsite.rb must come first:
+  # defining Campsite from the nested file alone would shadow its autoload and
+  # leave Campsite::DEV_APP_URL (used by config/initializers/cors.rb) missing.
+  require Rails.root.join("lib/campsite")
   require Rails.root.join("lib/campsite/smtp_settings")
 
   config.action_mailer.smtp_settings = Campsite::SmtpSettings.build(
