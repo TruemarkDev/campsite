@@ -17,6 +17,8 @@ class SmtpSettingsTest < Minitest::Test
         port: 587,
         domain: "tokdio.com",
         enable_starttls_auto: true,
+        open_timeout: 5,
+        read_timeout: 5,
         user_name: "postmark-user",
         password: "postmark-password",
         authentication: "plain",
@@ -33,6 +35,8 @@ class SmtpSettingsTest < Minitest::Test
         "SMTP_DOMAIN" => "agents.home",
         "SMTP_AUTHENTICATION" => "none",
         "SMTP_STARTTLS" => "false",
+        "SMTP_OPEN_TIMEOUT" => "15",
+        "SMTP_READ_TIMEOUT" => "25",
       },
       credentials: { smtp: { user: "must-not-leak", password: "must-not-leak" } },
     )
@@ -43,10 +47,19 @@ class SmtpSettingsTest < Minitest::Test
         port: 25,
         domain: "agents.home",
         enable_starttls_auto: false,
+        open_timeout: 15,
+        read_timeout: 25,
       },
       settings,
     )
     assert_empty(settings.keys & %i[authentication user_name password])
+  end
+
+  def test_defaults_the_timeouts_to_the_rails_values
+    settings = Campsite::SmtpSettings.build(environment: { "SMTP_AUTHENTICATION" => "none" })
+
+    assert_equal(5, settings[:open_timeout])
+    assert_equal(5, settings[:read_timeout])
   end
 
   def test_rejects_unknown_authentication
