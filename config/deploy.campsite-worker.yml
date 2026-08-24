@@ -11,8 +11,7 @@ servers:
     hosts:
       - 192.168.10.7
     cmd: bundle exec sidekiq
-    options:
-      no-healthcheck: true
+    proxy: false
 
 registry:
   server: localhost:5555
