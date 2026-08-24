@@ -123,7 +123,7 @@ accessories:
     service: campsite-api-tokdio-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0@sha256:9aaa38551b4d9e655c54d9dc6a1dad24ee568c41952dc8cf1d4808513cfb5f65
     host: shuri@192.168.20.14
-    port: "192.168.20.14:9200:9200"
+    port: "9201:9200"
     env:
       clear:
         cluster.name: campsite-tokdio
