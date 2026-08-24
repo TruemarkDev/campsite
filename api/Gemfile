@@ -95,7 +95,6 @@ group :test do
   gem "minitest-focus"
   gem "minitest-spec-rails", "~> 7.1"
   gem "minitest-stub-const"
-  gem "mock_redis"
   gem "mocha", "~> 3.1"
   gem "timecop"
   gem "vcr"

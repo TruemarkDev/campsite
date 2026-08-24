@@ -305,7 +305,6 @@ GEM
     minitest-stub-const (0.6)
     mocha (3.1.0)
       ruby2_keywords (>= 0.0.5)
-    mock_redis (0.48.1)
     msgpack (1.8.4)
     multi_json (1.21.1)
     multi_xml (0.9.1)
@@ -836,7 +835,6 @@ DEPENDENCIES
   minitest-spec-rails (~> 7.1)
   minitest-stub-const
   mocha (~> 3.1)
-  mock_redis
   mysql2 (~> 0.5.7)
   nanoid
   omniauth

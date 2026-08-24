@@ -1,0 +1,112 @@
+name: API Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    # Declared in stacks/forgejo-runner/runner-config.yml in the homelab repo.
+    # Unlike the existing node-* labels this one must resolve to a Ruby image:
+    # the API needs Ruby 4.0.6, and building a toolchain per run on a
+    # capacity-1 runner would dominate the job. Node is installed below
+    # because that image carries only Ruby.
+    runs-on: campsite-ruby40
+    timeout-minutes: 45
+
+    services:
+      mysql:
+        # Same digest config/deploy.campsite-api.yml pins, so CI and production
+        # agree on the server version.
+        image: mysql@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: campsite_api_test
+        options: >-
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 24
+
+      # Carried over from the GitHub workflow. Nothing in the suite has been
+      # shown to need it (test caching is :memory_store, Rack::Attack is off
+      # outside production, and Sidekiq runs in :fake mode), so this is a
+      # candidate for removal once a green run confirms it is unused.
+      redis:
+        image: redis@sha256:30abb90e62f14b737010746def3ba99cc79fe19dcdb3d37b41f21fc62e7da19d
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+
+      elasticsearch:
+        # Same digest script/setup and config/deploy.campsite-*.yml pin.
+        image: docker.elastic.co/elasticsearch/elasticsearch@sha256:8818ab9af72d7482e38a9d6f0454d5ee667564a25bbdc42360c0f9b8f8f72fc5
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: -Xms1g -Xmx1g
+        options: >-
+          --health-cmd "curl --fail --silent http://127.0.0.1:9200/_cluster/health"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 24
+          --health-start-period 30s
+
+    env:
+      RAILS_ENV: test
+      # Service containers resolve by service name, never 127.0.0.1.
+      DATABASE_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      ELASTICSEARCH_URL: http://elasticsearch:9200
+
+    steps:
+      - name: Check out the committed source
+        uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Install system packages the gems and asset build need
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential default-libmysqlclient-dev pkg-config git curl ca-certificates ffmpeg
+          curl -fsSL https://deb.nodesource.com/setup_24.x | bash -
+          apt-get install -y --no-install-recommends nodejs
+          npm install --global pnpm@11.9.0
+
+      - name: Install gems
+        working-directory: api
+        run: |
+          set -euo pipefail
+          bundle config set --local path vendor/bundle
+          bundle install --jobs 4 --retry 3
+
+      - name: Install the API's asset dependencies
+        working-directory: api
+        run: pnpm install --frozen-lockfile
+
+      # Verify only. The GitHub workflow autocorrected and pushed the fixes back
+      # to the branch using a GitHub App token; Forgejo has no equivalent, so
+      # this fails the build instead of rewriting the contributor's commit.
+      - name: Lint
+        working-directory: api
+        run: bundle exec rubocop --parallel
+
+      - name: Load the schema
+        working-directory: api
+        run: bundle exec rails db:schema:load
+
+      - name: Precompile assets
+        working-directory: api
+        run: bundle exec rails assets:precompile
+
+      - name: Run tests
+        working-directory: api
+        run: bundle exec rails test
