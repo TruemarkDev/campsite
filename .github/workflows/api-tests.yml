@@ -88,6 +88,11 @@ jobs:
 
       - name: Setup Elasticsearch
         uses: ankane/setup-elasticsearch@v1
+        with:
+          # Pin to the version script/setup and config/deploy.campsite-*.yml
+          # declare. Left unset, the action resolves its own "9" default (9.4.2
+          # today) and silently drifts away from dev and production.
+          elasticsearch-version: 9.5.0
 
       - name: Build and run tests
         env:

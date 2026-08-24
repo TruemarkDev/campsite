@@ -94,8 +94,19 @@ is rebuildable from MySQL, so the recommended path skips the ladder entirely:
    `bin/rails searchkick:reindex:all`, or one model at a time with
    `bin/rails searchkick:reindex CLASS=Post` (the searchkick-indexed models are
    `Post`, `Note`, and `Call`).
-5. Verify by comparing document counts per index against the source tables
-   before re-enabling search-dependent traffic.
+5. Verify before re-enabling search-dependent traffic, comparing each index
+   against the rows searchkick actually imports (`search_import`, not a raw
+   table count — the models scope what they index):
+
+   ```ruby
+   [Post, Note, Call].each do |m|
+     puts "#{m.name}: es=#{m.search_index.total_docs} db=#{m.search_import.count}"
+   end
+   ```
+
+Steps 3–5 were rehearsed locally against a clean 9.5.0 container: the reindex
+task completes for all three models and the counts match exactly. The Shuri
+execution itself is ❌ still outstanding.
 
 Preserving the existing volume instead would require the 8.19 intermediate hop
 first; there is no reason to take that path for a rebuildable index.
@@ -130,6 +141,39 @@ tokdio host family to Kamal proxy on Odin over private HTTP:
 Cloudflare terminates public TLS. Kamal proxy routes by preserved Host header.
 No old API, OAuth, webhook, POST, or WebSocket hostname is implemented as an
 HTTP redirect during the rollback window.
+
+## Outbound mail (❌ not yet deployed)
+
+Mail is delivered by the homelab Stalwart service on `vyas` (192.168.10.9), not
+by Postmark. Its runbook lives in the `homelab` repository at
+`runbooks/stalwart-on-vyas.md`; this repository owns only the client side.
+
+| Setting | Value |
+|---|---|
+| `SMTP_ADDRESS` | `smtp.home` |
+| `SMTP_PORT` | `25` |
+| `SMTP_DOMAIN` | `agents.home` |
+| `SMTP_AUTHENTICATION` | `none` |
+| `SMTP_STARTTLS` | `false` |
+| `MAILER_FROM` | `Campsite <campsite@agents.home>` |
+
+The endpoint is unauthenticated and plaintext, and is reachable only inside the
+homelab. `config/environments/production.rb` therefore omits `user_name`,
+`password`, and `authentication` from `smtp_settings` when
+`SMTP_AUTHENTICATION` is `none`. With every variable unset the defaults are
+unchanged: Postmark on 587 with plain authentication and STARTTLS.
+
+Stalwart runs with `MtaStageRcpt.allowRelaying` disabled, so it accepts
+`@agents.home` recipients only and returns `550` for anything else. Signup
+confirmations therefore succeed only for `@agents.home` addresses. Because
+`config.action_mailer.raise_delivery_errors` is `true` and Devise delivers the
+confirmation inline, a rejected recipient surfaces as a 500 on the signup POST
+after the user row has been committed.
+
+Both `config/deploy.campsite-api.yml` and `config/deploy.campsite-worker.yml`
+carry these variables; the worker sends the asynchronous mail and must stay in
+step with the API. No SMTP secret is required, so `.kamal/campsite-secrets`
+is unchanged.
 
 ## Durable storage and backups
 
