@@ -3,12 +3,21 @@
 require "test_helper"
 
 class MediaUrlBuilderTest < ActiveSupport::TestCase
+  MEDIA_ENV_KEYS = ["MEDIA_PROVIDER", "MEDIA_CDN_URL", "MEDIA_FOLDER_CDN_URL", "MEDIA_VIDEO_CDN_URL"].freeze
+
   class TestClass
     include MediaUrlBuilder
   end
 
   setup do
     @test_instance = TestClass.new
+    @original_media_env = ENV.to_h.slice(*MEDIA_ENV_KEYS)
+    MEDIA_ENV_KEYS.each { |key| ENV.delete(key) }
+  end
+
+  teardown do
+    MEDIA_ENV_KEYS.each { |key| ENV.delete(key) }
+    @original_media_env.each { |key, value| ENV[key] = value }
   end
 
   context "cdn_provider" do
@@ -26,6 +35,13 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
 
     test "defaults to :cloudflare when media provider is not set" do
       Rails.application.credentials.stubs(:dig).with(:media, :provider).returns(nil)
+
+      assert_equal :cloudflare, @test_instance.cdn_provider
+    end
+
+    test "runtime media provider overrides encrypted credentials" do
+      ENV["MEDIA_PROVIDER"] = "cloudflare"
+      Rails.application.credentials.stubs(:dig).with(:media, :provider).returns("imgix")
 
       assert_equal :cloudflare, @test_instance.cdn_provider
     end
@@ -74,6 +90,14 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
 
       assert_equal "https://cdn.polo-apps.com/cdn/images/photo.jpg", url
     end
+
+    test "runtime CDN URL overrides encrypted credentials" do
+      ENV["MEDIA_CDN_URL"] = "http://cdn.camp.home"
+
+      url = @test_instance.build_media_url("images/photo.jpg")
+
+      assert_equal "http://cdn.camp.home/cdn/images/photo.jpg", url
+    end
   end
 
   context "build_media_url with Imgix" do
@@ -111,6 +135,14 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
       url = @test_instance.build_media_folder_url("folders/image.jpg")
 
       assert_match %r{https://cdn.polo-apps.com}, url
+    end
+
+    test "runtime main CDN URL overrides an encrypted folder URL" do
+      ENV["MEDIA_CDN_URL"] = "http://cdn.camp.home"
+
+      url = @test_instance.build_media_folder_url("folders/image.jpg")
+
+      assert_equal "http://cdn.camp.home/cdn/folders/image.jpg", url
     end
   end
 

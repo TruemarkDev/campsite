@@ -17,8 +17,9 @@ module MediaUrlBuilder
   ].freeze
 
   def cdn_provider
-    # Check credentials to determine which CDN provider is configured
-    media_provider = Rails.application.credentials.dig(:media, :provider)
+    # Runtime deployments can override the encrypted production credentials.
+    # This keeps self-hosted installs from emitting URLs for the hosted CDN.
+    media_provider = ENV["MEDIA_PROVIDER"].presence || Rails.application.credentials.dig(:media, :provider)
 
     @cdn_provider ||= if media_provider == "cloudflare"
       :cloudflare
@@ -111,7 +112,14 @@ module MediaUrlBuilder
   def build_cloudflare_cdn_url(path, append_params = {}, url_key: :cdn_url)
     return if path.nil?
 
-    cdn_url = Rails.application.credentials.dig(:cloudflare, url_key)
+    env_key = {
+      cdn_url: "MEDIA_CDN_URL",
+      folder_cdn_url: "MEDIA_FOLDER_CDN_URL",
+      video_cdn_url: "MEDIA_VIDEO_CDN_URL",
+    }.fetch(url_key)
+
+    cdn_url = ENV[env_key].presence || ENV["MEDIA_CDN_URL"].presence
+    cdn_url ||= Rails.application.credentials.dig(:cloudflare, url_key)
     # Fallback to main cdn_url if specific URL is not configured
     cdn_url ||= Rails.application.credentials.dig(:cloudflare, :cdn_url)
 
