@@ -1,9 +1,12 @@
 # Canonical toolchain for the Rails API.
 # Source of truth for local dev (mise) and mirrored by:
 #   - api/.ruby-version  (consumed literally by api/Dockerfile + api/script/bootstrap)
-#   - api/fly.toml       [build.args] RUBY_VERSION / NODE_VERSION (deploy)
+#   - api/Dockerfile     `FROM node:<version>` for the asset-build stage
+#   - .nvmrc and the root mise.toml, which must agree on the Node baseline
 # When bumping a version here, update those too (see MAINTENANCE.md).
+# (api/fly.toml also carries these as [build.args], but the Fly deploy is dead —
+# see api/CLAUDE.md; do not treat it as a mirror target.)
 [tools]
 ruby = "4.0.6"
-node = "26.4.0"
+node = "24.19.0"
 pnpm = "11.9.0"

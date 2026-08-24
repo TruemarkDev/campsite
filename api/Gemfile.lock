@@ -177,11 +177,11 @@ GEM
     elastic-transport (8.5.3)
       faraday (< 3)
       multi_json
-    elasticsearch (8.19.3)
+    elasticsearch (9.5.0)
       elastic-transport (~> 8.3)
-      elasticsearch-api (= 8.19.3)
-      ostruct
-    elasticsearch-api (8.19.3)
+      elasticsearch-api (= 9.5.0)
+    elasticsearch-api (9.5.0)
+      base64
       multi_json
     erb (6.0.7)
     erubi (1.13.1)
@@ -817,7 +817,7 @@ DEPENDENCIES
   discard
   doorkeeper (~> 5.9)
   down
-  elasticsearch (~> 8.8)
+  elasticsearch (~> 9.5)
   factory_bot_rails
   faker
   faraday

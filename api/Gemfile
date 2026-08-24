@@ -17,9 +17,10 @@ gem "devise-two-factor"
 gem "discard"
 gem "doorkeeper", "~> 5.9"
 gem "down"
-# Pinned to 8.x: the deployed Elasticsearch is 8.8.0 (script/setup and
-# config/deploy.campsite-*.yml). Unpin only alongside a server upgrade.
-gem "elasticsearch", "~> 8.8"
+# Kept on a major-pinned requirement so the client cannot silently outrun the
+# deployed server: Elasticsearch rejects a client one major ahead. The server is
+# 9.5.0 (script/setup and config/deploy.campsite-*.yml) — bump both together.
+gem "elasticsearch", "~> 9.5"
 gem "fastimage"
 gem "faraday"
 gem "faraday-follow_redirects"

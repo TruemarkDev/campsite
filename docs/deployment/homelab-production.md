@@ -21,7 +21,12 @@ deployments.
 | MySQL 8                    | accessory   | Odin                 | 1 GiB             | local named volume          | `mysqladmin ping`               |
 | Redis                      | accessory   | Odin                 | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
 | S3-compatible object store | accessory   | Odin                 | 512 MiB           | local named volume          | readiness endpoint              |
-| Elasticsearch 8.8          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
+| Elasticsearch 9.5          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
+
+⚠️ The 2 GiB / 1 GiB-heap figure was measured against Elasticsearch 8.8; it has
+not been re-measured since the 9.5 upgrade (Lucene 10, additional bundled
+modules). Re-measure the container's steady-state footprint on Shuri before
+treating the cap as verified.
 
 Odin is the application and primary-data host. Shuri is the search host because
 Elasticsearch's measured footprint fits its 2 GiB cap while Asgard has only
@@ -70,6 +75,30 @@ digests. Node-based images use the repository's declared Node 24.19.0 runtime;
 all application processes run as unprivileged users. Updating a base image or
 Elasticsearch therefore requires an explicit digest refresh and rebuild rather
 than silently following a mutable registry tag.
+
+### Upgrading Elasticsearch (❌ not yet performed on Shuri)
+
+The declared image moved from 8.8.0 to 9.5.0. Elastic does not support a direct
+rolling upgrade from 8.8 to 9.x — the documented path is 8.8 → 8.19 (the last
+8.x minor) → 9.x, and indices created by 7.x are unreadable in 9.x.
+
+Campsite's Elasticsearch holds only derived search indices, every one of which
+is rebuildable from MySQL, so the recommended path skips the ladder entirely:
+
+1. Stop the accessory and the workers that write to it.
+2. Remove the `campsite-api-tokdio_elasticsearch-data` volume — do not carry the
+   8.8 data directory across.
+3. `kamal accessory boot elasticsearch` on the 9.5.0 digest, and wait for the
+   cluster-health check to report green.
+4. Reindex from the application against the live database — from `api/`,
+   `bin/rails searchkick:reindex:all`, or one model at a time with
+   `bin/rails searchkick:reindex CLASS=Post` (the searchkick-indexed models are
+   `Post`, `Note`, and `Call`).
+5. Verify by comparing document counts per index against the source tables
+   before re-enabling search-dependent traffic.
+
+Preserving the existing volume instead would require the 8.19 intermediate hop
+first; there is no reason to take that path for a rebuildable index.
 
 Deploys use Kamal commands from the operator workstation. SSH is Kamal's
 transport, not an independent deployment procedure. Direct host commands are
