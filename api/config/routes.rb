@@ -9,83 +9,96 @@ Rails.application.routes.draw do
   auth_subdomains = ENV.fetch("AUTH_SUBDOMAINS", ENV.fetch("AUTH_SUBDOMAIN", "auth")).split(",").map(&:strip)
   admin_subdomains = ENV.fetch("ADMIN_SUBDOMAINS", ENV.fetch("ADMIN_SUBDOMAIN", "admin")).split(",").map(&:strip)
 
+  # A lambda constraint can be evaluated for recognition but Rails cannot invert
+  # it to build a host, so url helpers inside these blocks would drop the
+  # subdomain entirely. Pinning the canonical subdomain as a scope default
+  # restores generation while the lambda keeps accepting every configured
+  # subdomain. AUTH_SUBDOMAIN/ADMIN_SUBDOMAIN name the canonical host;
+  # AUTH_SUBDOMAINS/ADMIN_SUBDOMAINS list every host that must be recognised.
+  canonical_auth_subdomain = ENV.fetch("AUTH_SUBDOMAIN", auth_subdomains.first)
+  canonical_admin_subdomain = ENV.fetch("ADMIN_SUBDOMAIN", admin_subdomains.first)
+
   get "/up", to: proc { [200, { "Content-Type" => "text/plain" }, ["OK"]] }
 
   if Rails.env.development?
     mount LetterOpenerWeb::Engine, at: "/preview-emails"
   end
 
-  constraints ->(request) { auth_subdomains.include?(request.subdomain) } do
-    devise_for :users,
-      controllers: {
-        omniauth_callbacks: "users/omniauth_callbacks",
-      },
-      path: "",
-      path_names: { sign_up: "sign-up", sign_in: "sign-in", sign_out: "sign-out" },
-      skip: [:confirmations, :registrations, :sessions]
+  scope defaults: { subdomain: canonical_auth_subdomain } do
+    constraints ->(request) { auth_subdomains.include?(request.subdomain) } do
+      devise_for :users,
+        controllers: {
+          omniauth_callbacks: "users/omniauth_callbacks",
+        },
+        path: "",
+        path_names: { sign_up: "sign-up", sign_in: "sign-in", sign_out: "sign-out" },
+        skip: [:confirmations, :registrations, :sessions]
 
-    devise_scope :user do
-      # registrations
-      get "/sign-up", to: "users/registrations#new", as: :new_user_registration
-      post "/", to: "users/registrations#create", as: :user_registration
-      # confirmations
-      get "/confirmation", to: "users/confirmations#show", as: :user_confirmation
-      # sessions
-      get "/sign-in", to: "users/sessions#new", as: :new_user_session
-      post "/sign-in", to: "users/sessions#create", as: :user_session
-      get "/desktop/sign-in", to: "users/sessions#desktop", as: :desktop_session
-      get "/sign-in/otp", to: "users/otp/sessions#new"
-      post "/sign-in/otp", to: "users/otp/sessions#create"
-      get "/sign-in/recovery-code", to: "users/recovery_code/sessions#new"
-      post "/sign-in/recovery-code", to: "users/recovery_code/sessions#create"
-    end
+      devise_scope :user do
+        # registrations
+        get "/sign-up", to: "users/registrations#new", as: :new_user_registration
+        post "/", to: "users/registrations#create", as: :user_registration
+        # confirmations
+        get "/confirmation", to: "users/confirmations#show", as: :user_confirmation
+        # sessions
+        get "/sign-in", to: "users/sessions#new", as: :new_user_session
+        post "/sign-in", to: "users/sessions#create", as: :user_session
+        get "/desktop/sign-in", to: "users/sessions#desktop", as: :desktop_session
+        get "/sign-in/otp", to: "users/otp/sessions#new"
+        post "/sign-in/otp", to: "users/otp/sessions#create"
+        get "/sign-in/recovery-code", to: "users/recovery_code/sessions#new"
+        post "/sign-in/recovery-code", to: "users/recovery_code/sessions#create"
+      end
 
-    get "/", to: redirect("/sign-in"), as: :auth_root
-    get "/sign-in/desktop", to: "users/desktop/sessions#new", as: :new_desktop_session
-    get "/sign-in/desktop/open", to: "users/desktop/sessions#show", as: :open_desktop_session
-    post "/sign-in/figma", to: "users/figma/sessions#create", as: :create_figma_session
-    get "/sign-in/figma/open", to: "users/figma/sessions#show", as: :open_figma_session
+      get "/", to: redirect("/sign-in"), as: :auth_root
+      get "/sign-in/desktop", to: "users/desktop/sessions#new", as: :new_desktop_session
+      get "/sign-in/desktop/open", to: "users/desktop/sessions#show", as: :open_desktop_session
+      post "/sign-in/figma", to: "users/figma/sessions#create", as: :create_figma_session
+      get "/sign-in/figma/open", to: "users/figma/sessions#show", as: :open_figma_session
 
-    use_doorkeeper do
-      skip_controllers :applications
-      controllers authorizations: "doorkeeper/custom_authorizations"
-    end
+      use_doorkeeper do
+        skip_controllers :applications
+        controllers authorizations: "doorkeeper/custom_authorizations"
+      end
 
-    namespace :integrations do
-      resource :auth, only: :new
+      namespace :integrations do
+        resource :auth, only: :new
+      end
     end
   end
 
-  constraints ->(request) { admin_subdomains.include?(request.subdomain) } do
-    scope module: "admin", path: "admin" do
-      authenticate :user, lambda { |u| u.staff? } do
-        mount Sidekiq::Web => "/sidekiq"
-      end
+  scope defaults: { subdomain: canonical_admin_subdomain } do
+    constraints ->(request) { admin_subdomains.include?(request.subdomain) } do
+      scope module: "admin", path: "admin" do
+        authenticate :user, lambda { |u| u.staff? } do
+          mount Sidekiq::Web => "/sidekiq"
+        end
 
-      get "/", to: "admin#index", as: "admin"
+        get "/", to: "admin#index", as: "admin"
 
-      scope module: "features" do
-        resources :features, only: [:index, :create, :destroy, :show], param: :name do
-          resources :users, only: [:create, :destroy]
-          resource :user_search, only: [:show]
-          resources :organizations, only: [:create, :destroy], param: :slug
-          resource :organization_search, only: [:show]
-          resources :actors, only: [:destroy]
-          resources :groups, only: [:create, :destroy], param: :name
-          resource :enablement, only: [:create, :destroy]
+        scope module: "features" do
+          resources :features, only: [:index, :create, :destroy, :show], param: :name do
+            resources :users, only: [:create, :destroy]
+            resource :user_search, only: [:show]
+            resources :organizations, only: [:create, :destroy], param: :slug
+            resource :organization_search, only: [:show]
+            resources :actors, only: [:destroy]
+            resources :groups, only: [:create, :destroy], param: :name
+            resource :enablement, only: [:create, :destroy]
 
-          resources :logs, only: [] do
-            resource :rollback, only: [:create]
+            resources :logs, only: [] do
+              resource :rollback, only: [:create]
+            end
           end
+        end
+
+        scope module: "demo_orgs" do
+          resources :demo_orgs, only: [:index, :create]
         end
       end
 
-      scope module: "demo_orgs" do
-        resources :demo_orgs, only: [:index, :create]
-      end
+      get "/", to: redirect("/admin")
     end
-
-    get "/", to: redirect("/admin")
   end
 
   scope module: "api/v1", path: "v1", defaults: { format: :json } do
