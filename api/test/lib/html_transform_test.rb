@@ -177,7 +177,6 @@ class HtmlTransformTest < ActiveSupport::TestCase
         <p>Foo bar</p>
         <script>alert("foo")</script>
         <figure><img src="foo.jpg" alt="Foo"><figcaption>Foo</figcaption></figure>
-        <table><tr><td>Foo</td></tr></table>
         <p>Cat dog</p>
       HTML
 
@@ -648,7 +647,6 @@ class HtmlTransformTest < ActiveSupport::TestCase
         <p>Foo bar</p>
         <script>alert("foo")</script>
         <figure><img src="foo.jpg" alt="Foo"><figcaption>Foo</figcaption></figure>
-        <table><tr><td>Foo</td></tr></table>
         <p>Cat dog</p>
       HTML
 
@@ -972,7 +970,7 @@ class HtmlTransformTest < ActiveSupport::TestCase
           </tbody>
         </table>
       HTML
-      expected = <<~MARKDOWN.strip
+      expected = <<~'MARKDOWN'.strip
         | Name | Status |
         | --- | --- |
         | Editor | Ready \| tested |

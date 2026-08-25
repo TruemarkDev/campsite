@@ -33,16 +33,28 @@ end
 VCR.configure do |config|
   config.cassette_library_dir = "fixtures/vcr_cassettes"
   config.hook_into(:faraday)
-  config.filter_sensitive_data("<LINEAR_TOKEN>") { Rails.application.credentials&.dig(:linear, :token) }
-  config.filter_sensitive_data("<FIGMA_CLIENT_SECRET>") { Rails.application.credentials&.dig(:figma, :client_secret) }
-  config.filter_sensitive_data("<FIGMA_OAUTH_TOKEN>") { Rails.application.credentials&.dig(:figma, :test_oauth_token) }
-  config.filter_sensitive_data("<FIGMA_OAUTH_REFRESH_TOKEN>") { Rails.application.credentials&.dig(:figma, :test_oauth_refresh_token) }
-  config.filter_sensitive_data("<PLAIN_API_KEY>") { Rails.application.credentials&.dig(:plain, :api_key) }
-  config.filter_sensitive_data("<IMGIX_API_KEY>") { Rails.application.credentials&.dig(:imgix, :api_key) }
-  config.filter_sensitive_data("<IMGIX_SOURCE_ID>") { Rails.application.credentials&.dig(:imgix, :source_id) }
-  config.filter_sensitive_data("<OPENAI_API_KEY>") { Rails.application.credentials&.dig(:openai, :access_token) }
-  config.filter_sensitive_data("<OPENAI_ORGANIZATION>") { Rails.application.credentials&.dig(:openai, :organization_id) }
-  config.filter_sensitive_data("<TENOR_API_KEY>") { Rails.application.credentials&.dig(:tenor, :api_key) }
+
+  # Several test credentials are the placeholder "TODO". Registering a filter
+  # for a value that generic rewrites every unrelated occurrence of it in a
+  # request - the imgix source id lands in a path segment, so the URI became
+  # ".../sources/<IMGIX_SOURCE_ID>/..." and failed to parse. Only filter values
+  # that are actually secret-shaped.
+  filter_credential = lambda do |placeholder, *path|
+    value = Rails.application.credentials&.dig(*path)
+    next if value.blank? || value == "TODO"
+
+    config.filter_sensitive_data(placeholder) { value }
+  end
+  filter_credential.call("<LINEAR_TOKEN>", :linear, :token)
+  filter_credential.call("<FIGMA_CLIENT_SECRET>", :figma, :client_secret)
+  filter_credential.call("<FIGMA_OAUTH_TOKEN>", :figma, :test_oauth_token)
+  filter_credential.call("<FIGMA_OAUTH_REFRESH_TOKEN>", :figma, :test_oauth_refresh_token)
+  filter_credential.call("<PLAIN_API_KEY>", :plain, :api_key)
+  filter_credential.call("<IMGIX_API_KEY>", :imgix, :api_key)
+  filter_credential.call("<IMGIX_SOURCE_ID>", :imgix, :source_id)
+  filter_credential.call("<OPENAI_API_KEY>", :openai, :access_token)
+  filter_credential.call("<OPENAI_ORGANIZATION>", :openai, :organization_id)
+  filter_credential.call("<TENOR_API_KEY>", :tenor, :api_key)
   # Derived from ELASTICSEARCH_URL rather than hardcoded: searchkick talks to
   # whatever that env var points at, and a mismatch here makes VCR reject every
   # elasticsearch call in the suite (a service container named `elasticsearch`,

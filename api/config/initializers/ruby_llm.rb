@@ -26,5 +26,13 @@ RubyLLM.configure do |config|
   if Rails.env.test?
     config.request_timeout = 30
     config.max_retries = 1
+
+    # Llm#initialize refuses to build a client when no provider is configured,
+    # so jobs that stub Llm#chat could not even construct one. The suite never
+    # reaches the network (calls are stubbed or recorded by VCR), so a
+    # placeholder key is enough to let construction succeed.
+    config.gemini_api_key ||= "test-gemini-api-key"
+    config.openai_api_key ||= "test-openai-api-key"
+    config.anthropic_api_key ||= "test-anthropic-api-key"
   end
 end
