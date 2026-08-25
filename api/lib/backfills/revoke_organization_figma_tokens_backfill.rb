@@ -9,7 +9,7 @@ module Backfills
       "users.name" => "Name",
       "users.email" => "Email",
       "oauth_access_tokens.created_at" => "Access token created at",
-    }
+    }.freeze
 
     def self.run(dry_run: true, organization_slug:)
       organization_user_ids = Organization.find_by!(slug: organization_slug).members.pluck(:id)

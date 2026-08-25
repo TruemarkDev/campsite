@@ -52,7 +52,7 @@ class Note < ApplicationRecord
   ].freeze
   SERIALIZER_PRELOADS = [
     :permissions,
-  ]
+  ].freeze
 
   scope :serializer_preload, -> {
     eager_load(*SERIALIZER_EAGER_LOADS).preload(*SERIALIZER_PRELOADS)

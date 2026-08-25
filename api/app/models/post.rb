@@ -5,7 +5,7 @@ class Post < ApplicationRecord
   FILE_LIMIT = 10 # This is for attachments
   POST_TAG_LIMIT = 10
   DIGEST_LIMIT = 16
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:last_activity_at, :published_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:last_activity_at, :published_at].freeze
 
   include Discard::Model
   include PublicIdGenerator
@@ -807,17 +807,16 @@ class Post < ApplicationRecord
   end
 
   def title_from_description
-    @title_from_descrition ||= begin
+    @title_from_description ||= begin
       first_child = parsed_description_html.children.first
-      return unless first_child
 
-      # return the text if the first child is a header tag
-      if first_child.name.in?(["h1", "h2", "h3", "h4", "h5", "h6"])
-        return first_child.text
-      end
-
-      # if the first child is a paragraph and has a strong or bold tag, return the text
-      if first_child.name == "p" && first_child.children.count == 1 && first_child.children[0].name.in?(["strong", "b"])
+      if first_child.nil?
+        nil
+      elsif first_child.name.in?(["h1", "h2", "h3", "h4", "h5", "h6"])
+        # the text if the first child is a header tag
+        first_child.text
+      elsif first_child.name == "p" && first_child.children.count == 1 && first_child.children[0].name.in?(["strong", "b"])
+        # if the first child is a paragraph and has a strong or bold tag, the text
         first_child.text
       end
     end

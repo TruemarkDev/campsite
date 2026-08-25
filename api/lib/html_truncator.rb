@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class HtmlTruncator
-  NOT_TRUNCATABLE_ELEMENTS = ["p", "li"]
+  NOT_TRUNCATABLE_ELEMENTS = ["p", "li"].freeze
 
   attr_accessor :html, :is_text_content_truncated
 

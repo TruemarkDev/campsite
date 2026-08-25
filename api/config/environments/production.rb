@@ -77,15 +77,16 @@ Rails.application.configure do
   }
   config.action_mailer.delivery_method = :smtp
 
-  config.action_mailer.smtp_settings = {
-    address: ENV.fetch("SMTP_ADDRESS", "smtp.postmarkapp.com"),
-    port: ENV.fetch("SMTP_PORT", "587"),
-    domain: ENV.fetch("SMTP_DOMAIN", "tokdio.com"),
-    user_name: ENV["SMTP_USER"] || Rails.application.credentials.dig(:smtp, :user),
-    password: ENV["SMTP_PASSWORD"] || Rails.application.credentials.dig(:smtp, :password),
-    authentication: "plain",
-    enable_starttls_auto: true,
-  }
+  # Environment files are evaluated before the Zeitwerk autoloaders are set up,
+  # so both files are required explicitly. lib/campsite.rb must come first:
+  # defining Campsite from the nested file alone would shadow its autoload and
+  # leave Campsite::DEV_APP_URL (used by config/initializers/cors.rb) missing.
+  require Rails.root.join("lib/campsite")
+  require Rails.root.join("lib/campsite/smtp_settings")
+
+  config.action_mailer.smtp_settings = Campsite::SmtpSettings.build(
+    credentials: Rails.application.credentials,
+  )
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.

@@ -36,7 +36,7 @@ env:
 accessories:
   elasticsearch:
     service: campsite-shadow-elasticsearch
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.0@sha256:9aaa38551b4d9e655c54d9dc6a1dad24ee568c41952dc8cf1d4808513cfb5f65
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.5.0@sha256:8818ab9af72d7482e38a9d6f0454d5ee667564a25bbdc42360c0f9b8f8f72fc5
     host: shuri@192.168.20.14
     port: "127.0.0.1:9200:9200"
     env:

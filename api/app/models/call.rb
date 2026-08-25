@@ -75,7 +75,7 @@ class Call < ApplicationRecord
         },
       ],
     },
-  ]
+  ].freeze
 
   scope :serializer_preload, -> {
     eager_load(SERIALIZER_EAGER_LOAD).preload(room: { subject: { organization_memberships: OrganizationMembership::SERIALIZER_EAGER_LOAD } })

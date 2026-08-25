@@ -43,10 +43,16 @@ VCR.configure do |config|
   config.filter_sensitive_data("<OPENAI_API_KEY>") { Rails.application.credentials&.dig(:openai, :access_token) }
   config.filter_sensitive_data("<OPENAI_ORGANIZATION>") { Rails.application.credentials&.dig(:openai, :organization_id) }
   config.filter_sensitive_data("<TENOR_API_KEY>") { Rails.application.credentials&.dig(:tenor, :api_key) }
+  # Derived from ELASTICSEARCH_URL rather than hardcoded: searchkick talks to
+  # whatever that env var points at, and a mismatch here makes VCR reject every
+  # elasticsearch call in the suite (a service container named `elasticsearch`,
+  # or simply a non-default port, would otherwise fail every test).
+  elasticsearch_uri = URI(ENV.fetch("ELASTICSEARCH_URL", "http://localhost:9200"))
+
   config.ignore_request do |request|
     uri = URI(request.uri)
     # ignore elasticsearch requests
-    uri.host == "localhost" && uri.port == 9200
+    uri.host == elasticsearch_uri.host && uri.port == elasticsearch_uri.port
   end
 end
 

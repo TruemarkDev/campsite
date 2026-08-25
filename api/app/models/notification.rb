@@ -60,7 +60,7 @@ class Notification < ApplicationRecord
     )
   }
 
-  SERIALIZER_EAGER_LOAD = [:organization, :event, organization_membership: OrganizationMembership::SERIALIZER_EAGER_LOAD]
+  SERIALIZER_EAGER_LOAD = [:organization, :event, organization_membership: OrganizationMembership::SERIALIZER_EAGER_LOAD].freeze
   SERIALIZER_PRELOAD = {
     target: Post::FEED_INCLUDES,
     event: [
@@ -90,7 +90,7 @@ class Notification < ApplicationRecord
         ],
       ],
     ],
-  }
+  }.freeze
   scope :serializer_preload, -> { eager_load(SERIALIZER_EAGER_LOAD).preload(SERIALIZER_PRELOAD) }
 
   delegate :subject, :actor, to: :event

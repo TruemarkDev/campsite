@@ -1,6 +1,8 @@
 # Campsite homelab production platform
 
-Status: declared design; no production cutover is implied by this document.
+Status: partially deployed. The Rails API/auth and Sidekiq services are live on
+Odin; sections below retain explicit gap markers for unverified or unbuilt
+parts of the wider platform.
 
 This is the target platform for the `camp.tokdio.com` migration. Kamal is the
 deployment control plane for every Campsite application runtime and stateful
@@ -21,7 +23,12 @@ deployments.
 | MySQL 8                    | accessory   | Odin                 | 1 GiB             | local named volume          | `mysqladmin ping`               |
 | Redis                      | accessory   | Odin                 | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
 | S3-compatible object store | accessory   | Odin                 | 512 MiB           | local named volume          | readiness endpoint              |
-| Elasticsearch 8.8          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
+| Elasticsearch 9.5          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
+
+⚠️ The 2 GiB / 1 GiB-heap figure was measured against Elasticsearch 8.8; it has
+not been re-measured since the 9.5 upgrade (Lucene 10, additional bundled
+modules). Re-measure the container's steady-state footprint on Shuri before
+treating the cap as verified.
 
 Odin is the application and primary-data host. Shuri is the search host because
 Elasticsearch's measured footprint fits its 2 GiB cap while Asgard has only
@@ -85,6 +92,41 @@ all application processes run as unprivileged users. Updating a base image or
 Elasticsearch therefore requires an explicit digest refresh and rebuild rather
 than silently following a mutable registry tag.
 
+### Upgrading Elasticsearch (❌ not yet performed on Shuri)
+
+The declared image moved from 8.8.0 to 9.5.0. Elastic does not support a direct
+rolling upgrade from 8.8 to 9.x — the documented path is 8.8 → 8.19 (the last
+8.x minor) → 9.x, and indices created by 7.x are unreadable in 9.x.
+
+Campsite's Elasticsearch holds only derived search indices, every one of which
+is rebuildable from MySQL, so the recommended path skips the ladder entirely:
+
+1. Stop the accessory and the workers that write to it.
+2. Remove the `campsite-api-tokdio_elasticsearch-data` volume — do not carry the
+   8.8 data directory across.
+3. `kamal accessory boot elasticsearch` on the 9.5.0 digest, and wait for the
+   cluster-health check to report green.
+4. Reindex from the application against the live database — from `api/`,
+   `bin/rails searchkick:reindex:all`, or one model at a time with
+   `bin/rails searchkick:reindex CLASS=Post` (the searchkick-indexed models are
+   `Post`, `Note`, and `Call`).
+5. Verify before re-enabling search-dependent traffic, comparing each index
+   against the rows searchkick actually imports (`search_import`, not a raw
+   table count — the models scope what they index):
+
+   ```ruby
+   [Post, Note, Call].each do |m|
+     puts "#{m.name}: es=#{m.search_index.total_docs} db=#{m.search_import.count}"
+   end
+   ```
+
+Steps 3–5 were rehearsed locally against a clean 9.5.0 container: the reindex
+task completes for all three models and the counts match exactly. The Shuri
+execution itself is ❌ still outstanding.
+
+Preserving the existing volume instead would require the 8.19 intermediate hop
+first; there is no reason to take that path for a rebuildable index.
+
 Deploys use Kamal commands from the operator workstation. SSH is Kamal's
 transport, not an independent deployment procedure. Direct host commands are
 reserved for provisioning prerequisites and break-glass recovery and require a
@@ -115,6 +157,75 @@ tokdio host family to Kamal proxy on Odin over private HTTP:
 Cloudflare terminates public TLS. Kamal proxy routes by preserved Host header.
 No old API, OAuth, webhook, POST, or WebSocket hostname is implemented as an
 HTTP redirect during the rollback window.
+
+## Outbound mail (✅ deployed)
+
+Mail is delivered by the homelab Stalwart service on `vyas` (192.168.10.9), not
+by Postmark. Its runbook lives in the `homelab` repository at
+`runbooks/stalwart-on-vyas.md`; this repository owns only the client side.
+
+| Setting | Value |
+|---|---|
+| `SMTP_ADDRESS` | `smtp.home` |
+| `SMTP_PORT` | `25` |
+| `SMTP_DOMAIN` | `agents.home` |
+| `SMTP_AUTHENTICATION` | `none` |
+| `SMTP_STARTTLS` | `false` |
+| `SMTP_OPEN_TIMEOUT` | `15` |
+| `SMTP_READ_TIMEOUT` | `25` |
+| `MAILER_FROM` | `Campsite <campsite@agents.home>` |
+
+The endpoint is unauthenticated and plaintext, and is reachable only inside the
+homelab. `config/environments/production.rb` therefore omits `user_name`,
+`password`, and `authentication` from `smtp_settings` when
+`SMTP_AUTHENTICATION` is `none`. With every variable unset the defaults are
+unchanged: Postmark on 587 with plain authentication and STARTTLS.
+
+Stalwart runs with `MtaStageRcpt.allowRelaying` disabled, so it accepts
+`@agents.home` recipients only and returns `550` for anything else. Signup
+confirmations therefore reach only `@agents.home` addresses; any other address
+fails in the background instead of reaching the user.
+
+Devise no longer delivers inline. `User#send_devise_notification` queues through
+Sidekiq, so a rejected recipient, a slow relay, or an unavailable one can no
+longer 500 the signup request — `raise_delivery_errors` stays `true`, but it now
+fails a job rather than a controller action. Mail failures surface in the worker
+log and in Sidekiq retries, not in the browser.
+
+`ActionMailer::MailDeliveryJob.enqueue_after_transaction_commit` is `true`
+(`config/initializers/mail_delivery_job.rb`). `send_devise_notification` runs
+inside the record's transaction and Rails 8.1 defaults this to `false`, so
+without it Sidekiq can dequeue the job before the user row is visible and fail
+to find it. The setting is per-job, so only mail delivery is affected.
+
+The timeouts above exist because Stalwart's spam scan once held the SMTP DATA
+phase for 12s, past Action Mailer's 5s default `read_timeout`. Inbound spam
+filtering is now disabled on the server (see the runbook), so delivery settles
+in well under a second; the headroom is retained deliberately.
+
+Both `config/deploy.campsite-api.yml` and `config/deploy.campsite-worker.yml`
+carry these variables; the worker sends the asynchronous mail and must stay in
+step with the API. No SMTP secret is required, so `.kamal/campsite-secrets`
+is unchanged.
+
+As built, the live API runs `2cb0ce8455c90241c60328afc8a8ad0e847e1a01` and the
+worker `b955395ae56b4b52032b60fa7959ce846f175a84`; both carry the same mail
+settings, and both revisions include the deferred-delivery change. Verified in
+the running API container: `smtp_settings` resolves to `smtp.home:25` with
+`open_timeout: 15`, `read_timeout: 25` and no credential keys; the
+`send_devise_notification` override is active; and the mail job's
+after-commit flag is set. A production Action Mailer message from
+`campsite@agents.home` was accepted by SMTP in 0.75s and ingested to the
+`prakash@agents.home` inbox.
+
+⚠️ **`config/deploy.campsite-api.yml` cannot deploy the Elasticsearch
+accessory.** Its `host:` is `shuri@192.168.20.14`; Kamal 2.12 has no
+per-accessory SSH user, so it resolves that whole string as a hostname and the
+registry port-forward step fails with `Socket::ResolutionError`. The global
+`ssh.user` is `debian`, which Shuri refuses — `shuri` and `prakash` are
+accepted. Deploys currently work around it with `--hosts 192.168.10.7`, which
+excludes the accessory host. The fix is `host: 192.168.20.14` plus a
+`~/.ssh/config` `User shuri` entry for that address.
 
 ## Durable storage and backups
 

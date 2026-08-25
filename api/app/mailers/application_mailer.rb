@@ -17,7 +17,7 @@ class ApplicationMailer < ActionMailer::Base
 
   module ApplicationHelper
     def noreply_email
-      "Campsite <hello@truemark.com.np>"
+      ENV.fetch("MAILER_FROM", "Campsite <hello@truemark.com.np>")
     end
 
     def support_email

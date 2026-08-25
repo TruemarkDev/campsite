@@ -44,10 +44,12 @@ module Api
           notes = notes_async.index_by(&:id)
           calls = calls_async.index_by(&:id)
 
-          # pluck the id+score and add a type so that we can merge them
-          post_items = posts_result.map { |h| h.merge(type: :post, resource: posts[h[:id]]) }
-          call_items = calls_result.map { |h| h.merge(type: :call, resource: calls[h[:id]]) }
-          note_items = notes_result.map { |h| h.merge(type: :note, resource: notes[h[:id]]) }
+          # pluck the id+score and add a type so that we can merge them.
+          # searchkick 6 dropped Hashie, so a hit is a bare Searchkick::HashWrapper
+          # (string-keyed, no #merge) — unwrap it before adding our own keys.
+          post_items = posts_result.map { |h| h.to_h.symbolize_keys.merge(type: :post, resource: posts[h[:id]]) }
+          call_items = calls_result.map { |h| h.to_h.symbolize_keys.merge(type: :call, resource: calls[h[:id]]) }
+          note_items = notes_result.map { |h| h.to_h.symbolize_keys.merge(type: :note, resource: notes[h[:id]]) }
 
           # combine all the results
           results = (post_items + call_items + note_items)

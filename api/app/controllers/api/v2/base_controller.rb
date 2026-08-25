@@ -6,7 +6,7 @@ module Api
       class UnauthorizedError < StandardError; end
 
       MAX_CURSOR_PAGINATION_LIMIT = 50
-      ALLOWED_ORDER_DIRECTIONS = [:asc, :desc]
+      ALLOWED_ORDER_DIRECTIONS = [:asc, :desc].freeze
 
       include Pundit::Authorization
       include RequestRescuable

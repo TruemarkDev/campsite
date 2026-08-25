@@ -15,7 +15,7 @@ class Comment < ApplicationRecord
   include ResourceMentionable
 
   FILE_LIMIT = 10
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at].freeze
 
   belongs_to :subject, polymorphic: true
   belongs_to :attachment, optional: true

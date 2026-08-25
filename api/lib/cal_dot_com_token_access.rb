@@ -3,7 +3,7 @@
 class CalDotComTokenAccess
   ALLOWED_ROUTES = {
     "api/v1/integrations/cal_dot_com/call_rooms" => [:create], # POST /v1/integrations/cal_dot_com/call_rooms
-  }
+  }.freeze
 
   def self.allowed?(controller:, action:)
     action = action.to_sym

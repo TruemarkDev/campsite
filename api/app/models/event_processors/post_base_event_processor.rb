@@ -213,11 +213,10 @@ module EventProcessors
     def previous_project
       return @previous_project if defined?(@previous_project)
 
-      @previous_project ||= begin
+      @previous_project = begin
         previous_project_id = subject_previous_changes[:project_id]&.first
-        return unless previous_project_id
 
-        Project.find(previous_project_id)
+        Project.find(previous_project_id) if previous_project_id
       end
     end
 

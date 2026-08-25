@@ -67,7 +67,7 @@ module Backfills
       nodes.each do |node|
         display_name = node.text.gsub(/@/, "")
         member = members_by_display_name[display_name]
-        next unless member && member.user # rubocop:disable Style/SafeNavigation
+        next unless member && member.user
 
         node["data-type"] = "mention"
         node["data-id"] = member.public_id

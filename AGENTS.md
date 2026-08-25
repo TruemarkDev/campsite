@@ -10,8 +10,10 @@ proposals live in `openspec/changes/`.
 ## Build & Test
 
 Toolchain: node 24.19.0 + ruby 4.0.6 + pnpm 11.9.0 via mise (`mise.toml`).
-🟡 Version drift exists: `.nvmrc` says 20.19.4 and `api/mise.toml` says node
-26.4.0 — `MAINTENANCE.md` declares node 24.x / ruby 4.0.6 the baseline.
+`.nvmrc`, `api/mise.toml`, every `Dockerfile`, and `package.json` `engines`
+all agree on node 24.19.0, the baseline `MAINTENANCE.md` declares.
+⚠️ `api/fly.toml` still carries node 26.4.0 in `[build.args]`, but the Fly
+deploy is dead (see `api/CLAUDE.md`) — it is not a mirror target.
 
 ```bash
 # First-time setup

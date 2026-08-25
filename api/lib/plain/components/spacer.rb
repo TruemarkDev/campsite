@@ -3,7 +3,7 @@
 module Plain
   module Components
     class Spacer < BaseComponent
-      SPACER_SIZES = ["XS", "S", "M", "L", "XL"]
+      SPACER_SIZES = ["XS", "S", "M", "L", "XL"].freeze
 
       def initialize(spacer_size: "M")
         raise ArgumentError, "spacer_size must be one of #{SPACER_SIZES.join(", ")}" unless SPACER_SIZES.include?(spacer_size)

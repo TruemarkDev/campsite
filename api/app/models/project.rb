@@ -22,7 +22,7 @@ class Project < ApplicationRecord
 
   MEMBERS_LIMIT = 2
   CAMPSITE_INSIDERS_PROD_PUBLIC_ID = "potztg2sr8pv"
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:name, :last_activity_at, :created_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:name, :last_activity_at, :created_at].freeze
 
   belongs_to :organization
   belongs_to :creator, class_name: "OrganizationMembership"
@@ -99,7 +99,7 @@ class Project < ApplicationRecord
     )
   }
 
-  SERIALIZER_INCLUDES = [:organization, :slack_channel, :message_thread, call_room: :organization]
+  SERIALIZER_INCLUDES = [:organization, :slack_channel, :message_thread, call_room: :organization].freeze
   scope :serializer_includes, -> do
     eager_load(SERIALIZER_INCLUDES)
   end

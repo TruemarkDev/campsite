@@ -40,7 +40,7 @@ class TimelineEvent < ApplicationRecord
   SERIALIZER_PRELOADS = [
     actor: OrganizationMembership::SERIALIZER_EAGER_LOAD,
     reference: [:external_record, *Post::FEED_INCLUDES, *Note::SERIALIZER_EAGER_LOADS, *Note::SERIALIZER_PRELOADS],
-  ]
+  ].freeze
 
   scope :serializer_preloads, -> { preload(SERIALIZER_PRELOADS) }
   scope :viewable_by, ->(user) {

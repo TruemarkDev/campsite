@@ -24,7 +24,7 @@ class CampsiteMcpServer < MCP::Server
 
   private
 
-  # mcp 1.1 advertises and negotiates 2026-07-28, but its modern transport path
+  # mcp advertises and negotiates 2026-07-28, but its modern transport path
   # is not complete yet. Keep the SDK's legacy initialize flow intact while
   # adding the request-scoped envelope and result fields required by the modern
   # lifecycle for Campsite's already-stateless, per-request server instances.
@@ -33,7 +33,7 @@ class CampsiteMcpServer < MCP::Server
     return handler unless handler
 
     lambda do |params|
-      modern = modern_request?(params)
+      modern = campsite_modern_request?(params)
       validate_modern_request!(params, request) if modern
 
       result = handler.call(params)
@@ -58,7 +58,10 @@ class CampsiteMcpServer < MCP::Server
     super.merge(ttlMs: STATIC_CATALOG_TTL_MS, cacheScope: PRIVATE_CACHE_SCOPE)
   end
 
-  def modern_request?(params)
+  # Deliberately NOT named `modern_request?`: MCP::Server defines its own
+  # `modern_request?(request, session)` (mcp >= 1.3) and a same-named private method
+  # here would shadow it and be called with the wrong arity.
+  def campsite_modern_request?(params)
     meta = params.is_a?(Hash) ? params[:_meta] || params["_meta"] : nil
     protocol_version = read_meta(meta, PROTOCOL_VERSION_META_KEY)
     !protocol_version.nil?

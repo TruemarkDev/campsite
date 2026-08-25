@@ -5,7 +5,7 @@ class ScheduledNotification < ApplicationRecord
 
   WEEKLY_DIGEST = "weekly_digest"
   DAILY_DIGEST = "daily_digest"
-  NAMES = [DAILY_DIGEST, WEEKLY_DIGEST]
+  NAMES = [DAILY_DIGEST, WEEKLY_DIGEST].freeze
 
   belongs_to :schedulable, polymorphic: true
 
