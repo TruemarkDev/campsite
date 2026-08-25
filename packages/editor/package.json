@@ -5,7 +5,7 @@
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json",
     "clean": "rm -rf .turbo dist node_modules",
     "lint": "eslint ./src/*.ts*",
     "test": "vitest --environment=jsdom"
@@ -64,5 +64,6 @@
   },
   "peerDependencies": {
     "prosemirror-model": "^1.22.3"
-  }
+  },
+  "types": "./dist/index.d.ts"
 }

@@ -4,7 +4,7 @@
     "esModuleInterop": true,
     "isolatedModules": true,
     "module": "ES2020",
-    "moduleResolution": "Node",
+    "moduleResolution": "bundler",
     "allowJs": true,
     "skipLibCheck": true,
     // Must match packages/ui's own lib (@campsite/tsconfig/nextjs.json), since we
