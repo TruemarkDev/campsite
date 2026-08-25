@@ -105,7 +105,7 @@ module Api
         end
 
         post = Post.create_post(
-          params: params.permit!,
+          params: create_params,
           parent: parent,
           project: project,
           organization: current_organization,
@@ -183,6 +183,29 @@ module Api
       end
 
       private
+
+      def create_params
+        params.permit(
+          :description,
+          :description_html,
+          :project_id,
+          :unfurled_link,
+          :parent_id,
+          :note,
+          :note_id,
+          :from_message_id,
+          :onboarding_step,
+          :status,
+          :title,
+          :draft,
+          attachment_ids: [],
+          feedback_request_member_ids: [],
+          tags: [],
+          links: [:name, :url],
+          poll: [:description, { options: [:description] }],
+          attachments: Api::V1::AttachmentsController::CREATE_PARAMS.keys,
+        )
+      end
 
       def current_post
         raise ActiveRecord::RecordNotFound unless current_organization

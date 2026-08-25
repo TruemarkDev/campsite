@@ -130,6 +130,14 @@ jobs:
         working-directory: api
         run: pnpm install --frozen-lockfile
 
+      - name: Audit Ruby dependencies
+        working-directory: api
+        run: bundle exec bundler-audit check --update
+
+      - name: Scan Rails security
+        working-directory: api
+        run: bundle exec brakeman --quiet --no-pager --exit-on-warn --exit-on-error --ensure-ignore-notes --ensure-no-obsolete-ignore-entries
+
       # Verify only. The GitHub workflow autocorrected and pushed the fixes back
       # to the branch using a GitHub App token; Forgejo has no equivalent, so
       # this fails the build instead of rewriting the contributor's commit.

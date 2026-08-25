@@ -1,0 +1,69 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "3694065d8432a5a594df03794bb56b32fc8e994f803803108925c757a56b2273",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "lib/cursor_pagination.rb",
+      "line": 31,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "options[:scope].where(\"#{qualified_column(column_name)} #{comparator(:order => order)} (:cursor_record_value)\", :cursor_record_value => cursor_record[column_name])",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "CursorPagination",
+        "method": "run"
+      },
+      "user_input": "qualified_column(column_name)",
+      "confidence": "Weak",
+      "cwe_id": [89],
+      "note": "Column names are checked against the model schema, directions are allow-listed, identifiers are adapter-quoted, and cursor values use bind parameters."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 4,
+      "fingerprint": "8b5a5821ad767204ff23c6cfcef2dc16b877a7ac68baaf34424f2c7a8029d5f0",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/models/concerns/mentionable.rb",
+      "line": 22,
+      "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
+      "code": "link_to(\"@#{member.username}\", member.url, :class => \"mention\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Mentionable",
+        "method": "replace_mentions_with_html_links"
+      },
+      "user_input": "member.url",
+      "confidence": "Weak",
+      "cwe_id": [79],
+      "note": "OrganizationMembership#url is synthesized from Campsite.app_url plus a fixed people path; it is not a stored or request-controlled URL."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "f8bbd24f4def681717740b84b3cf67bf8951a088292b2459c7c9be632990236d",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "lib/cursor_pagination.rb",
+      "line": 41,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "options[:scope].where(dynamic_cursor_predicate)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "CursorPagination",
+        "method": "run"
+      },
+      "user_input": "qualified_column(previous_column_name)",
+      "confidence": "Weak",
+      "cwe_id": [89],
+      "note": "Column names are checked against the model schema, directions are allow-listed, identifiers are adapter-quoted, and cursor values use bind parameters."
+    }
+  ],
+  "updated": "2026-08-26 00:00:00 +0545",
+  "brakeman_version": "8.0.6"
+}

@@ -51,6 +51,7 @@ gem "rack-mini-profiler"
 gem "rails", "~> 8.0"
 gem "redis", "~> 6.0"
 gem "stackprof"
+gem "strong_migrations", "~> 2.8"
 gem "aws-sdk-s3"
 gem "aws-sdk-ecs"
 gem "aws-sdk-transcribeservice"
@@ -76,6 +77,8 @@ gem "streamio-ffmpeg"
 # gem "image_processing", "~> 1.2"
 
 group :development, :test do
+  gem "brakeman", "~> 8.0", require: false
+  gem "bundler-audit", "~> 0.9.3", require: false
   gem "factory_bot_rails"
   gem "faker"
 end

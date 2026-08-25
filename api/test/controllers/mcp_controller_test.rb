@@ -109,6 +109,12 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_response :forbidden
       assert_equal "insufficient_scope", json_response["error"]
     end
+
+    test "HEAD is rejected like the unsupported GET transport" do
+      head "/mcp", headers: bearer_token_header(@token.plaintext_token)
+
+      assert_response :method_not_allowed
+    end
   end
 
   describe "rate limiting" do

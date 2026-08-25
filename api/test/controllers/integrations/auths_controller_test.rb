@@ -24,6 +24,15 @@ module Users
         assert_response :bad_request
         assert_includes response.body, "Invalid auth url"
       end
+
+      test "rejects non-HTTP and credential-bearing auth URLs" do
+        ["javascript:alert(1)", "https://user:password@example.com/oauth"].each do |auth_url|
+          get new_integrations_auth_path, params: { auth_url: auth_url }
+
+          assert_response :bad_request
+          assert_includes response.body, "Invalid auth url"
+        end
+      end
     end
   end
 end

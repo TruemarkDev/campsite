@@ -28,3 +28,43 @@ updates:
       # Prefix all commit messages with "chore: "
       prefix: 'chore'
       include: 'scope'
+
+  # Rails API gems. Routine version updates stay within the repository's
+  # patch/minor stewardship policy; security updates are not restricted by
+  # this allow rule.
+  - package-ecosystem: 'bundler'
+    directory: '/api'
+    versioning-strategy: increase
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    allow:
+      - dependency-type: 'all'
+        update-types:
+          - 'version-update:semver-patch'
+          - 'version-update:semver-minor'
+    open-pull-requests-limit: 2
+    groups:
+      bundler-security:
+        applies-to: security-updates
+        patterns:
+          - '*'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'
+
+  # Keep pinned workflow actions current independently from application gems.
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+    open-pull-requests-limit: 2
+    groups:
+      actions-security:
+        applies-to: security-updates
+        patterns:
+          - '*'
+    commit-message:
+      prefix: 'chore'
+      include: 'scope'

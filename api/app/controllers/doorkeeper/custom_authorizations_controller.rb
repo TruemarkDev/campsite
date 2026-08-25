@@ -2,6 +2,11 @@
 
 module Doorkeeper
   class CustomAuthorizationsController < AuthorizationsController
+    RESOURCE_OWNER_CLASSES = {
+      "Organization" => Organization,
+      "User" => User,
+    }.freeze
+
     include Pundit::Authorization
     include DatabaseRoleSwitchable
     include McpDiscoverable
@@ -18,7 +23,11 @@ module Doorkeeper
 
     def ensure_current_user_is_authorized_for_resource_owner
       resource_owner_id = params[:resource_owner_id] || current_resource_owner.id
-      resource_owner_class = params[:resource_owner_type]&.constantize || current_resource_owner.class
+      resource_owner_class = if params[:resource_owner_type]
+        RESOURCE_OWNER_CLASSES.fetch(params[:resource_owner_type]) { raise ActiveRecord::RecordNotFound }
+      else
+        current_resource_owner.class
+      end
 
       authorize(resource_owner_class.find(resource_owner_id), :create_oauth_access_grant?)
     end

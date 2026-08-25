@@ -19,6 +19,7 @@ class CursorPagination
       raise ArgumentError, "Invalid order: #{options[:order].inspect}"
     end
     @order[:id] ||= :asc
+    validate_order!
     @limit = options[:limit] || DEFAULT_PER_PAGE
   end
 
@@ -27,7 +28,7 @@ class CursorPagination
       where_parts = @order.map.with_index do |(column_name, order), index|
         if index == 0
           next @scope.where(
-            "#{table_name}.#{column_name} #{comparator(order: order)} (:cursor_record_value)",
+            "#{qualified_column(column_name)} #{comparator(order: order)} (:cursor_record_value)",
             cursor_record_value: cursor_record[column_name],
           )
         end
@@ -37,9 +38,9 @@ class CursorPagination
 
         @scope.where(
           <<~SQL.squish,
-            (#{table_name}.#{previous_column_name} #{comparator(order: previous_order)}= (:cursor_record_previous_column_value) OR
-              #{table_name}.#{previous_column_name} <=> (:cursor_record_previous_column_value)) AND
-            #{table_name}.#{column_name} #{comparator(order: order)} (:cursor_record_value)
+            (#{qualified_column(previous_column_name)} #{comparator(order: previous_order)}= (:cursor_record_previous_column_value) OR
+              #{qualified_column(previous_column_name)} <=> (:cursor_record_previous_column_value)) AND
+            #{qualified_column(column_name)} #{comparator(order: order)} (:cursor_record_value)
           SQL
           cursor_record_previous_column_value: cursor_record[previous_column_name],
           cursor_record_value: cursor_record[column_name],
@@ -52,7 +53,7 @@ class CursorPagination
     end
 
     @order.each do |(column_name, order)|
-      @results = @results.order("#{table_name}.#{column_name} #{order == :asc ? "asc" : "desc"}")
+      @results = @results.order(@scope.klass.arel_table[column_name].public_send(order))
     end
 
     # load an additional item to see if there is a next page
@@ -115,5 +116,23 @@ class CursorPagination
 
   def total_count
     @scope.size
+  end
+
+  private
+
+  def qualified_column(column_name)
+    [
+      @scope.connection.quote_table_name(table_name),
+      @scope.connection.quote_column_name(column_name),
+    ].join(".")
+  end
+
+  def validate_order!
+    valid_columns = @scope.klass.column_names
+
+    @order.each do |column_name, direction|
+      raise ArgumentError, "Invalid order column: #{column_name.inspect}" unless column_name.to_s.in?(valid_columns)
+      raise ArgumentError, "Invalid order direction: #{direction.inspect}" unless direction.in?([:asc, :desc])
+    end
   end
 end

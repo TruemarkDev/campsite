@@ -11,6 +11,15 @@ class CursorPaginationTest < ActiveSupport::TestCase
   end
 
   context "#run" do
+    test "rejects unknown columns and directions before constructing SQL" do
+      assert_raises(ArgumentError) do
+        CursorPagination.new(scope: User.all, order: { "id DESC; DROP TABLE users" => :asc })
+      end
+      assert_raises(ArgumentError) do
+        CursorPagination.new(scope: User.all, order: { id: :sideways })
+      end
+    end
+
     test "returns values if no option is provided" do
       pagination = CursorPagination.new(scope: User.all).run
       assert_equal 4, pagination.results.length

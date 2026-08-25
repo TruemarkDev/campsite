@@ -21,8 +21,7 @@ module Oauth
     end
 
     def self.instrument(outcome, host: nil)
-      ActiveSupport::Notifications.instrument("resolve.cimd.oauth", outcome: outcome, host: host)
-      Rails.logger.info(event: "oauth.cimd.resolve", outcome: outcome, host: host)
+      Rails.event.notify("campsite.oauth.cimd.resolve", outcome: outcome, host: host)
     end
   end
 end

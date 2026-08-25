@@ -25,7 +25,7 @@ class McpController < ActionController::API
   def handle
     # No server-initiated streaming for this tools-only server: clients use POST
     # for JSON-RPC. GET (SSE stream) is unsupported; DELETE (end session) is a no-op.
-    return head(:method_not_allowed) if request.get?
+    return head(:method_not_allowed) if request.get? || request.head?
     return head(:no_content) if request.delete?
 
     context = McpRequestContext.new(token: doorkeeper_token)

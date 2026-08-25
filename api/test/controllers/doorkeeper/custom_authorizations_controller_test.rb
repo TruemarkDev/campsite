@@ -368,6 +368,23 @@ module Doorkeeper
         assert_response :forbidden
       end
 
+      test "rejects unknown resource owner types without constantizing them" do
+        oauth_application = create(:oauth_application)
+        sign_in @user
+
+        post oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          state: "state",
+          redirect_uri: oauth_application.redirect_uri,
+          response_type: "code",
+          resource_owner_type: "Kernel",
+          resource_owner_id: @user.id,
+        }
+
+        assert_response :not_found
+        assert_nil AccessGrant.last
+      end
+
       test "creates an AccessGrant for an organization" do
         oauth_application = create(:oauth_application, :zapier, redirect_uri: "https://example.com/callback")
 
