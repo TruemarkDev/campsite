@@ -1,14 +1,12 @@
 module.exports = ({ env }) => ({
   plugins: {
-    'postcss-import': {},
-    'tailwindcss/nesting': {},
-    tailwindcss: {
-      config: './tailwind.mailer.config.js'
+    '@tailwindcss/postcss': {
+      optimize: env === 'production'
     },
-    autoprefixer: {},
     'postcss-custom-properties': {
-      preserve: false,
-      postcssInsertData: ['app/assets/stylesheets/mailer.css']
-    }
+      preserve: false
+    },
+    'postcss-logical': {},
+    'postcss-calc': {}
   }
 })

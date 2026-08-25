@@ -1,8 +1,34 @@
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import 'tailwindcss/theme.css';
+@import 'tailwindcss/utilities.css' source(none);
 
-@import 'mailer-base';
-@import 'prose';
+@import './mailer-base.css';
+@import './prose.css';
+
+@config '../../../tailwind.mailer.config.js';
+
+@source '../../views/layouts/mailer.html.erb';
+@source '../../views/mailers/*.erb';
+@source '../../views/mailers/**/*.erb';
+@source '../../../lib/rich_text.rb';
+@source not inline('flex-1 h-18 w-18');
+
+@source inline(
+  '{m,mx,my}-{auto,px,0,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,44,48,52,56,60,64,72,80,96}'
+);
+@source inline(
+  '{p,px,py}-{px,0,0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,9,10,11,12,14,16,20,24,28,32,36,40,44,48,52,56,60,64,72,80,96}'
+);
+
+@theme {
+  --color-blue-400: #60a5fa;
+  --color-blue-500: #3b82f6;
+  --color-blue-600: #2563eb;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --font-sans:
+    ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+}
 
 b,
 strong {
@@ -13,6 +39,10 @@ strong {
 .border {
   @apply border-primary border-solid;
   border-width: 1px;
+}
+
+.border-l {
+  border-left-style: solid;
 }
 
 img {
@@ -31,12 +61,31 @@ body {
 }
 
 label {
-  @apply text-primary items-center space-x-3 font-semibold;
+  @apply text-primary items-center font-semibold;
+}
+
+label > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(0.75rem * var(--tw-space-x-reverse));
+  margin-left: calc(0.75rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.flex-1 {
+  flex: 1 1 0%;
+}
+
+.table {
+  display: table;
+}
+
+/* Preserve the v3 mailer behavior: width was present, but no border rendered. */
+.prose blockquote {
+  border-left-style: none;
 }
 
 /* copied from web's global.css custom rule */
 .prose p {
-  @apply mb-2.5 mt-0;
+  @apply mt-0 mb-2.5;
 }
 
 .prose img[data-emoji], /* native reactions on Gmail get hot-swapped to Android emojis as <img> */

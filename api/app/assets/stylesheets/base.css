@@ -122,7 +122,13 @@ body {
 }
 
 label {
-  @apply text-primary flex items-center space-x-3 text-sm font-medium;
+  @apply text-primary flex items-center text-sm font-medium;
+}
+
+label > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(12px * var(--tw-space-x-reverse));
+  margin-left: calc(12px * calc(1 - var(--tw-space-x-reverse)));
 }
 
 input[type='text'],
@@ -131,27 +137,81 @@ input[type='password'],
 input[type='number'],
 input[type='search'],
 select {
-  @apply border-secondary bg-secondary text-primary w-full rounded-md border px-2 py-1.5 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:dark:ring-blue-900;
+  @apply border-secondary bg-secondary text-primary w-full rounded-md border px-2 py-1.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:dark:ring-blue-900;
 }
 
 a {
-  @apply rounded focus:outline-none focus:ring-2 focus:ring-blue-500;
+  @apply rounded-sm focus:ring-2 focus:ring-blue-500;
 }
 
 .btn {
-  @apply flex w-full items-center justify-center rounded-md bg-black bg-opacity-5 px-8 py-2 text-sm font-semibold hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-1 dark:bg-white dark:bg-opacity-5 dark:text-white dark:hover:bg-opacity-10;
+  @apply flex w-full items-center justify-center rounded-md bg-black/5 px-8 py-2 text-sm font-semibold hover:bg-black/10 focus:ring-2 focus:ring-offset-1 dark:bg-white/5 dark:text-white dark:hover:bg-white/10;
 }
 
 .btn-primary {
-  @apply bg-reverse bg-opacity-100 text-white ring-neutral-300 focus:outline-none dark:text-black focus:dark:ring-neutral-500;
+  @apply bg-reverse text-white ring-neutral-300 dark:text-black focus:dark:ring-neutral-500;
 }
 
 .btn-secondary {
-  @apply border-primary text-primary space-x-3 border bg-white hover:bg-neutral-50 focus:ring-neutral-300 dark:bg-opacity-10 dark:hover:bg-neutral-800 dark:hover:bg-opacity-100 focus:dark:ring-neutral-500 focus:dark:ring-offset-neutral-800;
+  @apply border-primary text-primary border bg-white hover:bg-neutral-50 focus:ring-neutral-300 dark:bg-white/10 dark:hover:bg-neutral-800 focus:dark:ring-neutral-500 focus:dark:ring-offset-neutral-800;
 }
 
 .btn-danger {
-  @apply space-x-3 border border-red-600 bg-white text-red-600 hover:bg-red-50 focus:ring-red-300 dark:bg-opacity-10 dark:hover:bg-neutral-800 dark:hover:bg-opacity-100 focus:dark:ring-red-500 focus:dark:ring-offset-red-800;
+  @apply border border-red-600 bg-white text-red-600 hover:bg-red-50 focus:ring-red-300 dark:bg-white/10 dark:hover:bg-neutral-800 focus:dark:ring-red-500 focus:dark:ring-offset-red-800;
+}
+
+.btn-secondary > :not([hidden]) ~ :not([hidden]),
+.btn-danger > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-x-reverse: 0;
+  margin-right: calc(12px * var(--tw-space-x-reverse));
+  margin-left: calc(12px * calc(1 - var(--tw-space-x-reverse)));
+}
+
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='password']:focus,
+input[type='number']:focus,
+input[type='search']:focus,
+select:focus,
+a:focus,
+.btn:focus {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  box-shadow:
+    0 0 0 var(--tw-ring-offset-width, 0px) var(--tw-ring-offset-color, #fff),
+    0 0 0 calc(2px + var(--tw-ring-offset-width, 0px)) var(--tw-ring-color, currentcolor),
+    var(--tw-shadow, 0 0 #0000);
+}
+
+@media (prefers-color-scheme: light) {
+  .btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
+    background-color: rgb(0 0 0 / 5%);
+  }
+
+  .btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger):hover {
+    background-color: rgb(0 0 0 / 10%);
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  .btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
+    background-color: rgb(255 255 255 / 5%);
+  }
+
+  .btn:not(.btn-primary):not(.btn-secondary):not(.btn-danger):hover,
+  .btn-secondary,
+  .btn-danger {
+    background-color: rgb(255 255 255 / 10%);
+  }
+
+  .btn-secondary:hover,
+  .btn-danger:hover {
+    background-color: #262626;
+  }
+
+  .dark\:bg-blue-900\/20 {
+    background-color: rgb(30 58 138 / 20%);
+  }
 }
 
 .outer-container {
@@ -163,7 +223,7 @@ a {
 }
 
 .page-title-container {
-  @apply text-primary flex w-full flex-col space-y-2;
+  @apply text-primary flex w-full flex-col;
 }
 
 .page-title {
@@ -171,11 +231,30 @@ a {
 }
 
 .form-group {
-  @apply space-y-2;
+}
+
+.page-title-container > :not([hidden]) ~ :not([hidden]),
+.form-group > :not([hidden]) ~ :not([hidden]),
+.space-y-2 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(8px * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(8px * var(--tw-space-y-reverse));
+}
+
+.space-y-5 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(20px * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(20px * var(--tw-space-y-reverse));
+}
+
+.space-y-8 > :not([hidden]) ~ :not([hidden]) {
+  --tw-space-y-reverse: 0;
+  margin-top: calc(32px * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(32px * var(--tw-space-y-reverse));
 }
 
 .divider {
-  @apply border-secondary relative mb-6 mt-12 h-1 w-full border-t;
+  @apply border-secondary relative mt-12 mb-6 h-1 w-full border-t;
 }
 
 .divider-label {

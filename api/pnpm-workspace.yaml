@@ -1,6 +1,6 @@
 # Standalone project (not part of the root pnpm workspace).
-# pnpm 11 errors on un-acknowledged dependency build scripts. esbuild installs
-# its platform binary via a postinstall, needed for `pnpm build` (the Rails
-# jsbundling step), so its build is explicitly allowed.
+# pnpm 11 errors on un-acknowledged dependency build scripts. Tailwind's native
+# watcher and esbuild's Rails JavaScript build both need their platform hooks.
 allowBuilds:
+  '@parcel/watcher': true
   esbuild: true

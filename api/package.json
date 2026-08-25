@@ -4,25 +4,27 @@
   "private": "true",
   "scripts": {
     "build": "esbuild ./app/javascript/*.* --bundle --sourcemap --outdir=./app/assets/builds --public-path=assets",
-    "build:app:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify --postcss",
+    "build:app:css": "tailwindcss -i ./app/assets/stylesheets/application.tailwind.css -o ./app/assets/builds/application.css --minify",
     "build:css": "pnpm build:app:css && pnpm build:mailer:css",
-    "build:mailer:css": "tailwindcss -c ./tailwind.mailer.config.js -i ./app/assets/stylesheets/mailer.css -o ./app/assets/builds/mailer.css --minify --postcss"
+    "build:mailer:css": "NODE_ENV=production postcss ./app/assets/stylesheets/mailer.css -o ./app/assets/builds/mailer.css --config ./mailer_config"
   },
   "dependencies": {
     "@github/auto-complete-element": "^3.8.0",
     "@github/relative-time-element": "^5.3.1",
     "@rails/ujs": "7.1.3-4",
+    "@tailwindcss/cli": "^4.3.3",
     "@tailwindcss/forms": "^0.5.11",
+    "@tailwindcss/postcss": "^4.3.3",
     "@tailwindcss/typography": "^0.5.20",
-    "autoprefixer": "^10.5.4",
-    "caniuse-lite": "^1.0.30001809",
     "esbuild": "^0.28.2",
     "postcss": "^8.5.26",
+    "postcss-calc": "^11.0.0",
+    "postcss-cli": "^11.0.1",
     "postcss-custom-properties": "^15.0.1",
     "postcss-discard-comments": "^8.0.4",
-    "postcss-import": "^17.0.0",
     "postcss-loader": "^8.2.1",
-    "tailwindcss": "^3.4.19"
+    "postcss-logical": "^9.0.0",
+    "tailwindcss": "^4.3.3"
   },
   "packageManager": "pnpm@11.9.0"
 }
