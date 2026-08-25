@@ -52,6 +52,9 @@ class Note < ApplicationRecord
   ].freeze
   SERIALIZER_PRELOADS = [
     :permissions,
+    # NoteSerializer renders attachments; without this each note costs an
+    # extra query (and AttachmentSerializer reaches for figma_file).
+    { attachments: :figma_file },
   ].freeze
 
   scope :serializer_preload, -> {

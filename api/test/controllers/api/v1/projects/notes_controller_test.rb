@@ -115,7 +115,7 @@ module Api
             )
 
             sign_in @member.user
-            assert_query_count 15 do
+            assert_query_count 16 do
               get organization_project_notes_path(@organization.slug, @private_project.public_id)
             end
 

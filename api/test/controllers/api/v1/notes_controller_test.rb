@@ -215,7 +215,7 @@ module Api
 
           test "query count" do
             sign_in @member.user
-            assert_query_count 9 do
+            assert_query_count 10 do
               get organization_notes_path(@organization.slug), params: { filter: "mine" }
             end
 
@@ -309,7 +309,7 @@ module Api
         test "query count" do
           sign_in @member.user
 
-          assert_query_count 22 do
+          assert_query_count 23 do
             post organization_notes_path(@organization.slug),
               params: {
                 title: "My new note",
@@ -572,7 +572,7 @@ module Api
 
         test "query count" do
           sign_in @author_member.user
-          assert_query_count 10 do
+          assert_query_count 11 do
             get organization_note_path(@organization.slug, @note.public_id)
           end
 
