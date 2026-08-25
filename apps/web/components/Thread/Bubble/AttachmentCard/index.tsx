@@ -150,7 +150,7 @@ export function AttachmentCard({ attachment, autoplay }: Props) {
 
 export function Accessory({ label }: { label: string }) {
   return (
-    <div className='dark:bg-elevated rounded-md bg-black px-2 py-1 text-center font-mono text-[11px] text-xs font-semibold text-white'>
+    <div className='dark:bg-elevated rounded-md bg-black px-2 py-1 text-center font-mono text-xs text-[11px] font-semibold text-white'>
       {label}
     </div>
   )

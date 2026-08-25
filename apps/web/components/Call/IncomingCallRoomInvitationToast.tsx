@@ -46,7 +46,7 @@ export function IncomingCallRoomInvitationToast() {
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className='bg-primary dark:bg-elevated dark fixed top-0 flex w-full items-center gap-3 p-3 shadow-2xl lg:max-w-[450px] lg:rounded-full dark:shadow-[inset_0px_1px_0px_rgb(255_255_255_/_0.04),_inset_0px_0px_0px_1px_rgb(255_255_255_/_0.02),_0px_1px_2px_rgb(0_0_0_/_0.4),_0px_2px_4px_rgb(0_0_0_/_0.08),_0px_0px_0px_0.5px_rgb(0_0_0_/_0.24)]'
           >
-            <div className='flex flex-1 select-none items-center gap-3'>
+            <div className='flex flex-1 items-center gap-3 select-none'>
               <AvatarAndTitle incomingCallRoomInvitation={incomingCallRoomInvitation} />
             </div>
 

@@ -10,7 +10,7 @@ export function Footer() {
   return (
     <>
       <div className='relative hidden dark:block'>
-        <div className='dark:via-gray-750 absolute bottom-0 left-0 right-0 z-30 h-px bg-gradient-to-r from-white via-neutral-200 to-white dark:from-gray-950 dark:to-gray-950' />
+        <div className='dark:via-gray-750 absolute right-0 bottom-0 left-0 z-30 h-px bg-gradient-to-r from-white via-neutral-200 to-white dark:from-gray-950 dark:to-gray-950' />
       </div>
 
       <div className='flex w-full justify-center border-t py-12 md:py-16 lg:py-20 2xl:py-24 dark:border-transparent'>

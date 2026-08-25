@@ -39,31 +39,29 @@ export async function GET(request: Request) {
   let title = url.searchParams.get('title') || DEFAULT_SEO.title
 
   return new ImageResponse(
-    (
-      <div
-        style={{
-          padding: '88px 256px 88px 88px',
-          background: 'white',
-          width: '100%',
-          height: '100%',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'flex-start',
-          justifyContent: 'flex-end'
-        }}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={`${SITE_URL}/og/og-image-app-icon.png`}
-          height='100px'
-          width='100px'
-          alt='Campsite logo'
-          style={{ marginBottom: '52px' }}
-        />
+    <div
+      style={{
+        padding: '88px 256px 88px 88px',
+        background: 'white',
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'flex-start',
+        justifyContent: 'flex-end'
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`${SITE_URL}/og/og-image-app-icon.png`}
+        height='100px'
+        width='100px'
+        alt='Campsite logo'
+        style={{ marginBottom: '52px' }}
+      />
 
-        <p style={{ fontSize: '52px', fontWeight: '600', lineHeight: '62px', letterSpacing: '-0.015em' }}>{title}</p>
-      </div>
-    ),
+      <p style={{ fontSize: '52px', fontWeight: '600', lineHeight: '62px', letterSpacing: '-0.015em' }}>{title}</p>
+    </div>,
     {
       ...OG_IMAGE_SIZE,
       fonts: await getFonts()

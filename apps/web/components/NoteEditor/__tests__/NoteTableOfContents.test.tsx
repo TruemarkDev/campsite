@@ -5,10 +5,7 @@ import { NoteTableOfContents } from '@/components/NoteEditor/NoteTableOfContents
 
 describe('NoteTableOfContents', () => {
   beforeEach(() => {
-    vi.stubGlobal(
-      'matchMedia',
-      vi.fn().mockReturnValue({ matches: false })
-    )
+    vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }))
     window.history.replaceState(null, '', '/')
   })
 

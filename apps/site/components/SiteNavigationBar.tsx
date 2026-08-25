@@ -34,7 +34,7 @@ export function SiteNavigationBar() {
 
   return (
     <>
-      <div ref={ref} className='absolute left-0 top-0 h-px w-px bg-transparent' />
+      <div ref={ref} className='absolute top-0 left-0 h-px w-px bg-transparent' />
       <div className='h-14' />
       <div className='pointer-events-none fixed isolate z-50 flex h-full w-full flex-col flex-nowrap bg-transparent'>
         <div
@@ -124,7 +124,7 @@ export function SiteNavigationBar() {
                 animate='visible'
                 exit='hidden'
                 variants={drawerVariants}
-                className='bg-primary absolute left-0 top-0 z-50 flex h-full w-full flex-col flex-nowrap justify-between p-4 pb-6'
+                className='bg-primary absolute top-0 left-0 z-50 flex h-full w-full flex-col flex-nowrap justify-between p-4 pb-6'
               >
                 <ul className='grid grid-cols-1 gap-2'>
                   <li>

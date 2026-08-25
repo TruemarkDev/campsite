@@ -15,7 +15,7 @@ export function KeyboardShortcut({ shortcut }: KeyboardShortcutProps) {
       {shortcut.split('').map((key) => (
         <kbd
           key={key}
-          className='text-primary bg-elevated inline-flex items-center justify-center rounded-[6px] border border-b-[3px] px-2.5 py-1.5 text-lg font-medium leading-none'
+          className='text-primary bg-elevated inline-flex items-center justify-center rounded-[6px] border border-b-[3px] px-2.5 py-1.5 text-lg leading-none font-medium'
         >
           <span className='translate-y-[1px]'>
             {key === '⌘' ? isWindows ? 'ctrl' : <span className='flex scale-125'>⌘</span> : key}

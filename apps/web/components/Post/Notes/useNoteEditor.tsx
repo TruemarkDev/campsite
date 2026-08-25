@@ -4,12 +4,7 @@ import Collaboration from '@tiptap/extension-collaboration'
 import CollaborationCaret from '@tiptap/extension-collaboration-caret'
 import { EditorOptions, ReactNodeViewRenderer, useEditor } from '@tiptap/react'
 
-import {
-  ActiveEditorComment,
-  BlurAtTopOptions,
-  getNoteExtensions,
-  PostNoteAttachmentOptions
-} from '@campsite/editor'
+import { ActiveEditorComment, BlurAtTopOptions, getNoteExtensions, PostNoteAttachmentOptions } from '@campsite/editor'
 import { cn } from '@campsite/ui/src/utils'
 
 import { InlineResourceMentionRenderer } from '@/components/InlineResourceMentionRenderer'
@@ -163,16 +158,7 @@ export function useNoteEditor({
         : []),
       DragAndDrop
     ].filter(notEmpty)
-  }, [
-    editable,
-    linkOptions,
-    onActiveComment,
-    onBlurAtTop,
-    onHoverComment,
-    onOpenAttachment,
-    provider,
-    hasRelativeTime
-  ])
+  }, [editable, linkOptions, onActiveComment, onBlurAtTop, onHoverComment, onOpenAttachment, provider, hasRelativeTime])
 
   const allEditable = editable === 'all'
 

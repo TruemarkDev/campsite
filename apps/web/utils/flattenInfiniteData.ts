@@ -1,6 +1,8 @@
 import { InfiniteData } from '@tanstack/react-query'
 
-interface Identifiable { id: string }
+interface Identifiable {
+  id: string
+}
 interface DataPage<T> {
   data: T[]
 }

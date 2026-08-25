@@ -5,8 +5,8 @@ identity (`whoami`), an inbox (`list_notifications` / `mark_notification_read`),
 and a durable working doc (`create_note` / `update_note`). An agent can now poll
 what is addressed to it and record results.
 
-Tier 2 is **coordination**: the actions a team of people and agents take *on the
-work itself* once it's in flight — iterate on a post, close it out, thread a reply
+Tier 2 is **coordination**: the actions a team of people and agents take _on the
+work itself_ once it's in flight — iterate on a post, close it out, thread a reply
 onto a discussion, spin up a workspace for a run, and queue a personal follow-up.
 Without these, an agent can talk but cannot drive a piece of work to "done":
 
@@ -20,10 +20,10 @@ Without these, an agent can talk but cannot drive a piece of work to "done":
 As in Tier 1, every action already exists in `/api/v1` and is guarded by Pundit,
 so each tool is a thin `McpTool` wrapper — no new domain logic, no inference.
 
-Note on hand-off: assigning work to *another* member is already possible today via
+Note on hand-off: assigning work to _another_ member is already possible today via
 `@mention` (in `create_post`/`add_comment`), which lands a notification in that
 member's inbox that they poll with `list_notifications`. A **follow-up** in
-Campsite is a *personal reminder* on a subject, not an assignment to someone else —
+Campsite is a _personal reminder_ on a subject, not an assignment to someone else —
 this change exposes it as such (self-scoped), not as a hand-off primitive.
 
 ## What Changes
@@ -53,6 +53,7 @@ Blueprinter serialization as the REST API.
 ## Capabilities
 
 ### Modified Capabilities
+
 - `mcp-tools`: adds the coordination tool set (resolve/edit posts, threaded comment
   replies, project creation, personal follow-ups) to the existing catalog. The four
   content-mutating tools require their matching `write_post`/`write_project` scope;

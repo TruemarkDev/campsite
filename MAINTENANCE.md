@@ -24,7 +24,7 @@ No new features. No redesigns. No speculative refactors.
 ## Disallowed changes (open an issue instead of coding these)
 
 - New features, screens, endpoints, or user-facing behavior.
-- New dependencies (a security fix that *requires* a new dep is an issue, not a PR).
+- New dependencies (a security fix that _requires_ a new dep is an issue, not a PR).
 - Behavior changes — including "fixing" a failing test by changing what the code does.
 - Major-version upgrades that change framework APIs (Rails, Next, React, etc.), unless
   there is no supported/patched version remaining on the current major.
@@ -50,13 +50,13 @@ CI is the source of truth. Green-stays-green ⇒ safe & mechanical. Otherwise �
 
 These four must always agree. When bumping one, bump all:
 
-| Where | File |
-| --- | --- |
-| mise root      | `mise.toml` |
-| mise api       | `api/mise.toml` |
-| Ruby pin       | `api/.ruby-version` (symlinked from `/.ruby-version`) |
-| Node engines   | `package.json` → `engines.node` |
-| CI runners     | `.github/workflows/*` → `node-version` |
+| Where          | File                                                                                |
+| -------------- | ----------------------------------------------------------------------------------- |
+| mise root      | `mise.toml`                                                                         |
+| mise api       | `api/mise.toml`                                                                     |
+| Ruby pin       | `api/.ruby-version` (symlinked from `/.ruby-version`)                               |
+| Node engines   | `package.json` → `engines.node`                                                     |
+| CI runners     | `.github/workflows/*` → `node-version`                                              |
 | Container base | `apps/*/Dockerfile` → `FROM node:*`; API uses `api/Dockerfile` → `ARG RUBY_VERSION` |
 
 Current baseline: **Node 24.x, Ruby 4.0.6.**

@@ -49,17 +49,17 @@ assets:precompile + rails test against MySQL 8/Redis/Elasticsearch) and
 
 Slack-alternative: Rails 8.1 API + Next.js web app + realtime services.
 
-| Path | What |
-|---|---|
-| `api/` | Rails 8.1 API/admin/auth — MySQL (trilogy), Sidekiq 8 + sidekiq-scheduler, searchkick/Elasticsearch, Devise + Doorkeeper + Pundit, Blueprinter serializers, Flipper flags, Pusher realtime, `ruby_llm`, MCP server in `app/mcp/` (`mcp` gem, docs at `api/docs/mcp_server.md`) |
-| `apps/web/` | Next.js 16 / React 19 main app (`app.campsite.test:3000`) |
-| `apps/site/` | Marketing site (Next.js + Sanity) |
-| `apps/sync-server/` | Hocuspocus/Yjs collaborative-editing WebSocket server |
-| `apps/styled-text-server/` | Express service: Tiptap JSON ↔ HTML ↔ Markdown |
-| `apps/integrations/`, `apps/figma/`, `apps/sanity-studio/` | integration surfaces, Figma plugin, CMS studio |
-| `packages/` | shared libs; `types` holds the GENERATED API client (never hand-edit) |
-| `html-to-image/` | Puppeteer screenshot service — own workspace, not in pnpm workspace |
-| `config/deploy.campsite-*.yml`, `.kamal/` | Kamal deploy configs (homelab) |
+| Path                                                       | What                                                                                                                                                                                                                                                                           |
+| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `api/`                                                     | Rails 8.1 API/admin/auth — MySQL (trilogy), Sidekiq 8 + sidekiq-scheduler, searchkick/Elasticsearch, Devise + Doorkeeper + Pundit, Blueprinter serializers, Flipper flags, Pusher realtime, `ruby_llm`, MCP server in `app/mcp/` (`mcp` gem, docs at `api/docs/mcp_server.md`) |
+| `apps/web/`                                                | Next.js 16 / React 19 main app (`app.campsite.test:3000`)                                                                                                                                                                                                                      |
+| `apps/site/`                                               | Marketing site (Next.js + Sanity)                                                                                                                                                                                                                                              |
+| `apps/sync-server/`                                        | Hocuspocus/Yjs collaborative-editing WebSocket server                                                                                                                                                                                                                          |
+| `apps/styled-text-server/`                                 | Express service: Tiptap JSON ↔ HTML ↔ Markdown                                                                                                                                                                                                                                 |
+| `apps/integrations/`, `apps/figma/`, `apps/sanity-studio/` | integration surfaces, Figma plugin, CMS studio                                                                                                                                                                                                                                 |
+| `packages/`                                                | shared libs; `types` holds the GENERATED API client (never hand-edit)                                                                                                                                                                                                          |
+| `html-to-image/`                                           | Puppeteer screenshot service — own workspace, not in pnpm workspace                                                                                                                                                                                                            |
+| `config/deploy.campsite-*.yml`, `.kamal/`                  | Kamal deploy configs (homelab)                                                                                                                                                                                                                                                 |
 
 Data flow: browser → Next.js → REST to Rails via generated `@campsite/types`
 client; realtime via Pusher; collaborative docs via WebSocket to sync-server
@@ -78,6 +78,7 @@ says Hatchbox and Fly leftovers exist (`api/fly.toml`, `script/prod-*`) — all
 ## Conventions & Patterns
 
 Rails:
+
 - Minitest + minitest-spec-rails, FactoryBot, VCR, `Sidekiq.testing!(:fake)`;
   tests mirror `app/` (controllers are the bulk of coverage). Committed
   `focus` is blocked by the custom cop `api/test/custom_cops/no_focus.rb`.
@@ -92,6 +93,7 @@ Rails:
   enforced; cursor pagination via `render_page`.
 
 Frontend:
+
 - TanStack Query v5 over the generated client (module-level query object +
   `useMutation`/invalidate pattern — see `apps/web/hooks/useArchiveProject.ts`);
   jotai atoms in `apps/web/atoms/`; `@/` alias = `apps/web`.
@@ -108,6 +110,7 @@ Key docs: `MAINTENANCE.md`, `docs/deployment/homelab-production.md`,
 `docs/editor-component-integration.md`, `api/docs/mcp_server.md`.
 
 <!-- BEGIN BEADS INTEGRATION v:1 profile:minimal hash:6cd5cc61 -->
+
 ## Beads Issue Tracker
 
 This project uses **bd (beads)** for issue tracking. Run `bd prime` to see full workflow context and commands.
@@ -158,7 +161,9 @@ This protocol applies when ending a Beads implementation workflow. It is subordi
 5. **Hand off** - Summarize changes, validation, issue status, and any blocked sync/commit/push step
 
 **Critical rules:**
+
 - Explicit user or orchestrator instructions override this Beads block.
 - Do not commit or push without clear authority from the active profile or the current user request.
 - If a required sync or push is blocked, stop and report the exact command and error.
+
 <!-- END BEADS INTEGRATION -->

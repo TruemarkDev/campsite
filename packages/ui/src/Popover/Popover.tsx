@@ -129,7 +129,7 @@ const PopoverContent = React.forwardRef<
               context.sheet && 'bg-elevated pb-safe-offset-1 fixed inset-x-0 bottom-0 -mb-10 rounded-t-xl',
               !context.sheet && 'max-h-[--radix-popper-available-height] max-w-[--radix-popper-available-width]',
               CONTAINER_STYLES.animation,
-              '!outline-none focus:outline-none focus:ring-0 focus-visible:outline-none focus-visible:ring-0',
+              '!outline-none focus:ring-0 focus:outline-none focus-visible:ring-0 focus-visible:outline-none',
               className
             )}
             collisionPadding={collisionPadding}

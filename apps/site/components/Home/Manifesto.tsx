@@ -40,7 +40,7 @@ export function Manifesto() {
       <WidthContainer className='3xl:pt-32 4xl:pt-36 max-w-2xl gap-4 pt-12 md:pt-16 lg:pt-20 lg:text-center xl:pt-24 2xl:pt-28'>
         <PageTitle className='leading-[1]'>Teamwork, meet deep work</PageTitle>
 
-        <SectionText className='text-wrap text-[clamp(1.1rem,_2vw,_1.4rem)] font-medium'>
+        <SectionText className='text-[clamp(1.1rem,_2vw,_1.4rem)] font-medium text-wrap'>
           The new standard for thoughtful team communication — replace noisy chats with focused, organized posts.
         </SectionText>
 
@@ -53,7 +53,7 @@ export function Manifesto() {
 
       <Screenshots />
 
-      <WidthContainer className='3xl:gap-36 4xl:gap-40 xl:gap-18 3xl:py-32 4xl:py-36 isolate max-w-2xl gap-20 py-12 md:gap-24 md:py-16 lg:gap-28 lg:py-20 xl:py-24 2xl:gap-32 2xl:py-28'>
+      <WidthContainer className='3xl:gap-36 4xl:gap-40 3xl:py-32 4xl:py-36 isolate max-w-2xl gap-20 py-12 md:gap-24 md:py-16 lg:gap-28 lg:py-20 xl:gap-18 xl:py-24 2xl:gap-32 2xl:py-28'>
         <Section>
           <SectionHeading className='lg:text-center'>Posts are the sweet spots between chat and docs</SectionHeading>
 
@@ -67,7 +67,7 @@ export function Manifesto() {
 
           <div className='flex flex-col gap-6 py-6'>
             <div className='grid gap-4 md:grid-cols-2 md:gap-5 lg:gap-6'>
-              <div className='bg-tertiary dark:bg-secondary flex transform select-none items-center justify-center rounded-xl border-[0.5px] p-4 md:aspect-video dark:border-transparent'>
+              <div className='bg-tertiary dark:bg-secondary flex transform items-center justify-center rounded-xl border-[0.5px] p-4 select-none md:aspect-video dark:border-transparent'>
                 <div className='bg-elevated dark:bg-gray-750 flex w-full items-start gap-3 rounded-lg border-[0.5px] px-3 py-2 shadow'>
                   <SmartSummaryIcon size={32} />
                   <div className='flex flex-1 flex-col'>
@@ -80,7 +80,7 @@ export function Manifesto() {
                 <div className='flex flex-col gap-1.5'>
                   <p className='text-base font-medium'>Summarize</p>
 
-                  <p className='text-tertiary text-balance text-base leading-[1.4]'>
+                  <p className='text-tertiary text-base leading-[1.4] text-balance'>
                     Recap long discussions with one-click smart summaries
                   </p>
                 </div>
@@ -88,9 +88,9 @@ export function Manifesto() {
             </div>
 
             <div className='grid gap-4 md:grid-cols-2 md:gap-5 lg:gap-6'>
-              <div className='bg-tertiary dark:bg-secondary transform select-none overflow-hidden rounded-xl border-[0.5px] pl-4 pt-4 md:aspect-video md:pl-5 md:pt-5 dark:border-transparent'>
-                <div className='bg-elevated flex h-full w-full flex-col gap-1 rounded-tl-lg border-l-[0.5px] border-t-[0.5px] p-4 shadow dark:bg-gray-800'>
-                  <Badge className='mb-2.5 h-auto self-start rounded-full py-2 pl-[9px] pr-3.5' color='green'>
+              <div className='bg-tertiary dark:bg-secondary transform overflow-hidden rounded-xl border-[0.5px] pt-4 pl-4 select-none md:aspect-video md:pt-5 md:pl-5 dark:border-transparent'>
+                <div className='bg-elevated flex h-full w-full flex-col gap-1 rounded-tl-lg border-t-[0.5px] border-l-[0.5px] p-4 shadow dark:bg-gray-800'>
+                  <Badge className='mb-2.5 h-auto self-start rounded-full py-2 pr-3.5 pl-[9px]' color='green'>
                     <span className='flex items-center gap-2'>
                       <CheckCircleFilledFlushIcon size={14} />
                       <span className='-mb-[0.5px] text-[11px] tracking-wide'>Resolved</span>
@@ -110,7 +110,7 @@ export function Manifesto() {
                 <div className='flex flex-col gap-1.5'>
                   <p className='text-base font-medium'>Resolve</p>
 
-                  <p className='text-tertiary text-balance text-base leading-[1.4]'>
+                  <p className='text-tertiary text-base leading-[1.4] text-balance'>
                     Close the loop with magically-generated resolutions
                   </p>
                 </div>
@@ -118,15 +118,15 @@ export function Manifesto() {
             </div>
 
             <div className='grid gap-4 md:grid-cols-2 md:gap-5 lg:gap-6'>
-              <div className='bg-tertiary dark:bg-secondary relative flex transform select-none flex-col gap-3 overflow-hidden rounded-xl border-[0.5px] pl-4 pt-4 md:aspect-video lg:pl-0 lg:pt-0 dark:border-transparent'>
-                <div className='bg-elevated left-4 top-4 flex w-[700px] flex-none rounded-tl-lg border-l-[0.5px] border-t-[0.5px] shadow md:left-5 md:top-5 lg:absolute dark:bg-gray-800'>
+              <div className='bg-tertiary dark:bg-secondary relative flex transform flex-col gap-3 overflow-hidden rounded-xl border-[0.5px] pt-4 pl-4 select-none md:aspect-video lg:pt-0 lg:pl-0 dark:border-transparent'>
+                <div className='bg-elevated top-4 left-4 flex w-[700px] flex-none rounded-tl-lg border-t-[0.5px] border-l-[0.5px] shadow md:top-5 md:left-5 lg:absolute dark:bg-gray-800'>
                   <div className='flex h-full w-[320px] flex-col border-r-[0.5px]'>
-                    <div className='h-11.5 flex items-center gap-0.5 border-b-[0.5px] p-2'>
+                    <div className='flex h-11.5 items-center gap-0.5 border-b-[0.5px] p-2'>
                       <Button variant='plain'>Inbox</Button>
                       <Button variant='flat'>Follow up</Button>
                     </div>
                     <div className='flex flex-col gap-px p-1.5'>
-                      <div className='flex select-none gap-3 rounded-lg p-2 pr-2.5'>
+                      <div className='flex gap-3 rounded-lg p-2 pr-2.5 select-none'>
                         <Avatar src='/img/team/alexandru.png' name='Alexandru' size='sm' />
 
                         <div className='flex flex-1 flex-col gap-0.5'>
@@ -147,7 +147,7 @@ export function Manifesto() {
                     </div>
                   </div>
                   <div className='flex w-[380px] flex-1 flex-col overflow-hidden'>
-                    <div className='h-11.5 flex w-full items-center gap-1.5 overflow-hidden border-b-[0.5px] p-2'></div>
+                    <div className='flex h-11.5 w-full items-center gap-1.5 overflow-hidden border-b-[0.5px] p-2'></div>
                     <div className='p-16'></div>
                   </div>
                 </div>
@@ -157,7 +157,7 @@ export function Manifesto() {
                 <div className='flex flex-col gap-1.5'>
                   <p className='text-base font-medium'>Follow up</p>
 
-                  <p className='text-tertiary text-balance text-base leading-[1.4]'>
+                  <p className='text-tertiary text-base leading-[1.4] text-balance'>
                     Set a reminder to revisit any conversation
                   </p>
                 </div>
@@ -248,7 +248,7 @@ export function SectionHeading({ children, className }: { children: React.ReactN
   return (
     <h3
       className={cn(
-        'scroll-mt-20 text-balance text-[clamp(1.5rem,_3vw,_1.8rem)] font-semibold leading-[1.2] -tracking-[0.5px]',
+        'scroll-mt-20 text-[clamp(1.5rem,_3vw,_1.8rem)] leading-[1.2] font-semibold -tracking-[0.5px] text-balance',
         className
       )}
     >
@@ -261,7 +261,7 @@ export function SectionText({ children, className }: { children: React.ReactNode
   return (
     <p
       className={cn(
-        'text-balance text-[clamp(1rem,_2vw,_1.1rem)] leading-relaxed -tracking-[0.1px] md:-tracking-[0.2px] lg:-tracking-[0.3px] xl:-tracking-[0.4px]',
+        'text-[clamp(1rem,_2vw,_1.1rem)] leading-relaxed -tracking-[0.1px] text-balance md:-tracking-[0.2px] lg:-tracking-[0.3px] xl:-tracking-[0.4px]',
         className
       )}
     >
@@ -279,7 +279,7 @@ function CTA() {
     <div className='flex flex-col gap-2'>
       <StartButton className='flex-none' />
 
-      <p className='text-quaternary mt-1 text-balance text-center text-xs'>
+      <p className='text-quaternary mt-1 text-center text-xs text-balance'>
         14-day free trial, no credit card required. Up and running in two minutes.
       </p>
     </div>
@@ -296,14 +296,14 @@ function Highlight({ children }: { children: React.ReactNode }) {
 
 function PostsGraphic() {
   return (
-    <div className='mb-4 mt-4 flex flex-col gap-6 lg:-mx-4 xl:-mx-6 2xl:-mx-8'>
+    <div className='mt-4 mb-4 flex flex-col gap-6 lg:-mx-4 xl:-mx-6 2xl:-mx-8'>
       <div className='group/posts relative flex items-center justify-center'>
         <CompactPost
-          className='absolute left-[1rem] top-3.5 z-[1] max-w-[calc(100%-2rem)] opacity-50 transition-all delay-100 group-hover/posts:-translate-y-4 group-hover/posts:opacity-0 group-hover/posts:delay-[150ms]'
+          className='absolute top-3.5 left-[1rem] z-[1] max-w-[calc(100%-2rem)] opacity-50 transition-all delay-100 group-hover/posts:-translate-y-4 group-hover/posts:opacity-0 group-hover/posts:delay-[150ms]'
           post={null}
         />
         <CompactPost
-          className='absolute left-[0.5rem] top-2 z-[2] max-w-[calc(100%-1rem)] bg-white/80 opacity-80 backdrop-blur-lg transition-all delay-[150ms] group-hover/posts:-translate-y-2.5 group-hover/posts:opacity-0 group-hover/posts:delay-100 dark:bg-gray-900/80'
+          className='absolute top-2 left-[0.5rem] z-[2] max-w-[calc(100%-1rem)] bg-white/80 opacity-80 backdrop-blur-lg transition-all delay-[150ms] group-hover/posts:-translate-y-2.5 group-hover/posts:opacity-0 group-hover/posts:delay-100 dark:bg-gray-900/80'
           post={null}
         />
         <Link href='https://app.campsite.com/campsite/posts/edf4uyexwd84' target='_blank'>
@@ -338,7 +338,7 @@ function CompactPost({ post, className }: { post: Post | null; className?: strin
   return (
     <div
       className={cn(
-        'bg-elevated min-h-17 group relative flex w-full select-none scroll-m-1 gap-3 rounded-xl border-[0.5px] px-4 py-3 shadow-sm',
+        'bg-elevated group relative flex min-h-17 w-full scroll-m-1 gap-3 rounded-xl border-[0.5px] px-4 py-3 shadow-sm select-none',
         className
       )}
     >
@@ -356,7 +356,7 @@ function CompactPost({ post, className }: { post: Post | null; className?: strin
                 </UIText>
 
                 <div className='flex items-center'>
-                  <span className='h-4.5 text-tertiary mr-2 mt-px flex items-center justify-center self-start rounded bg-black/[0.04] px-1.5 text-[10px] font-semibold uppercase dark:bg-white/10'>
+                  <span className='text-tertiary mt-px mr-2 flex h-4.5 items-center justify-center self-start rounded bg-black/[0.04] px-1.5 text-[10px] font-semibold uppercase dark:bg-white/10'>
                     {post.comments}
                   </span>
 
@@ -466,30 +466,30 @@ function KnowledgeSilosGraphic() {
             />
           </svg>
         </span>
-        <div className='dark:bg-quaternary bg-tertiary flex select-none items-center gap-3 rounded-lg p-2'>
+        <div className='dark:bg-quaternary bg-tertiary flex items-center gap-3 rounded-lg p-2 select-none'>
           <UIText>📈</UIText>
           <UIText weight='font-medium'>Q4 growth</UIText>
         </div>
-        <div className='text-quaternary flex select-none items-center gap-3 rounded-lg p-2'>
+        <div className='text-quaternary flex items-center gap-3 rounded-lg p-2 select-none'>
           <UIText>⚙️</UIText>
           <UIText>Engineering</UIText>
         </div>
-        <div className='text-quaternary flex select-none items-center gap-3 rounded-lg p-2'>
+        <div className='text-quaternary flex items-center gap-3 rounded-lg p-2 select-none'>
           <UIText>🔮</UIText>
           <UIText>Design</UIText>
         </div>
-        <div className='text-quaternary flex select-none items-center gap-3 rounded-lg p-2'>
+        <div className='text-quaternary flex items-center gap-3 rounded-lg p-2 select-none'>
           <UIText>🚩</UIText>
           <UIText>Announcements</UIText>
         </div>
-        <div className='text-quaternary flex select-none items-center gap-3 rounded-lg p-2'>
+        <div className='text-quaternary flex items-center gap-3 rounded-lg p-2 select-none'>
           <UIText>🎱</UIText>
           <UIText>Watercooloer</UIText>
         </div>
       </div>
 
-      <div className='bg-elevated dark:shadow-popover relative -mt-8 flex min-w-[280px] max-w-[320px] rotate-3 select-none flex-col gap-4 rounded-xl border-[0.5px] p-4 shadow md:mt-0 dark:border-gray-700'>
-        <span className='text-quaternary absolute -bottom-6 -right-8 hidden rotate-2 opacity-50 lg:flex'>
+      <div className='bg-elevated dark:shadow-popover relative -mt-8 flex max-w-[320px] min-w-[280px] rotate-3 flex-col gap-4 rounded-xl border-[0.5px] p-4 shadow select-none md:mt-0 dark:border-gray-700'>
+        <span className='text-quaternary absolute -right-8 -bottom-6 hidden rotate-2 opacity-50 lg:flex'>
           <svg width='55' height='29' viewBox='0 0 55 29' fill='none' xmlns='http://www.w3.org/2000/svg'>
             <path
               d='M44.8735 9.06453C43.6829 8.85941 43.0291 9.54171 42.23 9.80418C41.6847 9.98823 41.0883 10.1571 40.5382 10.1257C39.3587 10.0566 38.7176 8.58181 39.4458 7.69063C39.8192 7.24993 40.2805 6.84399 40.7767 6.55118C43.9006 4.71812 47.043 2.89486 50.2126 1.10965C50.7891 0.776559 51.4885 0.591348 52.1674 0.489918C53.1978 0.326345 54.1122 1.23647 54.0395 2.25032C54.0195 2.53533 53.9572 2.83339 53.8906 3.11733C53.2022 5.88601 52.5465 8.66013 51.8071 11.4136C51.6349 12.0555 51.3271 12.7083 50.9236 13.2512C50.1501 14.2958 48.9726 14.1331 48.3722 12.94C48.2066 12.604 48.1308 12.2091 47.9429 11.6011C47.4447 11.9875 47.085 12.2226 46.7656 12.5382C44.7259 14.5318 42.7003 16.5211 40.679 18.5245C36.1699 22.9698 30.6557 25.7121 24.7416 27.7105C22.8942 28.328 20.9118 28.7085 18.9731 28.781C15.9366 28.8986 12.8866 28.7725 9.86667 28.5442C6.46479 28.279 3.7422 26.5647 1.54177 23.9918C1.17738 23.5623 0.848497 22.9979 0.757264 22.4529C0.69564 22.0537 0.918856 21.4271 1.23189 21.1909C1.54493 20.9547 2.21755 20.9327 2.57276 21.1327C3.15928 21.4316 3.66167 21.9579 4.16067 22.4233C6.20769 24.3 8.5859 25.2998 11.357 25.3727C14.203 25.438 17.0484 25.7512 19.8779 25.2639C26.1183 24.1714 31.6316 21.4759 36.4541 17.4449C39.0814 15.2541 41.4313 12.7154 43.9041 10.3246C44.2473 9.98613 44.4895 9.57051 44.8735 9.06453Z'
@@ -535,7 +535,7 @@ function KnowledgeSilosGraphic() {
         </div>
       </div>
 
-      <div className='bg-elevated dark:shadow-popover flex min-w-[320px] max-w-[380px] -translate-y-4 -rotate-3 select-none flex-col rounded-xl border-[0.5px] shadow md:mt-0 md:-translate-x-3 dark:border-gray-700'>
+      <div className='bg-elevated dark:shadow-popover flex max-w-[380px] min-w-[320px] -translate-y-4 -rotate-3 flex-col rounded-xl border-[0.5px] shadow select-none md:mt-0 md:-translate-x-3 dark:border-gray-700'>
         <div className='p-3 pb-0'>
           <UIText weight='font-semibold'>Latest posts</UIText>
         </div>
@@ -605,7 +605,7 @@ function KnowledgeSilosGraphic() {
 function ConnectTheDots() {
   return (
     <div className='3xl:my-10 relative my-6 lg:-mx-4 xl:-mx-6 xl:my-8 2xl:-mx-8'>
-      <div className='flex select-none items-center'>
+      <div className='flex items-center select-none'>
         <div className='bg-elevated w-full rounded-lg border-[0.5px] shadow lg:-rotate-2'>
           <div className='grid grid-cols-[24px,1fr] gap-x-3 gap-y-0.5 border-b-[0.5px] p-3'>
             <Avatar src='/img/team/dan.jpg' size='xs' />
@@ -634,7 +634,7 @@ function ConnectTheDots() {
             </div>
           </div>
           <div className='relative grid grid-cols-[24px,1fr] gap-x-3 border-b-[0.5px] p-3'>
-            <span className='text-quaternary -left-29 absolute -top-8 hidden lg:flex'>
+            <span className='text-quaternary absolute -top-8 -left-29 hidden lg:flex'>
               <AutomaticBacklinks />
             </span>
             <SignIcon />
@@ -659,34 +659,34 @@ function ConnectTheDots() {
         </div>
       </div>
 
-      <div className='absolute -right-2 -top-3 hidden max-w-[250px] rotate-[5deg] select-none flex-col gap-1.5 sm:flex'>
+      <div className='absolute -top-3 -right-2 hidden max-w-[250px] rotate-[5deg] flex-col gap-1.5 select-none sm:flex'>
         <div className='bg-elevated dark:bg-gray-750 dark:shadow-popover flex flex-col rounded-xl border-[0.5px] shadow dark:border-gray-700'>
           <div className='flex flex-col gap-px border-b-[0.5px] p-1'>
-            <UIText size='text-xs' tertiary className='px-2.5 pb-1 pt-3'>
+            <UIText size='text-xs' tertiary className='px-2.5 pt-3 pb-1'>
               Posts
             </UIText>
-            <div className='text-secondary hidden select-none items-center gap-2 rounded-lg p-2 lg:flex'>
+            <div className='text-secondary hidden items-center gap-2 rounded-lg p-2 select-none lg:flex'>
               <PostFilledIcon />
               <UIText className='line-clamp-1'>Mobile app kickoff</UIText>
             </div>
-            <div className='text-secondary flex select-none items-center gap-2 rounded-lg p-2'>
+            <div className='text-secondary flex items-center gap-2 rounded-lg p-2 select-none'>
               <PostFilledIcon />
               <UIText className='line-clamp-1'>Shipped: new typeahead mentions</UIText>
             </div>
-            <div className='text-secondary flex select-none items-center gap-2 rounded-lg p-2'>
+            <div className='text-secondary flex items-center gap-2 rounded-lg p-2 select-none'>
               <PostFilledIcon />
               <UIText className='line-clamp-1'>NYC team offsite</UIText>
             </div>
           </div>
           <div className='flex flex-col gap-px p-1'>
-            <UIText size='text-xs' tertiary className='px-2.5 pb-1 pt-3'>
+            <UIText size='text-xs' tertiary className='px-2.5 pt-3 pb-1'>
               People
             </UIText>
-            <div className='text-secondary flex select-none items-center gap-2 rounded-lg p-2'>
+            <div className='text-secondary flex items-center gap-2 rounded-lg p-2 select-none'>
               <Avatar src='/img/team/alexandru.png' size='xs' />
               <UIText>Alexandru</UIText>
             </div>
-            <div className='text-secondary flex select-none items-center gap-2 rounded-lg p-2'>
+            <div className='text-secondary flex items-center gap-2 rounded-lg p-2 select-none'>
               <Avatar src='/img/team/nick.jpeg' size='xs' />
               <UIText>Nick</UIText>
             </div>
@@ -757,14 +757,14 @@ function ExtendAutomate() {
 
   return (
     <div className='relative -mb-8 flex aspect-video overflow-hidden lg:-mx-4 lg:p-12 xl:-mx-6 2xl:-mx-8'>
-      <div className='dark:via-gray-750 via-gray-150 absolute left-0 right-0 top-0 z-30 h-px bg-gradient-to-r from-white to-white dark:from-black dark:to-black' />
+      <div className='dark:via-gray-750 via-gray-150 absolute top-0 right-0 left-0 z-30 h-px bg-gradient-to-r from-white to-white dark:from-black dark:to-black' />
 
       <Image
         src={extendImage}
         alt='Extend and automate'
         width={1282}
         height={634}
-        className='absolute left-0 right-0 top-0 w-full object-contain saturate-[110%]'
+        className='absolute top-0 right-0 left-0 w-full object-contain saturate-[110%]'
       />
     </div>
   )
@@ -783,7 +783,7 @@ function Screenshots() {
 
   return (
     <div className='relative flex aspect-[4/3.6] flex-col gap-4 overflow-hidden md:aspect-auto'>
-      <div className='overflow-hidden bg-gradient-to-t from-gray-50 to-white after:absolute after:bottom-0 after:left-0 after:right-0 after:z-20 after:h-[0.5px] after:bg-gray-200 dark:from-gray-900 dark:after:bg-gray-800'>
+      <div className='overflow-hidden bg-gradient-to-t from-gray-50 to-white after:absolute after:right-0 after:bottom-0 after:left-0 after:z-20 after:h-[0.5px] after:bg-gray-200 dark:from-gray-900 dark:after:bg-gray-800'>
         <Image
           alt='Screenshot of Campsite feed running in the Desktop app'
           src={isDark ? images.dark : images.light}
@@ -791,7 +791,7 @@ function Screenshots() {
           height={2024}
           priority
           quality={100}
-          className='absolute z-10 mx-auto -mb-[60px] mt-0 w-[220vw] max-w-7xl md:relative md:w-full lg:-mb-[100px]'
+          className='absolute z-10 mx-auto mt-0 -mb-[60px] w-[220vw] max-w-7xl md:relative md:w-full lg:-mb-[100px]'
         />
       </div>
       <Image
@@ -810,7 +810,7 @@ function Screenshots() {
         height={1024 / 2}
         priority
         alt='watercolor'
-        className='absolute -bottom-[20%] right-[54%] z-0 saturate-[200%]'
+        className='absolute right-[54%] -bottom-[20%] z-0 saturate-[200%]'
       />
     </div>
   )
@@ -903,7 +903,7 @@ function AutomaticBacklinks() {
 function CallsChat() {
   return (
     <div className='relative mt-2 select-none sm:mt-6 lg:-mx-4 lg:mt-8 xl:-mx-6 xl:mt-12 2xl:-mx-8'>
-      <div className='bg-elevated flex select-none items-center rounded-lg border-[0.5px] pt-2 shadow lg:max-w-[70%] lg:-rotate-2'>
+      <div className='bg-elevated flex items-center rounded-lg border-[0.5px] pt-2 shadow select-none lg:max-w-[70%] lg:-rotate-2'>
         <Messages thread={messageThreads.group} messages={messageThreads.group.messages} />
       </div>
 
@@ -916,7 +916,7 @@ function CallUI() {
   return (
     <div
       className={cn(
-        'bg-elevated bottom-22 dark absolute -right-32 z-20 hidden aspect-video w-full max-w-[75%] rotate-2 select-none self-end rounded-lg md:max-w-[300px] lg:block lg:max-w-[400px]',
+        'bg-elevated dark absolute -right-32 bottom-22 z-20 hidden aspect-video w-full max-w-[75%] rotate-2 self-end rounded-lg select-none md:max-w-[300px] lg:block lg:max-w-[400px]',
         'shadow-[inset_0_0.5px_0_rgb(0_0_0_/_0.1),_0px_2px_4px_rgb(0,0,0,0.1),_0px_4px_12px_rgb(0,0,0,0.1),_0px_8px_20px_rgb(0,0,0,0.02)] dark:bg-neutral-900 dark:shadow-[inset_0px_0px_0px_0.5px_rgb(255_255_255_/_0.12),_0px_1px_2px_rgb(0_0_0_/_0.4),_0px_2px_12px_rgb(0_0_0_/_0.12),_0px_0px_0px_0.5px_rgb(0_0_0_/_0.24),_0px_2px_30px_rgb(0_0_0_/_0.50)]'
       )}
     >

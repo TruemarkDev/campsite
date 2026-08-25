@@ -19,16 +19,7 @@ function removeTrailingSlash(url: string) {
 }
 
 type EmbedType =
-  | 'link'
-  | 'loom'
-  | 'figma'
-  | 'codepen'
-  | 'codesandbox'
-  | 'rive'
-  | 'storybook'
-  | 'play'
-  | 'tome'
-  | 'youtube'
+  'link' | 'loom' | 'figma' | 'codepen' | 'codesandbox' | 'rive' | 'storybook' | 'play' | 'tome' | 'youtube'
 
 export function embedType(link: string) {
   if (link.match(loomRegex)) {

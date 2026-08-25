@@ -90,10 +90,10 @@ controlled row keeps the client ID URL as `uid`, stores no usable client secret,
 and is refreshed only after a valid metadata fetch. Existing non-CIMD rows keep
 the ordinary `kept` lookup path and are never silently reinterpreted.
 
-- *Alternative considered:* create CIMD applications through `POST
-  /oauth/register`. Rejected: CIMD's client ID is the metadata URL and requires
+- _Alternative considered:_ create CIMD applications through `POST
+/oauth/register`. Rejected: CIMD's client ID is the metadata URL and requires
   no registration request; forcing DCR would defeat the new mechanism.
-- *Alternative considered:* special-case only the consent controller. Rejected:
+- _Alternative considered:_ special-case only the consent controller. Rejected:
   token exchange would still reject the URL client ID or bind the grant to a
   different client.
 
@@ -115,7 +115,7 @@ HTTP redirects are not followed, matching section 5 of the active July 2026
 CIMD draft. Fetch failures and policy rejections abort authorization without
 falling back to a similarly named CIMD client.
 
-- *Alternative considered:* use the application's ordinary HTTP client with a
+- _Alternative considered:_ use the application's ordinary HTTP client with a
   scheme check. Rejected: a scheme check alone does not cover private DNS
   answers, rebinding, or response exhaustion.
 
@@ -133,7 +133,7 @@ Consent uses the validated `client_name`, but also visibly presents the client-I
 hostname and redirect hostname so a friendly name cannot hide the destination.
 Optional metadata is ignored unless a later reviewed change gives it semantics.
 
-- *Alternative considered:* prefix, origin-only, or wildcard redirect matching.
+- _Alternative considered:_ prefix, origin-only, or wildcard redirect matching.
   Rejected: the CIMD and OAuth security contracts require exact registered
   redirect matching.
 
@@ -151,10 +151,10 @@ Redirect validation always reads from the same validated cached document used to
 construct the client identity. Expiry causes a refetch and complete revalidation;
 there is no stale-if-error authorization path.
 
-- *Alternative considered:* persist the first document indefinitely. Rejected:
+- _Alternative considered:_ persist the first document indefinitely. Rejected:
   the client controls its metadata and HTTP freshness, and redirect revocation
   must eventually take effect.
-- *Alternative considered:* negative caching. Rejected for the initial rollout:
+- _Alternative considered:_ negative caching. Rejected for the initial rollout:
   it makes transient client-host failures indistinguishable from invalid
   clients and complicates recovery.
 

@@ -44,7 +44,7 @@ export default function ChangelogListItem(props: Props) {
             <Link href={`/changelog/${changelog.data.slug}`}>{changelog.data.title}</Link>
           </h2>
         ) : (
-          <h1 className='mb-1 text-[clamp(2rem,_4vw,_2.8rem)] font-bold leading-[1.12]'>{changelog.data.title}</h1>
+          <h1 className='mb-1 text-[clamp(2rem,_4vw,_2.8rem)] leading-[1.12] font-bold'>{changelog.data.title}</h1>
         )}
 
         <Link

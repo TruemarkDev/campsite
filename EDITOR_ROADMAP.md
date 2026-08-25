@@ -17,19 +17,19 @@ doesn't have to be redone at implementation time.
 
 ## Tracked work (beads, label `tiptap3` unless noted)
 
-| Bead | What |
-|---|---|
+| Bead         | What                                                                 |
+| ------------ | -------------------------------------------------------------------- |
 | campsite-ahb | Selection extension — keep selection highlighted during comment flow |
-| campsite-k78 | EditorBubbleMenu → `useEditorState` (kill rerender-per-transaction) |
-| campsite-7j7 | UniqueID for stable block IDs (needs `NOTE_SCHEMA_VERSION` bump) |
-| campsite-rff | Mathematics (LaTeX) — product call |
-| campsite-auf | FileHandler vs custom paste/drop plumbing |
-| campsite-dom | styled-text-server: markdown output via `@tiptap/markdown` |
-| campsite-4oi | `@tiptap/static-renderer`: DOM-free JSON→HTML (blocks pua, s5r) |
-| campsite-pua | html_to_slack as ProseMirror serialization (replaces cheerio) |
-| campsite-s5r | PM JSON as first-class interchange + structural sanitization |
-| campsite-l5e | Semantic diff endpoint via vendored recreate-transform |
-| campsite-8ss | Hocuspocus 4 `onTokenSync` re-authorization (label `hocuspocus`) |
+| campsite-k78 | EditorBubbleMenu → `useEditorState` (kill rerender-per-transaction)  |
+| campsite-7j7 | UniqueID for stable block IDs (needs `NOTE_SCHEMA_VERSION` bump)     |
+| campsite-rff | Mathematics (LaTeX) — product call                                   |
+| campsite-auf | FileHandler vs custom paste/drop plumbing                            |
+| campsite-dom | styled-text-server: markdown output via `@tiptap/markdown`           |
+| campsite-4oi | `@tiptap/static-renderer`: DOM-free JSON→HTML (blocks pua, s5r)      |
+| campsite-pua | html_to_slack as ProseMirror serialization (replaces cheerio)        |
+| campsite-s5r | PM JSON as first-class interchange + structural sanitization         |
+| campsite-l5e | Semantic diff endpoint via vendored recreate-transform               |
+| campsite-8ss | Hocuspocus 4 `onTokenSync` re-authorization (label `hocuspocus`)     |
 
 Full integration details (package versions, file paths, gotchas) are in each bead's
 description — `bd show <id>`.
@@ -42,10 +42,10 @@ comments); its 2026 mission is "the document layer around the database" — sche
 versioned, queryable docs. Because Campsite self-hosts the entire collab stack
 (Hocuspocus + Yjs + own schema), every one of these has a viable OSS/DIY path.
 
-### 1. User-invoked AI editing with suggestion review  → OpenSpec: `add-ai-note-editing`
+### 1. User-invoked AI editing with suggestion review → OpenSpec: `add-ai-note-editing`
 
 **The proven shape** (Tiptap AI Toolkit "Cursor-like agent", Harvey/Spellbook legal
-redlining, Rezonant docs): the user, *in* the note, selects text or types a command; AI
+redlining, Rezonant docs): the user, _in_ the note, selects text or types a command; AI
 edits land **as suggestions** — attributed insert/delete marks, individually
 accept/rejectable, Google-Docs style. The review workflow is the value; agent
 connectivity is plumbing beneath it. MIT reference for the marks:
@@ -55,7 +55,7 @@ version is Cloud-paid.
 The OpenSpec change covers: suggestion marks + accept/reject (core,
 `NOTE_SCHEMA_VERSION` bump batched with UniqueID campsite-7j7), "Edit with AI"
 bubble-menu/slash-command surface, a server-side edit facade for jobs, and one genuinely
-*live* pilot — the call-recording summary streaming into the meeting note while
+_live_ pilot — the call-recording summary streaming into the meeting note while
 participants still have it open. Human-to-human suggesting mode is a natural follow-up
 on the same marks.
 

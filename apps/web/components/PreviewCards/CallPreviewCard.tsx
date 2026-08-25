@@ -28,7 +28,7 @@ export function CallPreviewCard({ className, callId, interactive }: Props) {
     return (
       <div
         className={cn(
-          'bg-primary dark:bg-secondary min-h-22 relative w-full overflow-hidden rounded-lg border',
+          'bg-primary dark:bg-secondary relative min-h-22 w-full overflow-hidden rounded-lg border',
           className
         )}
       ></div>
@@ -36,10 +36,10 @@ export function CallPreviewCard({ className, callId, interactive }: Props) {
   }
 
   return (
-    <div className='bg-elevated not-prose min-h-22 relative flex w-full items-center gap-2 overflow-hidden rounded-lg border p-3'>
+    <div className='bg-elevated not-prose relative flex min-h-22 w-full items-center gap-2 overflow-hidden rounded-lg border p-3'>
       {interactive && <Link href={`/${scope}/calls/${call.id}`} className='absolute inset-0 z-0' />}
 
-      <span className='h-7.5 w-7.5 relative flex items-center justify-center self-start'>
+      <span className='relative flex h-7.5 w-7.5 items-center justify-center self-start'>
         <CallBreadcrumbIcon />
       </span>
 
@@ -50,7 +50,7 @@ export function CallPreviewCard({ className, callId, interactive }: Props) {
 
         {call.summary_html && (
           <HTMLRenderer
-            className='text-tertiary break-anywhere line-clamp-2 w-full select-text text-sm'
+            className='text-tertiary break-anywhere line-clamp-2 w-full text-sm select-text'
             text={call.summary_html}
           />
         )}

@@ -9,8 +9,10 @@ import { MenuHeadingType, MenuItem, MenuItemType, MenuSubType, MenuTextType, Men
 import { UIText } from '../Text'
 import { cn, CONTAINER_STYLES } from '../utils'
 
-interface DropdownMenuPortalProps
-  extends Pick<DropdownMenuPrimitive.DropdownMenuPortalProps, 'children' | 'container'> {}
+interface DropdownMenuPortalProps extends Pick<
+  DropdownMenuPrimitive.DropdownMenuPortalProps,
+  'children' | 'container'
+> {}
 
 function DropdownMenuPortal({ children, ...rest }: DropdownMenuPortalProps) {
   return <DropdownMenuPrimitive.Portal {...rest}>{children}</DropdownMenuPrimitive.Portal>
@@ -24,7 +26,7 @@ function DropdownMenuSeparator() {
 
 function DropdownMenuHeading({ item }: { item: MenuHeadingType }) {
   return (
-    <div className='pointer-events-none flex w-full items-center justify-start px-3 pb-1 pt-2'>
+    <div className='pointer-events-none flex w-full items-center justify-start px-3 pt-2 pb-1'>
       <UIText tertiary className='line-clamp-1 flex-1 text-left' size='text-xs'>
         {item.label}
       </UIText>
@@ -34,7 +36,7 @@ function DropdownMenuHeading({ item }: { item: MenuHeadingType }) {
 
 function DropdownMenuText({ item }: { item: MenuTextType }) {
   return (
-    <div className='pointer-events-none flex w-full items-center justify-start px-3 pb-1 pt-2'>
+    <div className='pointer-events-none flex w-full items-center justify-start px-3 pt-2 pb-1'>
       <UIText tertiary className='flex-1 text-left' size='text-xs'>
         {item.label}
       </UIText>
@@ -54,7 +56,7 @@ function DropdownMenuItem({ item }: DropdownMenuItemProps) {
       onSelect={item.onSelect}
       className={cn(
         'group relative flex cursor-pointer items-center rounded-[5px] border-none outline-none',
-        'md:h-8.5 h-10.5 text-base md:text-sm',
+        'h-10.5 text-base md:h-8.5 md:text-sm',
         'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50',
         'data-[highlighted]:dark:shadow-select-item',
         {
@@ -115,7 +117,7 @@ function DropdownMenuSubItem({ children, item, width }: DropdownMenuSubItemProps
       <DropdownMenuPrimitive.SubTrigger
         className={cn(
           'group relative flex cursor-pointer items-center rounded-[5px] border-none pr-3 outline-none',
-          'md:h-8.5 h-10.5 text-base md:text-sm',
+          'h-10.5 text-base md:h-8.5 md:text-sm',
           'data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50',
           'data-[highlighted]:bg-black/5 data-[highlighted]:dark:bg-white/10',
           'data-[highlighted]:dark:shadow-select-item',

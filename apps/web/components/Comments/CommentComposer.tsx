@@ -45,8 +45,7 @@ export function commentComposerId(subjectId: string, replyingToCommentId?: strin
 const ADD_ATTACHMENT_SHORTCUT = 'mod+shift+u'
 
 export interface CommentComposerProps
-  extends CommentFormProps,
-    Pick<ComponentProps<typeof MarkdownEditor>, 'defaultMentions'> {
+  extends CommentFormProps, Pick<ComponentProps<typeof MarkdownEditor>, 'defaultMentions'> {
   open?: boolean
   onOptimisticCreate?(): void
   onCreated?: (response: Comment) => void

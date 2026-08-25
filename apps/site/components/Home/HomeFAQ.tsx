@@ -94,7 +94,7 @@ export function FAQItem({ title, children }: FAQItemProps) {
         </AccordionPrimitive.Trigger>
       </AccordionPrimitive.Header>
       <AccordionPrimitive.Content className='data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down overflow-hidden'>
-        <div className='text-primary col-start-2 flex max-w-3xl flex-col gap-4 pl-8 pt-2 text-base leading-relaxed lg:pl-0'>
+        <div className='text-primary col-start-2 flex max-w-3xl flex-col gap-4 pt-2 pl-8 text-base leading-relaxed lg:pl-0'>
           {children}
         </div>
       </AccordionPrimitive.Content>

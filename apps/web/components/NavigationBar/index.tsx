@@ -883,7 +883,7 @@ function BadgedChatIcon({ prefetch }: { prefetch?: boolean }) {
   return (
     <div className='relative'>
       {hasUnreads && (
-        <div className='pointer-events-none absolute -right-[3px] -top-px z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
+        <div className='pointer-events-none absolute -top-px -right-[3px] z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
       )}
       <ChatBubbleIcon size={28} />
     </div>
@@ -899,7 +899,7 @@ function BadgedNotificationsIcon() {
   return (
     <div className='relative'>
       {hasUnreads && (
-        <div className='pointer-events-none absolute -right-[3px] -top-px z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
+        <div className='pointer-events-none absolute -top-px -right-[3px] z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
       )}
       <InboxIcon size={28} />
     </div>
@@ -915,7 +915,7 @@ function BadgedHomeIcon() {
   return (
     <div className='relative'>
       {hasUnreads && (
-        <div className='pointer-events-none absolute -right-[3px] -top-px z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
+        <div className='pointer-events-none absolute -top-px -right-[3px] z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
       )}
       <HomeIcon size={28} />
     </div>

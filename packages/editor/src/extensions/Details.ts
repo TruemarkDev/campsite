@@ -1,3 +1,4 @@
+import { findParentNodeClosestToPos } from '@tiptap/core'
 import {
   DetailsContent,
   DetailsContentOptions,
@@ -6,7 +7,6 @@ import {
   DetailsSummaryOptions,
   Details as TiptapDetails
 } from '@tiptap/extension-details'
-import { findParentNodeClosestToPos } from '@tiptap/core'
 
 export type { DetailsContentOptions, DetailsOptions, DetailsSummaryOptions }
 

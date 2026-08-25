@@ -52,7 +52,7 @@ export function SlimOpenGraphCard({ className, url }: OpenGraphCardProps) {
       <div className='flex min-w-0 flex-1 flex-col justify-center gap-1 truncate px-3 py-2.5 pr-5'>
         {hasTitle && (
           <UIText
-            className='break-anywhere line-clamp-1 min-w-0 truncate text-[15px] font-medium leading-tight'
+            className='break-anywhere line-clamp-1 min-w-0 truncate text-[15px] leading-tight font-medium'
             primary
           >
             {data.title}

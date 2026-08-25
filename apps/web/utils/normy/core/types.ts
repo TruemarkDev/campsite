@@ -14,7 +14,9 @@ export interface NormalizerConfig {
   structuralSharing?: boolean
 }
 
-export interface UsedKeys { [path: string]: ReadonlyArray<string> }
+export interface UsedKeys {
+  [path: string]: ReadonlyArray<string>
+}
 
 export interface NormalizedData {
   queries: {

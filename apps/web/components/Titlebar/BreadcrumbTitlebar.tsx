@@ -98,7 +98,7 @@ export function BreadcrumbLabel({
 }: ComponentProps<'p'> & { children: React.ReactNode; className?: string }) {
   return (
     <UIText
-      className={cn('break-anywhere min-w-0 max-w-[32ch] truncate text-[15px] leading-tight', className)}
+      className={cn('break-anywhere max-w-[32ch] min-w-0 truncate text-[15px] leading-tight', className)}
       weight='font-medium'
       {...rest}
     >

@@ -10,6 +10,7 @@ over existing controllers.
 ## Decisions
 
 ### Decision 1 — `resolve_post` covers closure; no `set_post_status`
+
 `Post`'s `status` enum is only `{ none, feedback_requested }` (post.rb:196) — there
 is no "done"/"blocked" state to set, so a status tool would be near-useless.
 Closure is **resolution**: `Posts::ResolutionsController#create` calls
@@ -20,6 +21,7 @@ boolean (default `true`): `true` → `resolve!` (passing optional `resolve_html`
 `:resolve?`, requires `write_post`, returns `PostSerializer`.
 
 ### Decision 2 — `update_post` delegates to `post.update_post`
+
 Mirrors `PostsController#update`: resolve an optional `project_id` via
 `policy_scope(organization.projects).find_by!`, then
 `post.update_post(actor: member, organization:, project:, params:)` with permitted
@@ -28,6 +30,7 @@ Authorizes `:update?`, requires `write_post`. The post's own validations/errorin
 path returns a tool error on failure.
 
 ### Decision 3 — `reply_to_comment` is a distinct tool, not a flag on `add_comment`
+
 A reply is `Comment.create_comment(params:, member:, parent: <comment>)` — the
 `parent:` keyword threads it (`create_comment.rb:34` builds `parent.kept_replies`).
 Keeping it a separate tool (rather than an optional `parent_comment_id` on
@@ -38,6 +41,7 @@ exactly as the REST comment create does. Requires `write_post`, returns
 `CommentSerializer`.
 
 ### Decision 4 — `create_project` exposes the safe subset
+
 `ProjectsController#create` accepts many params (slack channel, members,
 chat_format, onboarding). The tool exposes only `name` (required), `description`,
 and `private`, building `organization.projects.build(creator: member, name:,
@@ -46,6 +50,7 @@ transaction shape (without the Slack/onboarding side-paths). Authorizes
 `:create_project?`, requires `write_project`, returns `ProjectSerializer`.
 
 ### Decision 5 — `create_follow_up` is self-only, `mcp`-scope-only, documented
+
 A Campsite follow-up is a **personal reminder** the member sets on a subject — it is
 created via `<subject>.follow_ups.create!(organization_membership: member, show_at:)`
 and is never an assignment to another member. The tool is polymorphic over post /
@@ -57,6 +62,7 @@ acting member's own state, so it is **deliberately gated by `mcp` alone** (no
 registry. `show_at` is an ISO8601 timestamp string.
 
 ### Decision 6 — hand-off uses `@mention`, not follow-ups
+
 Assigning work to another agent/member is already expressible: `create_post` /
 `add_comment` with `<@member_public_id>` lands a notification in that member's
 inbox, which they poll via `list_notifications`. No new "assign" tool is needed,

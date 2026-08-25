@@ -17,7 +17,7 @@ export function NoteTableOfContents({ anchors }: Props) {
 
   return (
     <nav aria-label='Table of contents' className='border-primary mx-auto mb-6 max-w-[44rem] border-b pb-4'>
-      <p className='text-secondary mb-2 text-xs font-semibold uppercase tracking-wide'>On this page</p>
+      <p className='text-secondary mb-2 text-xs font-semibold tracking-wide uppercase'>On this page</p>
       <ol className='max-h-64 space-y-1 overflow-y-auto pr-1'>
         {anchors.map((anchor) => (
           <li key={anchor.id} style={{ paddingInlineStart: `${(anchor.level - 1) * 0.75}rem` }}>

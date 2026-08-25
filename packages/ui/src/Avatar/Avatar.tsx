@@ -222,7 +222,7 @@ function AvatarComponent(props: Props) {
               transform: clipId ? 'translateZ(0)' : undefined
             }}
             className={cn(
-              'relative flex shrink-0 select-none items-center justify-center font-semibold',
+              'relative flex shrink-0 items-center justify-center font-semibold select-none',
               !showImage && accentBackgroundColor,
               textSize,
               fade && 'opacity-50 saturate-[10%]',

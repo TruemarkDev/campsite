@@ -36,7 +36,7 @@ export function InlineResourceMentionRenderer(props: NodeViewWrapperProps) {
 
 function Container({ children }: React.PropsWithChildren) {
   return (
-    <span className='rounded bg-black/[0.04] decoration-clone py-0.5 pl-px pr-[3px] align-baseline text-[15px] hover:bg-black/[0.08] dark:bg-white/10 dark:hover:bg-white/[0.14]'>
+    <span className='rounded bg-black/[0.04] decoration-clone py-0.5 pr-[3px] pl-px align-baseline text-[15px] hover:bg-black/[0.08] dark:bg-white/10 dark:hover:bg-white/[0.14]'>
       {children}
     </span>
   )

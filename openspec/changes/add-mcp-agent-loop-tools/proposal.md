@@ -2,17 +2,17 @@
 
 The `add-mcp-server` change shipped a remote MCP server with 16 read/write tools
 over posts, comments, reactions, messages, notes, projects, organizations, and
-members. That is enough to *demo* an agent reading and writing Campsite content,
+members. That is enough to _demo_ an agent reading and writing Campsite content,
 but **not enough to run a real multi-agent loop on top of Campsite** ("loop
 engineering" — using Campsite as the async coordination substrate between an
 orchestrator and worker agents).
 
 A loop needs three primitives the current tool set is missing:
 
-1. **Self-identity** — an agent must know *who it is* (its user identity and its
+1. **Self-identity** — an agent must know _who it is_ (its user identity and its
    per-org member id) to recognize when it has been @mentioned or assigned, and
    to filter "mine".
-2. **An inbox** — an agent must be able to poll *what is addressed to it* and mark
+2. **An inbox** — an agent must be able to poll _what is addressed to it_ and mark
    items handled. Today the only option is brute-forcing `list_posts` and diffing,
    which misses messages/mentions and does not scale.
 3. **A durable working doc** — an agent needs a place to write a plan, status, and
@@ -60,6 +60,7 @@ the same Pundit authorization and Blueprinter serialization as the REST API.
 ## Capabilities
 
 ### Modified Capabilities
+
 - `mcp-tools`: adds the agent-loop tool set (self-identity, notifications inbox,
   note creation/update) to the existing catalog, and a `write_note` scope gating
   note writes. Read-of-self and inbox tools gate on the `mcp` scope only;

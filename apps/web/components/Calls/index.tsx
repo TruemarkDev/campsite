@@ -291,7 +291,7 @@ export const CallRow = memo(({ call, display, hideProject = false }: CallRowProp
 
         {summary && (
           <HTMLRenderer
-            className='text-tertiary break-anywhere line-clamp-1 max-w-xl select-text text-sm'
+            className='text-tertiary break-anywhere line-clamp-1 max-w-xl text-sm select-text'
             text={summary}
           />
         )}

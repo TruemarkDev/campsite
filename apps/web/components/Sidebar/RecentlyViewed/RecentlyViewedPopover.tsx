@@ -91,7 +91,7 @@ function RecentlyViewedPopoverContent({ onClose }: { onClose: () => void }) {
 
       <Command
         autoFocus
-        className='flex flex-1 flex-col ring-0 focus-visible:border-0 focus-visible:outline-none focus-visible:ring-0'
+        className='flex flex-1 flex-col ring-0 focus-visible:border-0 focus-visible:ring-0 focus-visible:outline-none'
         loop
         tabIndex={0}
       >

@@ -68,7 +68,7 @@ export function FollowUpListItem({ followUp }: { followUp: FollowUp }) {
           )}
         </div>
         <div className='my-1 flex flex-col gap-y-1'>
-          <div className={cn('flex border-l-2 pl-2 pr-3 leading-tight')}>
+          <div className={cn('flex border-l-2 pr-3 pl-2 leading-tight')}>
             <UIText element='span' secondary className='break-anywhere line-clamp-1'>
               {followUp.subject.body_preview}
             </UIText>

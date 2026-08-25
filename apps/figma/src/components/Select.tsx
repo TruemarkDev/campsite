@@ -77,7 +77,7 @@ function BasicViewport<T>({ options, getItemKey, getItemTextValue, renderItem }:
                 <RadixSelect.Item
                   key={getItemKey(option)}
                   className={cn(
-                    'h-8.5 group relative mx-1 flex cursor-pointer items-center rounded-[5px] border-none px-3 text-sm font-medium outline-none',
+                    'group relative mx-1 flex h-8.5 cursor-pointer items-center rounded-[5px] border-none px-3 text-sm font-medium outline-none',
                     'focus:shadow-dropdown-item focus:bg-white/20'
                   )}
                   value={getItemKey(option)}
@@ -95,7 +95,7 @@ function BasicViewport<T>({ options, getItemKey, getItemTextValue, renderItem }:
             <RadixSelect.Item
               key={getItemKey(option)}
               className={cn(
-                'h-8.5 group relative mx-1 flex cursor-pointer items-center rounded-[5px] border-none px-3 text-sm font-medium outline-none',
+                'group relative mx-1 flex h-8.5 cursor-pointer items-center rounded-[5px] border-none px-3 text-sm font-medium outline-none',
                 'focus:shadow-dropdown-item focus:bg-white/20'
               )}
               value={getItemKey(option)}
@@ -159,7 +159,7 @@ function ComboboxViewport<T>({
         <CommandInput
           className={cn(
             'border-0 bg-transparent py-0', // reset Figma styles
-            'h-8 w-full !px-2 !text-sm focus:!outline-none focus:!ring-0 disabled:cursor-not-allowed disabled:opacity-50'
+            'h-8 w-full !px-2 !text-sm focus:!ring-0 focus:!outline-none disabled:cursor-not-allowed disabled:opacity-50'
           )}
           placeholder='Search...'
           value={query}
@@ -175,7 +175,7 @@ function ComboboxViewport<T>({
 
       <CommandList
         className={cn(
-          'scrollbar-hide overflow-y-auto overflow-x-hidden',
+          'scrollbar-hide overflow-x-hidden overflow-y-auto',
           '[[data-side=bottom]_&]:scroll-pt-1 [[data-side=top]_&]:scroll-pb-1'
         )}
         style={{
@@ -346,7 +346,7 @@ export function Select<T>({
               ref={contentRef}
               {...POPOVER_MOTION}
               className={cn(
-                'text-gray-150 shadow-popover bg-primary dark:bg-elevated dark select-none rounded-lg border-black/50 bg-black py-1 dark:border',
+                'text-gray-150 shadow-popover bg-primary dark:bg-elevated dark rounded-lg border-black/50 bg-black py-1 select-none dark:border',
                 'max-h-[--radix-select-content-available-height]',
                 'z-[9999] origin-[--radix-popper-transform-origin]',
                 {

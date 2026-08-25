@@ -65,7 +65,7 @@ export function InlineAttachmentRenderer(props: InlineAttachmentRendererProps) {
           {isRenderable && (
             <div
               className={cn(
-                'group/attachment relative flex h-full w-full select-none items-center justify-center rounded',
+                'group/attachment relative flex h-full w-full items-center justify-center rounded select-none',
                 {
                   'pointer-events-none opacity-25': !!clientError
                 }
@@ -136,7 +136,7 @@ function SizedAttachmentPlaceholder(props: { width: number; height: number }) {
   const { width, height } = fitDimensions(props)
 
   return (
-    <div className='relative flex h-full w-full select-none items-center justify-center'>
+    <div className='relative flex h-full w-full items-center justify-center select-none'>
       <div
         className='max-h-[50vh] rounded object-contain'
         style={{ width, height, aspectRatio: `${width}/${height}` }}

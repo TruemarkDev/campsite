@@ -184,7 +184,11 @@ export function SearchField({ query, isLoading, mobile }: SearchFieldProps) {
 
   return (
     <>
-      <LayeredHotkeys keys={['/', 'meta+f']} callback={() => ref.current?.focus()} options={{ preventDefault: true, useKey: true }} />
+      <LayeredHotkeys
+        keys={['/', 'meta+f']}
+        callback={() => ref.current?.focus()}
+        options={{ preventDefault: true, useKey: true }}
+      />
 
       <form
         onSubmit={onSubmit}
@@ -199,7 +203,7 @@ export function SearchField({ query, isLoading, mobile }: SearchFieldProps) {
       >
         <div
           className={cn('relative flex flex-1 items-center gap-2', {
-            'bg-quaternary focus:bg-primary h-10 rounded-full border-transparent pl-2 pr-10': mobile
+            'bg-quaternary focus:bg-primary h-10 rounded-full border-transparent pr-10 pl-2': mobile
           })}
         >
           <span className='text-tertiary flex h-5 w-5 items-center justify-center'>
@@ -207,7 +211,7 @@ export function SearchField({ query, isLoading, mobile }: SearchFieldProps) {
           </span>
           <input
             ref={ref}
-            className='flex-1 border-none bg-transparent p-0 text-sm outline-none ring-0 focus:ring-0'
+            className='flex-1 border-none bg-transparent p-0 text-sm ring-0 outline-none focus:ring-0'
             placeholder='Search...'
             role='searchbox'
             autoComplete='off'
@@ -235,7 +239,7 @@ export function SearchField({ query, isLoading, mobile }: SearchFieldProps) {
             onMouseDown={(e) => e.preventDefault()}
             accessibilityLabel='Clear search'
             variant='plain'
-            className={cn('absolute right-2 top-1/2 h-6 w-6 -translate-y-1/2', {
+            className={cn('absolute top-1/2 right-2 h-6 w-6 -translate-y-1/2', {
               'pointer-events-none opacity-0': isLoading || !text.length
             })}
           />

@@ -35,7 +35,7 @@ export function PageTitle({
       id={id}
       element={element}
       size='text-[clamp(2.4rem,_4vw,_4rem)]'
-      className={cn('text-balance leading-[1.1] -tracking-[1px] lg:-tracking-[1.8px]', className, id && 'scroll-mt-20')}
+      className={cn('leading-[1.1] -tracking-[1px] text-balance lg:-tracking-[1.8px]', className, id && 'scroll-mt-20')}
       weight='font-semibold'
     >
       {children}
@@ -57,7 +57,7 @@ export function PageSubtitle({
       element={element}
       size='text-[clamp(1.1rem,_2vw,_1.4rem)]'
       className={cn(
-        'max-w-5xl text-balance leading-relaxed -tracking-[0.1px] md:-tracking-[0.2px] lg:-tracking-[0.3px] xl:-tracking-[0.4px]',
+        'max-w-5xl leading-relaxed -tracking-[0.1px] text-balance md:-tracking-[0.2px] lg:-tracking-[0.3px] xl:-tracking-[0.4px]',
         className
       )}
       weight='font-medium'

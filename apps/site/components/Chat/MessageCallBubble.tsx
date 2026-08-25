@@ -36,7 +36,7 @@ function ActiveMessageCall({ call, className }: { call: Call; className: string 
         Join
       </Button>
 
-      <span className='absolute -right-24 top-6 hidden lg:flex'>
+      <span className='absolute top-6 -right-24 hidden lg:flex'>
         <svg
           width='49'
           className='text-quaternary opacity-50'

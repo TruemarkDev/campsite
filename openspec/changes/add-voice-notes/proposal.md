@@ -12,8 +12,7 @@ without decoding audio), and there is no way for an agent to talk back.
 
 Notably, the `attachments` table already carries `transcription_job_id`,
 `transcription_job_status`, and `transcription_vtt` columns (migration
-`20230426204217_add_transcription_job_id_and_status_to_attachments.rb`,
-2023) that are **currently unused by any model, job, or serializer** — dead
+`20230426204217_add_transcription_job_id_and_status_to_attachments.rb`, 2023) that are **currently unused by any model, job, or serializer** — dead
 schema from an earlier, abandoned attempt at this exact feature. This change
 finishes that work: wire a local-first STT worker to populate those columns,
 and add a symmetric TTS path for agent replies.
@@ -59,6 +58,7 @@ and add a symmetric TTS path for agent replies.
 ## Capabilities
 
 ### New Capabilities
+
 - `voice-notes`: audio-attachment transcription (STT) and agent voice replies
   (TTS) as a Campsite-native capability — covers the Sidekiq transcription
   job, the `Attachment` transcript field/serializer exposure, the TTS service
@@ -66,6 +66,7 @@ and add a symmetric TTS path for agent replies.
   `speak_reply`).
 
 ### Modified Capabilities
+
 - None. No `openspec/specs/` capability exists yet for `mcp-tools` or
   `attachments` (the MCP proposals that would define them —
   `add-mcp-server`, `add-mcp-tier-3` — are themselves still unarchived), so

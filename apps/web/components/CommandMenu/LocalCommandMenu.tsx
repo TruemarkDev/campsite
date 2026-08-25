@@ -182,7 +182,7 @@ export function LocalCommandMenu() {
         <RadixDialog.Portal>
           <RadixDialog.Overlay className='data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out fixed inset-0 bg-black/10 dark:bg-black/60' />
           <RadixDialog.Content
-            className='data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out fixed left-1/2 top-16 w-full max-w-[calc(100%_-_16px)] origin-[50%] -translate-x-1/2 transition-all md:max-w-3xl'
+            className='data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out fixed top-16 left-1/2 w-full max-w-[calc(100%_-_16px)] origin-[50%] -translate-x-1/2 transition-all md:max-w-3xl'
             onOpenAutoFocus={(e) => {
               e.preventDefault()
               inputRef.current?.focus()
@@ -224,7 +224,7 @@ export function LocalCommandMenu() {
                   className='w-full border-0 bg-transparent px-4 py-3 text-[15px] placeholder-gray-400 outline-none focus:border-black focus:border-black/5 focus:ring-0'
                 />
 
-                <Command.List className='scrollbar-hide scroll-pb-2 overflow-y-auto overflow-x-hidden px-2 pb-2 outline-none'>
+                <Command.List className='scrollbar-hide scroll-pb-2 overflow-x-hidden overflow-y-auto px-2 pb-2 outline-none'>
                   {page === 'shortcuts' ? (
                     <>
                       <Command.Group>
@@ -591,7 +591,7 @@ function ProjectItem({ navigate, project }: { navigate: NavigateFn; project: Syn
       )}
       {project.name}
       {project.private && (
-        <div className='text-quaternary h-5.5 w-5.5 flex items-center justify-center'>
+        <div className='text-quaternary flex h-5.5 w-5.5 items-center justify-center'>
           <LockIcon size={16} strokeWidth='2' />
         </div>
       )}

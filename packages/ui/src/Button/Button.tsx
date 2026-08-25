@@ -179,7 +179,7 @@ export const Button = forwardRef<HTMLButtonElement & HTMLAnchorElement, ButtonPr
             id={id}
             href={href}
             className={cn(
-              'relative outline-none transition',
+              'relative transition outline-none',
               buttonVariants({ variant, fullWidth, loading, size, round }),
               { '!pl-1': leftSlot && size === 'sm' },
               { '!pl-2': leftSlot && size === 'base' },

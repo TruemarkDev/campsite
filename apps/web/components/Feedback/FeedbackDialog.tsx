@@ -219,7 +219,7 @@ export function FeedbackDialog() {
         </Dialog.Content>
 
         {showInsidersUpsell && (
-          <div className='bg-secondary pb-4.5 hidden items-start gap-3 border-t p-3 lg:flex'>
+          <div className='bg-secondary hidden items-start gap-3 border-t p-3 pb-4.5 lg:flex'>
             <PlanetIcon size={40} className='-translate-y-0.5' />
             <div className='flex flex-col gap-3 pt-1'>
               <UIText className='text-balance' secondary>

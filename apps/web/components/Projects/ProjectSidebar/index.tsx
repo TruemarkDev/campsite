@@ -67,7 +67,7 @@ export function ProjectMobileSidebar({ project }: ProjectSidebarProps) {
             animate={{ width: PROJECT_DETAILS_WIDTH }}
             exit={{ width: 0 }}
             transition={{ duration: 0.1 }}
-            className='bg-elevated fixed bottom-0 right-0 top-0 z-20 lg:hidden'
+            className='bg-elevated fixed top-0 right-0 bottom-0 z-20 lg:hidden'
           >
             <ProjectSidebar project={project} />
           </m.div>

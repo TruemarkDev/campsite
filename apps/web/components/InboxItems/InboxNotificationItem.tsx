@@ -98,7 +98,7 @@ export function InboxNotificationItem({
         </div>
 
         {/* Notification Title */}
-        <div className={cn('@xl:flex-row flex flex-1 flex-col', { hidden: variant === 'group-child' })}>
+        <div className={cn('flex flex-1 flex-col @xl:flex-row', { hidden: variant === 'group-child' })}>
           <div
             className={cn(
               'flex flex-shrink items-center',
@@ -134,14 +134,14 @@ export function InboxNotificationItem({
               <button
                 className={cn(
                   'relative z-10 -mr-1 flex flex-row flex-nowrap gap-px pl-0.5 text-blue-500',
-                  'focus:!outline-none focus:!ring-0 active:!outline-none active:!ring-0',
+                  'focus:!ring-0 focus:!outline-none active:!ring-0 active:!outline-none',
                   'after:pointer-events-none after:absolute after:-inset-[3px] after:rounded-lg after:border after:border-blue-500 after:opacity-0 after:ring-2 after:ring-blue-500/20 after:transition-opacity focus-visible:after:opacity-100 active:after:opacity-0'
                 )}
                 onClick={toggleGroup}
               >
                 {/* expand hit area to minimum 30px on touch devices */}
                 <span
-                  className='absolute left-1/2 top-1/2 size-[max(100%,2rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden'
+                  className='absolute top-1/2 left-1/2 size-[max(100%,2rem)] -translate-x-1/2 -translate-y-1/2 [@media(pointer:fine)]:hidden'
                   aria-hidden='true'
                 />
 
@@ -158,7 +158,7 @@ export function InboxNotificationItem({
 
         {/* Notification Preview */}
         {notification.reply_to_body_preview && (
-          <div className='mb-0.5 flex border-l-2 pl-2 pr-3 leading-tight'>
+          <div className='mb-0.5 flex border-l-2 pr-3 pl-2 leading-tight'>
             <UIText element='span' quaternary className='break-anywhere line-clamp-1'>
               {notification.reply_to_body_preview}
             </UIText>

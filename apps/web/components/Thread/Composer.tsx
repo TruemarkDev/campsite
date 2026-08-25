@@ -242,7 +242,7 @@ export const Composer = forwardRef<HTMLFormElement, Props>(function Composer(
                 defaultMentions={thread?.other_members}
               />
 
-              <div className='absolute bottom-1 right-1 flex h-7 w-7 items-center justify-center'>
+              <div className='absolute right-1 bottom-1 flex h-7 w-7 items-center justify-center'>
                 <Button
                   round
                   variant={editMode ? 'important' : 'primary'}
@@ -275,7 +275,7 @@ const Attachments = memo(function Attachments() {
   if (attachments.length === 0) return null
 
   return (
-    <ul className='flex flex-wrap items-end gap-1.5 px-3 pb-0.5 pt-2.5 lg:pb-0'>
+    <ul className='flex flex-wrap items-end gap-1.5 px-3 pt-2.5 pb-0.5 lg:pb-0'>
       {attachments.map((attachment) => (
         <Tooltip
           key={attachment.id}

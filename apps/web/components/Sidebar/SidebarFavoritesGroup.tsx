@@ -107,7 +107,7 @@ export function SidebarFavoritesGroup() {
                 })}
               >
                 {!collapsed && (
-                  <span className='text-quaternary absolute -left-[11px] top-1/2 -translate-y-1/2 cursor-move opacity-0 group-hover/reorder-item:opacity-100 group-has-[[data-state="open"]]/reorder-item:opacity-100'>
+                  <span className='text-quaternary absolute top-1/2 -left-[11px] -translate-y-1/2 cursor-move opacity-0 group-hover/reorder-item:opacity-100 group-has-[[data-state="open"]]/reorder-item:opacity-100'>
                     <ReorderDotsIcon strokeWidth='2' size={16} />
                   </span>
                 )}

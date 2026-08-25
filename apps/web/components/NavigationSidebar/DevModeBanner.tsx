@@ -8,8 +8,8 @@ export function DevModeBanner() {
   if (isProd) return null
 
   return (
-    <m.div className={cn('border-brand-primary fixed left-0 right-0 top-0 z-40 border-t-2')}>
-      <div className='bg-brand-primary fixed left-1/2 -translate-x-1/2 rounded-b-md px-2.5 pb-0.5 text-center font-mono text-[10px] font-bold uppercase tracking-wider text-white'>
+    <m.div className={cn('border-brand-primary fixed top-0 right-0 left-0 z-40 border-t-2')}>
+      <div className='bg-brand-primary fixed left-1/2 -translate-x-1/2 rounded-b-md px-2.5 pb-0.5 text-center font-mono text-[10px] font-bold tracking-wider text-white uppercase'>
         Dev
       </div>
     </m.div>

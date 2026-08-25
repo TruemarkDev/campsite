@@ -317,7 +317,7 @@ export function MigrateForm({
       {submitted && (
         <div className='flex flex-col items-center justify-center gap-6 p-12'>
           <CheckCircleFilledFlushIcon size={72} className='text-green-500' />
-          <UIText size='text-base' className='text-balance text-center'>
+          <UIText size='text-base' className='text-center text-balance'>
             We’re putting the finishing touches on our Slack migration assistant, we’ll be in touch soon.
           </UIText>
           <Button size='large' variant='primary' href='/start'>

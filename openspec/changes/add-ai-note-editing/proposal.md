@@ -2,7 +2,7 @@
 
 ## Why
 
-The proven, revenue-earning shape of AI in editors (Tiptap AI Toolkit, Harvey/Spellbook redlining, Rezonant docs) is not an autonomous background writer — it is **user-invoked, in-document editing with reviewable changes**: select text or type a command in the note you're editing, the AI proposes edits *in place*, and you accept or reject each change without leaving the document. Campsite has the LLM plumbing (Rails AI jobs) and the entire self-hosted collab stack, but no way for AI output to land in a note as anything other than a static, take-it-or-leave-it block. The review workflow — suggestion marks, accept/reject — is the value; agent connectivity is plumbing beneath it.
+The proven, revenue-earning shape of AI in editors (Tiptap AI Toolkit, Harvey/Spellbook redlining, Rezonant docs) is not an autonomous background writer — it is **user-invoked, in-document editing with reviewable changes**: select text or type a command in the note you're editing, the AI proposes edits _in place_, and you accept or reject each change without leaving the document. Campsite has the LLM plumbing (Rails AI jobs) and the entire self-hosted collab stack, but no way for AI output to land in a note as anything other than a static, take-it-or-leave-it block. The review workflow — suggestion marks, accept/reject — is the value; agent connectivity is plumbing beneath it.
 
 ## What Changes
 
@@ -17,6 +17,7 @@ The proven, revenue-earning shape of AI in editors (Tiptap AI Toolkit, Harvey/Sp
 ## Capabilities
 
 ### New Capabilities
+
 - `editor/ai-note-editing`: user-invoked AI editing of notes — command surface, suggestion-mode change semantics, accept/reject review, attribution.
 - `collab/agent-peer`: server-side actors applying schema-valid, conflict-free edits through the collaborative session — authentication/grants, presence, high-level edit operations.
 

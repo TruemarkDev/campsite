@@ -78,7 +78,7 @@ function CopyLinkButton({ iconOnly = false }: { iconOnly?: boolean }) {
         tooltip='Copy link'
         accessibilityLabel='Copy link'
         className={cn({
-          '!border-transparent !bg-green-500 !text-white !shadow-none !outline-none !ring-0': isCopied
+          '!border-transparent !bg-green-500 !text-white !shadow-none !ring-0 !outline-none': isCopied
         })}
         tooltipShortcut={'mod+shift+c'}
         round
@@ -93,7 +93,7 @@ function CopyLinkButton({ iconOnly = false }: { iconOnly?: boolean }) {
       onClick={onCopy}
       leftSlot={isCopied ? <CheckIcon /> : <LinkIcon />}
       className={cn({
-        '!border-transparent !bg-green-500 !text-white !shadow-none !outline-none !ring-0': isCopied
+        '!border-transparent !bg-green-500 !text-white !shadow-none !ring-0 !outline-none': isCopied
       })}
       tooltipShortcut={'mod+shift+c'}
     >

@@ -10,7 +10,7 @@ The MCP server (`McpController`) does not run this check — it authenticates th
 Doorkeeper bearer token, requires the `mcp` scope, then dispatches tools. So a user
 without 2FA, holding an `mcp` token, can read and write through the connector in an
 org that enforces 2FA, **bypassing the org's own security policy**. This bites in
-particular when an org enables enforcement *after* a token was already issued
+particular when an org enables enforcement _after_ a token was already issued
 (Doorkeeper tokens are long-lived). The MCP surface must not be a 2FA bypass.
 
 ## What Changes
@@ -27,6 +27,7 @@ particular when an org enables enforcement *after* a token was already issued
 ## Capabilities
 
 ### Modified Capabilities
+
 - `mcp-server`: org-scoped tool execution now enforces the organization's
   two-factor-authentication policy, matching the REST API, so the connector cannot
   be used to bypass enforced 2FA.

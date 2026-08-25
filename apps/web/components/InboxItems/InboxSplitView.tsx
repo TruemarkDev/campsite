@@ -789,7 +789,7 @@ function InboxItem({ item, children, variant = 'plain', isGroupExpanded, classNa
         ref={ref}
         className={cn(
           'dark:focus:bg-tertiary group relative flex min-h-12 flex-none cursor-pointer scroll-m-2 scroll-mt-12 items-center gap-3 rounded-lg p-2.5',
-          'border-none outline-none ring-0 focus-within:border-none focus-within:outline-none focus-within:ring-0 focus:border-none focus:outline-none focus:ring-0',
+          'border-none ring-0 outline-none focus-within:border-none focus-within:ring-0 focus-within:outline-none focus:border-none focus:ring-0 focus:outline-none',
           className,
           // plain
           variant === 'plain' && isActive && 'bg-tertiary hover:bg-quaternary',
@@ -807,7 +807,7 @@ function InboxItem({ item, children, variant = 'plain', isGroupExpanded, classNa
         )}
       >
         <Link
-          className='absolute inset-0 focus:outline-none focus:ring-0'
+          className='absolute inset-0 focus:ring-0 focus:outline-none'
           href={getInboxItemRoutePath(item)}
           onClick={(e) => {
             if (!e.metaKey && showsSplitView) {

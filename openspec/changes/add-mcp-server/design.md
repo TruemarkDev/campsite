@@ -22,6 +22,7 @@ RSpec. Lint via rubocop-shopify with a `no_focus` cop.
 ## Goals / Non-Goals
 
 **Goals:**
+
 - A remote MCP server **mounted in the Rails API** at a stable HTTP path (`/mcp`),
   reusing existing auth, policies, serializers, and models.
 - Read **and** write tools over the core domain, each running through the same
@@ -31,6 +32,7 @@ RSpec. Lint via rubocop-shopify with a `no_focus` cop.
   of the existing Doorkeeper provider, with PKCE and a single `mcp` scope.
 
 **Non-Goals:**
+
 - A standalone MCP microservice (rejected below).
 - Any LLM/inference call from the server.
 - Hard-delete / bulk-destructive tools in the first cut.
@@ -40,42 +42,51 @@ RSpec. Lint via rubocop-shopify with a `no_focus` cop.
 ## Decisions
 
 ### Decision 1 — Mount in Rails, do not build a standalone service
+
 Mounting reuses Doorkeeper auth, `Current` context, Pundit policies, and
 Blueprinter serializers in-process. A standalone server would have to re-implement
 auth, re-call the REST API over the network (extra hop + token plumbing), and
 drift from policy changes. The user asked us to recommend; the existing OAuth +
 domain layer makes mounting clearly simpler and safer.
-- *Alternative considered:* separate Ruby/Rack service calling `/api/v1` with a
+
+- _Alternative considered:_ separate Ruby/Rack service calling `/api/v1` with a
   service token. Rejected: duplicates auth, weaker per-user authorization, more
   infra.
 
 ### Decision 2 — MCP gem + Streamable HTTP transport, mounted as a Rack endpoint
+
 Use a maintained Ruby MCP library to handle the JSON-RPC framing, `initialize`/
 `tools/list`/`tools/call`, and the Streamable HTTP transport, mounted in
 `config/routes.rb` (e.g. `mount` a Rack app or route to a controller at `/mcp`).
 Candidates: the official `mcp` Ruby SDK and `fast-mcp` (ships Rack/Rails mounting
-+ SSE/HTTP). **At implementation time, evaluate both and pick the one with clean
-Rack mounting + Streamable HTTP + active maintenance, and install the latest
-stable version** (per the add-latest-library rule). The transport choice must be
-the modern Streamable HTTP endpoint (single `/mcp` path), since that is what
-current remote connectors negotiate.
-- *Alternative considered:* hand-rolling JSON-RPC. Rejected: needless surface area
+
+- SSE/HTTP). **At implementation time, evaluate both and pick the one with clean
+  Rack mounting + Streamable HTTP + active maintenance, and install the latest
+  stable version** (per the add-latest-library rule). The transport choice must be
+  the modern Streamable HTTP endpoint (single `/mcp` path), since that is what
+  current remote connectors negotiate.
+
+* _Alternative considered:_ hand-rolling JSON-RPC. Rejected: needless surface area
   and spec-drift risk.
 
 ### Decision 3 — Authn: reuse Doorkeeper bearer tokens, gate with an `mcp` scope
+
 The `/mcp` endpoint validates the bearer access token via Doorkeeper, requires
 the `mcp` scope, then sets `Current.user` / organization membership from the
 token's resource owner — the same pattern `Api::V1::BaseController` already uses.
 Individual write tools additionally require the matching `write_*` scope. Add
 `mcp` to `optional_scopes` in the Doorkeeper initializer.
-- *Alternative considered:* a bespoke personal-access-token model. Rejected:
+
+- _Alternative considered:_ a bespoke personal-access-token model. Rejected:
   Doorkeeper already issues per-user scoped tokens; a connector needs the OAuth
   flow anyway (Decision 4), so PATs add a parallel auth path for no gain.
 
 ### Decision 4 — Authz/connect: add OAuth discovery + DCR on top of Doorkeeper
+
 To match the Notion/PostHog UX, the client must self-discover and self-register.
 Add three things the connector spec requires that Doorkeeper does not serve out
 of the box:
+
 1. `/.well-known/oauth-protected-resource` (RFC 9728) describing `/mcp` and
    pointing at the auth server; the `401` from `/mcp` carries a
    `WWW-Authenticate` with a `resource_metadata` pointer.
@@ -84,13 +95,15 @@ of the box:
    `scopes_supported` incl. `mcp`.
 3. Dynamic Client Registration (RFC 7591) creating an `OauthApplication` from the
    client's POST and returning `client_id`/`client_secret`.
-The authorization-code + PKCE flow and consent screen are already implemented by
-Doorkeeper's custom authorizations controller.
-- *Alternative considered:* pre-register a single shared OAuth app and hand the
+   The authorization-code + PKCE flow and consent screen are already implemented by
+   Doorkeeper's custom authorizations controller.
+
+- _Alternative considered:_ pre-register a single shared OAuth app and hand the
   user a client id. Rejected: not the Notion/PostHog UX, and per-client
   registration is what MCP clients expect.
 
 ### Decision 5 — Multi-org: a user-scoped token; tools take an organization argument
+
 The REST API already resolves the active org from an `org_slug` **request param**
 against the user's kept memberships (`base_controller.rb` `current_organization_
 membership`), and the Doorkeeper token's resource owner is the **user**, not an
@@ -99,31 +112,36 @@ frontend integration. Each tool that operates within an org accepts an
 organization argument (slug/public id); `list_organizations` lets the client
 discover which orgs the user can act in. The server validates that the user has a
 kept membership in the requested org before doing any work (no cross-org leakage).
-- *Alternative considered:* binding one connection to one org at connect time.
+
+- _Alternative considered:_ binding one connection to one org at connect time.
   Rejected: the user asked for multi-org parity with the frontend, and the token
   is already user-scoped, so per-org binding would add friction for no benefit.
 
 ### Decision 6 — DCR is open but throttled
+
 Registration is unauthenticated (open) so the connector flow needs no manual
 credential provisioning, but guarded by: a redirect-URI scheme/host constraint
 and a rate limit on the registration endpoint. Registering a client grants no
 access by itself — a human still logs in and consents before any token issues, so
 the only residual risk is `OauthApplication` row spam, which throttling caps.
 Tighten to a redirect-URI allowlist or approval queue later only if abused.
-- *Alternative considered:* gated DCR (initial access token / approval queue) from
+
+- _Alternative considered:_ gated DCR (initial access token / approval queue) from
   day one. Rejected: adds a manual step that breaks the Notion/PostHog-style UX;
   not warranted before observing real abuse.
 
 ### Decision 7 — Tools wrap controllers/services, not duplicate them
+
 Each tool is a small class (name, description, JSON-Schema input) that builds the
 same params and calls the same model/service path the matching controller uses,
 authorizing with the same Pundit policy and serializing with the same Blueprinter
 serializer (or a trimmed subset). Start with a focused catalog:
+
 - **Read:** `list_organizations`, `list_projects`, `list_posts` (filter by
   project), `search_posts`, `read_post` (+comments), `list_message_threads`,
   `read_messages`, `list_notes`, `read_note`.
 - **Write:** `create_post`, `add_comment` (post/note), `add_reaction`.
-Reads are bounded/paginated. No delete/bulk tools in v1.
+  Reads are bounded/paginated. No delete/bulk tools in v1.
 
 ## Risks / Trade-offs
 
@@ -171,6 +189,7 @@ last (revoking issued connector tokens).
 - Do we want a Flipper flag gating availability for the initial rollout?
 
 **Resolved:**
-- *DCR open vs gated* → open but throttled (Decision 6).
-- *Multi-org* → user-scoped token, tools take an org argument; parity with the
+
+- _DCR open vs gated_ → open but throttled (Decision 6).
+- _Multi-org_ → user-scoped token, tools take an org argument; parity with the
   frontend (Decision 5).

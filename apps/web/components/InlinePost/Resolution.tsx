@@ -66,7 +66,7 @@ export function Resolution({ post, display, className }: Props) {
         'group flex w-full flex-col overflow-hidden rounded-lg border shadow-sm',
         {
           'bg-elevated': display === 'page' || display === 'hovercard',
-          'bg-secondary dark:bg-elevated -mb-1 mt-4': display === 'feed'
+          'bg-secondary dark:bg-elevated mt-4 -mb-1': display === 'feed'
         },
         className
       )}
@@ -90,7 +90,7 @@ export function Resolution({ post, display, className }: Props) {
             <>
               <HTMLRenderer
                 text={previewHtml}
-                className='line-clamp-1 flex-1 select-none text-sm opacity-40 max-lg:hidden'
+                className='line-clamp-1 flex-1 text-sm opacity-40 select-none max-lg:hidden'
               />
             </>
           )}
@@ -159,7 +159,7 @@ export function Resolution({ post, display, className }: Props) {
 
 export function CommentComposerResolutionBanner() {
   return (
-    <span className='text-secondary relative left-px flex w-[calc(100%-2px)] items-center justify-center gap-1 rounded-t-lg bg-green-500 px-2 pb-3.5 pt-1 font-mono text-[11px] font-semibold uppercase tracking-wide text-white dark:bg-green-900/50 dark:text-green-400'>
+    <span className='text-secondary relative left-px flex w-[calc(100%-2px)] items-center justify-center gap-1 rounded-t-lg bg-green-500 px-2 pt-1 pb-3.5 font-mono text-[11px] font-semibold tracking-wide text-white uppercase dark:bg-green-900/50 dark:text-green-400'>
       <span>Post resolved</span>
       <InformationIcon className='opacity-80' size={14} />
     </span>

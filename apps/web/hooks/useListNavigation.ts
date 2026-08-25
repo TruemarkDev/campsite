@@ -3,7 +3,10 @@ import { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
 import { useLayeredHotkeys } from '@campsite/ui/DismissibleLayer'
 import { useCallbackRef } from '@campsite/ui/hooks'
 
-interface Item { groupIndex: number; itemIndex: number }
+interface Item {
+  groupIndex: number
+  itemIndex: number
+}
 
 export type SelectGroupItemFn = (args: { groupIndex: number; itemIndex: number; scroll?: boolean }) => void
 

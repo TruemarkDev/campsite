@@ -59,17 +59,17 @@ existing Doorkeeper OAuth2 provider. It is not served from the web host.
 The connection is gated by the **`mcp`** scope. Individual tools require additional
 scopes:
 
-| Scope             | Grants                                                        |
-| ----------------- | ------------------------------------------------------------- |
-| `mcp`             | Access to the `/mcp` endpoint at all (required).              |
-| `read_*`          | Read tools (organizations, members, projects, posts, notes, messages). |
-| `write_post`      | `create_post`, `add_comment`, `add_reaction`, `resolve_post`, `update_post`, `reply_to_comment`. |
-| `write_message`   | `send_message`, `create_message_thread`.                      |
-| `write_note`      | `create_note`, `update_note`.                                 |
-| `write_project`   | `create_project`.                                             |
+| Scope                                               | Grants                                                                                                                 |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `mcp`                                               | Access to the `/mcp` endpoint at all (required).                                                                       |
+| `read_*`                                            | Read tools (organizations, members, projects, posts, notes, messages).                                                 |
+| `write_post`                                        | `create_post`, `add_comment`, `add_reaction`, `resolve_post`, `update_post`, `reply_to_comment`.                       |
+| `write_message`                                     | `send_message`, `create_message_thread`.                                                                               |
+| `write_note`                                        | `create_note`, `update_note`.                                                                                          |
+| `write_project`                                     | `create_project`.                                                                                                      |
 | `attach_file` / `upload_attachment` / `speak_reply` | gated by the subject's write scope (`write_post` for posts, `write_note` for notes); `create_upload` needs only `mcp`. |
 
-The access token is **user-scoped**, so one connection works across *every*
+The access token is **user-scoped**, so one connection works across _every_
 organization the user belongs to. Tools act as the user (the same authorization as
 the `/api/v1` REST API), never as the connector application.
 
@@ -82,42 +82,42 @@ discover the organizations and slugs available.
 
 ### Read tools
 
-| Tool                   | Description                                            |
-| ---------------------- | ----------------------------------------------------- |
-| `list_organizations`   | Organizations the user belongs to, with their slugs.  |
-| `list_members`         | Members of an org, with ids/usernames (for @mentions and DMs). |
-| `list_projects`        | Projects (channels) in an organization.               |
-| `list_posts`           | Published posts, optionally filtered to one project.  |
-| `search_posts`         | Full-text search over an org's posts.                 |
-| `read_post`            | A single post and its top-level comments.             |
-| `list_message_threads` | The user's DMs and group chats in an organization.    |
-| `read_messages`        | Recent messages in a thread.                          |
-| `list_notes`           | Notes in an organization the user can see.            |
-| `read_note`            | A single note with its content.                       |
-| `whoami`               | The connected user's identity and their member id in each org. |
-| `list_notifications`   | The user's inbox (or activity) notifications in an org. |
-| `mark_notification_read` | Mark one of the user's own notifications as read (mutates self only; no extra scope). |
-| `create_follow_up`     | Set a personal follow-up reminder on a post, note, or comment for yourself (mutates self only; no extra scope beyond `mcp`). |
-| `get_attachment_transcript` | Get transcription status and plain text for an attachment the caller can view. |
+| Tool                        | Description                                                                                                                  |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `list_organizations`        | Organizations the user belongs to, with their slugs.                                                                         |
+| `list_members`              | Members of an org, with ids/usernames (for @mentions and DMs).                                                               |
+| `list_projects`             | Projects (channels) in an organization.                                                                                      |
+| `list_posts`                | Published posts, optionally filtered to one project.                                                                         |
+| `search_posts`              | Full-text search over an org's posts.                                                                                        |
+| `read_post`                 | A single post and its top-level comments.                                                                                    |
+| `list_message_threads`      | The user's DMs and group chats in an organization.                                                                           |
+| `read_messages`             | Recent messages in a thread.                                                                                                 |
+| `list_notes`                | Notes in an organization the user can see.                                                                                   |
+| `read_note`                 | A single note with its content.                                                                                              |
+| `whoami`                    | The connected user's identity and their member id in each org.                                                               |
+| `list_notifications`        | The user's inbox (or activity) notifications in an org.                                                                      |
+| `mark_notification_read`    | Mark one of the user's own notifications as read (mutates self only; no extra scope).                                        |
+| `create_follow_up`          | Set a personal follow-up reminder on a post, note, or comment for yourself (mutates self only; no extra scope beyond `mcp`). |
+| `get_attachment_transcript` | Get transcription status and plain text for an attachment the caller can view.                                               |
 
 ### Write tools (additive only)
 
-| Tool                    | Description                                  | Scope           |
-| ----------------------- | -------------------------------------------- | --------------- |
-| `create_post`           | Create a post in an org / project.           | `write_post`    |
-| `add_comment`           | Comment on a post or a note.                 | `write_post`    |
-| `add_reaction`          | Add an emoji reaction to a post or comment.  | `write_post`    |
-| `resolve_post`          | Resolve or unresolve a post (optional resolution note). | `write_post`    |
-| `update_post`           | Update a post's title, body, or project.     | `write_post`    |
-| `reply_to_comment`      | Reply to an existing comment (threaded reply). | `write_post`  |
-| `create_project`        | Create a new project (channel) in an org.    | `write_project` |
-| `send_message`          | Send a message into an existing thread.      | `write_message` |
-| `create_message_thread` | Start a new DM or group chat.                | `write_message` |
-| `create_note`           | Create a note (optionally in a project), body set at creation. | `write_note` |
-| `update_note`           | Update an existing note's **title** only.    | `write_note`    |
-| `create_upload`         | Get presigned S3 fields to upload a file (mints credentials only, no Campsite write). | `mcp` |
-| `attach_file`           | Attach an already-uploaded file (by S3 key) to a post or note. | `write_post` / `write_note` |
-| `upload_attachment`     | Upload a small file inline (base64, ≤5 MB) and attach it to a post or note. | `write_post` / `write_note` |
+| Tool                    | Description                                                                                          | Scope                       |
+| ----------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- |
+| `create_post`           | Create a post in an org / project.                                                                   | `write_post`                |
+| `add_comment`           | Comment on a post or a note.                                                                         | `write_post`                |
+| `add_reaction`          | Add an emoji reaction to a post or comment.                                                          | `write_post`                |
+| `resolve_post`          | Resolve or unresolve a post (optional resolution note).                                              | `write_post`                |
+| `update_post`           | Update a post's title, body, or project.                                                             | `write_post`                |
+| `reply_to_comment`      | Reply to an existing comment (threaded reply).                                                       | `write_post`                |
+| `create_project`        | Create a new project (channel) in an org.                                                            | `write_project`             |
+| `send_message`          | Send a message into an existing thread.                                                              | `write_message`             |
+| `create_message_thread` | Start a new DM or group chat.                                                                        | `write_message`             |
+| `create_note`           | Create a note (optionally in a project), body set at creation.                                       | `write_note`                |
+| `update_note`           | Update an existing note's **title** only.                                                            | `write_note`                |
+| `create_upload`         | Get presigned S3 fields to upload a file (mints credentials only, no Campsite write).                | `mcp`                       |
+| `attach_file`           | Attach an already-uploaded file (by S3 key) to a post or note.                                       | `write_post` / `write_note` |
+| `upload_attachment`     | Upload a small file inline (base64, ≤5 MB) and attach it to a post or note.                          | `write_post` / `write_note` |
 | `speak_reply`           | Synthesize an MP3 and attach it to a post or note; accepts an optional provider-specific `voice_id`. | `write_post` / `write_note` |
 
 > **Attaching files.** Two paths: for any file, `create_upload` → upload the bytes to
@@ -157,10 +157,10 @@ prompt performs **no writes and no inference**: it returns instruction messages 
 drive the tools above, so it needs only the `mcp` scope. Each takes a required
 `org_slug` argument (plus optional ones).
 
-| Prompt             | Arguments                          | What it does                                                                 |
-| ------------------ | ---------------------------------- | ---------------------------------------------------------------------------- |
-| `triage_inbox`     | `org_slug`, `filter?`              | Walk `list_notifications`, summarize what needs attention, propose `create_follow_up`s. |
-| `draft_standup`    | `org_slug`, `since?`               | Summarize your recent posts/comments into a Done / In progress / Blocked update. |
+| Prompt             | Arguments                            | What it does                                                                                 |
+| ------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------- |
+| `triage_inbox`     | `org_slug`, `filter?`                | Walk `list_notifications`, summarize what needs attention, propose `create_follow_up`s.      |
+| `draft_standup`    | `org_slug`, `since?`                 | Summarize your recent posts/comments into a Done / In progress / Blocked update.             |
 | `summarize_thread` | `org_slug`, `post_id?`, `thread_id?` | Condense a post (with comments) or a message thread into TL;DR + decisions + open questions. |
 
 ## Resources

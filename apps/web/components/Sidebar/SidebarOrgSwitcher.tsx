@@ -149,7 +149,7 @@ function OrgSidebarItem({
 
             {showUnread && (
               <div
-                className='absolute right-px top-px h-2 w-2 rounded-full bg-blue-500 ring-2 ring-gray-50 dark:ring-gray-900'
+                className='absolute top-px right-px h-2 w-2 rounded-full bg-blue-500 ring-2 ring-gray-50 dark:ring-gray-900'
                 style={{ transform: 'translate(50%, -50%)' }}
               />
             )}

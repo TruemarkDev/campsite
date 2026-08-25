@@ -7,7 +7,7 @@ import { StartButton } from '@/components/Home/StartButton'
 import { SegmentedControl } from '@/components/SegmentedControl'
 
 function PlanText({ children, className }: PropsWithChildren & { className?: string }) {
-  return <p className={cn('text-tertiary text-balance text-[clamp(0.875rem,_2vw,_1rem)]', className)}>{children}</p>
+  return <p className={cn('text-tertiary text-[clamp(0.875rem,_2vw,_1rem)] text-balance', className)}>{children}</p>
 }
 
 export function PlanTable() {
@@ -26,7 +26,7 @@ export function PlanTable() {
         />
       </div>
       <div className='mt-8 grid grid-cols-1 gap-8 lg:grid-cols-3 lg:gap-0'>
-        <PlanContainer className='bg-elevated relative z-10 gap-0 overflow-hidden border p-0 shadow-sm lg:-mb-4 lg:-mt-8 lg:gap-0 lg:p-0 2xl:pb-0 dark:border-transparent dark:bg-neutral-800 dark:shadow-[inset_0px_0px_0.5px_rgb(255_255_255_/_0.6)]'>
+        <PlanContainer className='bg-elevated relative z-10 gap-0 overflow-hidden border p-0 shadow-sm lg:-mt-8 lg:-mb-4 lg:gap-0 lg:p-0 2xl:pb-0 dark:border-transparent dark:bg-neutral-800 dark:shadow-[inset_0px_0px_0.5px_rgb(255_255_255_/_0.6)]'>
           <div className='bg-secondary text-secondary dark:bg-gray-750 rounded-t-[11px] border-b bg-black p-1.5 text-center dark:border-gray-700'>
             <UIText weight='font-medium' size='text-[13px]'>
               Start here and scale up
@@ -34,7 +34,7 @@ export function PlanTable() {
           </div>
 
           <div className='flex h-full flex-1 flex-col gap-4 p-4 lg:gap-6 lg:p-5'>
-            <UIText weight='font-semibold' className='text-brand-primary uppercase tracking-wide'>
+            <UIText weight='font-semibold' className='text-brand-primary tracking-wide uppercase'>
               Essentials
             </UIText>
 
@@ -64,8 +64,8 @@ export function PlanTable() {
             </ul>
           </div>
         </PlanContainer>
-        <PlanContainer className='lg:-mx-px lg:rounded-none lg:border-b lg:border-t'>
-          <UIText weight='font-semibold' className='uppercase tracking-wide'>
+        <PlanContainer className='lg:-mx-px lg:rounded-none lg:border-t lg:border-b'>
+          <UIText weight='font-semibold' className='tracking-wide uppercase'>
             Pro
           </UIText>
 
@@ -94,7 +94,7 @@ export function PlanTable() {
         </PlanContainer>
 
         <PlanContainer className='lg:rounded-l-none lg:border'>
-          <UIText weight='font-semibold' className='uppercase tracking-wide'>
+          <UIText weight='font-semibold' className='tracking-wide uppercase'>
             Business
           </UIText>
 

@@ -33,6 +33,7 @@ exposes tools/resources and runs them against existing Campsite logic.
 ## Capabilities
 
 ### New Capabilities
+
 - `mcp-server`: A remote, OAuth-authorized MCP endpoint mounted in the Rails API
   that advertises the protocol handshake, lists available tools, and dispatches
   tool calls to Campsite domain logic under the authenticated user's permissions.
@@ -45,6 +46,7 @@ exposes tools/resources and runs them against existing Campsite logic.
   connect Campsite the same way it connects Notion or PostHog.
 
 ### Modified Capabilities
+
 <!-- None: there is no existing OpenSpec spec for the Doorkeeper/OAuth or REST API
      behavior in openspec/specs/, so this is purely additive. -->
 

@@ -84,7 +84,7 @@ export function FigmaTip({ attachment }: Props): ReactElement {
           <Button
             onClick={() => setShowFigmaTip(false)}
             variant='plain'
-            className='absolute right-2 top-2'
+            className='absolute top-2 right-2'
             iconOnly={<CloseIcon />}
             accessibilityLabel='Close'
           />

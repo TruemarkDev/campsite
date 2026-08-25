@@ -320,7 +320,7 @@ function CallTranscript({
                     <Fragment key={`vtt-${line.index}`}>
                       <span
                         id={`vtt-${line.index.toString()}`}
-                        className={cn('-mx-0.5 w-full select-text rounded px-0.5 py-0.5 text-[15px]')}
+                        className={cn('-mx-0.5 w-full rounded px-0.5 py-0.5 text-[15px] select-text')}
                         title={line.text}
                       >
                         {line.text}
@@ -396,7 +396,7 @@ function ReadOnlyCallSummary({ call }: { call: Call }) {
         {call.title}
       </UIText>
       {summary && (
-        <div className='prose mt-4 select-text whitespace-pre-wrap focus:outline-none lg:leading-normal'>
+        <div className='prose mt-4 whitespace-pre-wrap select-text focus:outline-none lg:leading-normal'>
           <RichTextRenderer content={summary} extensions={extensions} />
         </div>
       )}
@@ -503,7 +503,7 @@ function CallDetailsEditor({ call, defaultValues }: { call: Call; defaultValues:
     <>
       <TitleTextField
         ref={titleRef}
-        className='mx-auto w-full text-2xl font-bold leading-[1.2]'
+        className='mx-auto w-full text-2xl leading-[1.2] font-bold'
         placeholder='Meeting title'
         value={methods.getValues('title')}
         onChange={(value) => methods.setValue('title', value, { shouldDirty: true, shouldValidate: true })}
@@ -635,7 +635,7 @@ function BreadcrumbProjectAndCallTitle({ call }: { call: Call }) {
             {call.project.private && <LockIcon size={16} className='text-tertiary' />}
           </Link>
 
-          <span className='-ml-1 -mr-0.5 inline-flex min-w-1 items-center'>
+          <span className='-mr-0.5 -ml-1 inline-flex min-w-1 items-center'>
             {call.viewer_can_edit && (
               <CallSharePopover call={call} align='start'>
                 <Button size='sm' variant='plain' iconOnly accessibilityLabel='Move to channel' className='w-5'>

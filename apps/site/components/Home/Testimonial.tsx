@@ -13,7 +13,7 @@ export function Testimonial({
   children: React.ReactNode
 }) {
   return (
-    <div className='before:bg-quaternary relative flex flex-col gap-4 pb-2 pl-5 pt-1 before:absolute before:bottom-0 before:left-0 before:top-0 before:w-[3px] before:rounded-full'>
+    <div className='before:bg-quaternary relative flex flex-col gap-4 pt-1 pb-2 pl-5 before:absolute before:top-0 before:bottom-0 before:left-0 before:w-[3px] before:rounded-full'>
       <p className='text-quaternary dark:text-tertiary text-[clamp(0.9375rem,_2vw,_1.0625rem)] leading-relaxed'>
         {children}
       </p>

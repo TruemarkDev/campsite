@@ -155,7 +155,7 @@ export function SuggestionReview({ editor, noteId }: Props) {
         aria-live='polite'
       >
         <SparklesIcon size={16} />
-        <UIText size='text-xs' weight='font-medium' className='whitespace-nowrap px-1'>
+        <UIText size='text-xs' weight='font-medium' className='px-1 whitespace-nowrap'>
           {suggestions.length} suggested {suggestions.length === 1 ? 'change' : 'changes'}
         </UIText>
         <Button size='sm' variant='plain' onClick={() => resolveAll('accept')}>

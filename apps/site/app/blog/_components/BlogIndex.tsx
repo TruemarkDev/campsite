@@ -89,7 +89,7 @@ function FeatureBlog({ blog, className }: { blog: Blog; className?: string }) {
               width={680}
               height={400}
               alt={blog.metadata.posterAlt ?? blog.metadata.title}
-              className='block h-full w-full select-none border-0 object-cover outline-none dark:hidden'
+              className='block h-full w-full border-0 object-cover outline-none select-none dark:hidden'
             />
           )}
           {blog.metadata.posterDark && (
@@ -99,7 +99,7 @@ function FeatureBlog({ blog, className }: { blog: Blog; className?: string }) {
               width={680}
               height={400}
               alt={blog.metadata.posterAlt ?? blog.metadata.title}
-              className='hidden h-full w-full select-none border-0 object-cover outline-none dark:block'
+              className='hidden h-full w-full border-0 object-cover outline-none select-none dark:block'
             />
           )}
         </div>
@@ -121,8 +121,8 @@ function FeatureBlog({ blog, className }: { blog: Blog; className?: string }) {
             Start here
           </UIText>
         )}
-        <p className='text-balance text-xl font-semibold leading-snug 2xl:text-2xl'>{blog.metadata.title}</p>
-        <p className='text-secondary line-clamp-2 text-balance text-lg'>{blog.metadata.description}</p>
+        <p className='text-xl leading-snug font-semibold text-balance 2xl:text-2xl'>{blog.metadata.title}</p>
+        <p className='text-secondary line-clamp-2 text-lg text-balance'>{blog.metadata.description}</p>
         {!blog.metadata.pinned && (
           <UIText size='text-base' quaternary className='line-clamp-3 text-balance'>
             {new Date(blog.metadata.publishedAt).toLocaleDateString('en-US', {

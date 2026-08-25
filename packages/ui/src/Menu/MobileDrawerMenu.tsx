@@ -50,7 +50,7 @@ function DrawerItem({ item, onClose }: DrawerItemProps) {
       }}
       className={cn(
         'group relative flex w-full cursor-pointer items-center justify-start gap-2.5 rounded-[5px] border-none px-4 font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50',
-        'md:h-8.5 h-10.5 text-base md:text-sm'
+        'h-10.5 text-base md:h-8.5 md:text-sm'
       )}
     >
       {item.leftSlot && <span className='initial:text-neutral-400 scale-125 transition-colors'>{item.leftSlot}</span>}
@@ -94,7 +94,7 @@ function DrawerSubItem({ item, onClose }: DrawerSubItemProps) {
         disabled={item.disabled}
         className={cn(
           'group relative flex w-full cursor-pointer items-center justify-start gap-2.5 rounded-[5px] border-none px-4 font-medium outline-none disabled:cursor-not-allowed disabled:opacity-50',
-          'md:h-8.5 h-10.5 text-base md:text-sm'
+          'h-10.5 text-base md:h-8.5 md:text-sm'
         )}
       >
         {item.leftSlot && <span className='initial:text-neutral-400 scale-125 transition-colors'>{item.leftSlot}</span>}
@@ -131,7 +131,7 @@ function DrawerActions({ items, onClose, header }: DrawerActionsProps) {
             <DrawerPrimitive.Handle className='!h-1 !w-8 !rounded-full !bg-[--text-primary] !opacity-20' />
           </div>
 
-          <div className='scrollbar-hide pb-safe-offset-1 relative overflow-y-auto overflow-x-hidden'>
+          <div className='scrollbar-hide pb-safe-offset-1 relative overflow-x-hidden overflow-y-auto'>
             {header}
 
             {items.map((item, i) => {

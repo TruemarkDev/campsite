@@ -84,7 +84,7 @@ export function SidebarContainer() {
       <div
         key={`${scope}`}
         className={cn(
-          'fixed bottom-0 top-0 isolate z-30 h-screen w-[--sidebar-width] transition-[opacity,transform] duration-200',
+          'fixed top-0 bottom-0 isolate z-30 h-screen w-[--sidebar-width] transition-[opacity,transform] duration-200',
           {
             'left-0': !showOrgSwitcherSidebar,
             'left-12': showOrgSwitcherSidebar && !collapsed,
@@ -183,7 +183,7 @@ function SidebarContent() {
       </div>
 
       <SidebarGroup
-        className={cn('border-t pb-3 pt-1.5', {
+        className={cn('border-t pt-1.5 pb-3', {
           'border-primary': !bottomInView,
           'border-transparent': bottomInView
         })}

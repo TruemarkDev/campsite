@@ -18,7 +18,7 @@ reuses them rather than adding new columns, on the theory that whatever
 naming/shape decisions were made then are still reasonable and reusing them
 avoids a second unused-column graveyard.
 
-The one *working* transcription pipeline in the codebase today is
+The one _working_ transcription pipeline in the codebase today is
 `CallRecording#transcription_vtt`, populated by
 `ProcessCallRecordingTranscriptionJob`, which downloads an SRT produced by
 the 100ms/OpenAI call-recording pipeline and converts it to VTT. That
@@ -43,13 +43,14 @@ horizontal STT worker autoscaling).
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Any audio attachment gets transcribed automatically, no user action, no
   required external API key.
 - Transcript is readable by an MCP-connected agent through tools that
   already exist (`read_post`, `read_note`, `read_messages`,
   `list_notifications`) by adding one field to the shared
   `AttachmentSerializer`, plus one small tool for the id-only case.
-- An agent can reply with synthesized speech using the *same* attach-a-file
+- An agent can reply with synthesized speech using the _same_ attach-a-file
   path (`upload_attachment`) already shipped for artifacts — no new upload
   transport.
 - Local-first STT with no mandatory API key; TTS defaults to a free provider
@@ -58,6 +59,7 @@ horizontal STT worker autoscaling).
 - Runs on existing Sidekiq infra, no new deployable process.
 
 **Non-Goals:**
+
 - Realtime/streaming speech-to-speech (async voice notes only, matching the
   "OpenClaw pattern" — record, upload, transcribe, reply — from
   `notes/research/2026-07-18-mission-control-voice.md` §2).
@@ -74,6 +76,7 @@ horizontal STT worker autoscaling).
 ## Decisions
 
 ### 1. STT engine: whisper.cpp (default), sherpa-onnx as a documented alternative
+
 `whisper.cpp` is chosen as the default local engine: single static binary,
 CPU-only inference viable for short voice notes (seconds to low minutes),
 CLI (`whisper-cli -m <model> -f <wav> -owts`/`--output-srt`) that a Sidekiq
@@ -89,7 +92,7 @@ a system `ffmpeg` binary is present rather than bundling one.
 
 Alternative considered and rejected: OpenAI Whisper API (already has a
 Rails credentials slot — `openai` — used for call/post summaries). Rejected
-as the *default* because it reintroduces a mandatory API key and per-call
+as the _default_ because it reintroduces a mandatory API key and per-call
 cost, which is exactly what this change is scoped to avoid; kept as a
 possible future fallback provider behind the same `Stt::Service` interface
 if local inference proves too slow on the Hatchbox worker box, but not built
@@ -97,6 +100,7 @@ in this change (YAGNI for a single-org deployment — add it only if local
 STT turns out to be a problem in practice).
 
 ### 2. VAD: skip Silero VAD for v1, revisit if trimming matters
+
 The reference pattern (research doc §2, §4) pairs local STT with Silero VAD
 to trim silence before transcription. For v1, voice notes are short,
 user-initiated clips (not a continuously-open mic), so the marginal value of
@@ -108,6 +112,7 @@ preprocess → transcribe → save) has an obvious slot for a preprocessing
 step.
 
 ### 3. Storage: reuse the existing `transcription_vtt` / `transcription_job_status` columns on `Attachment`
+
 Confirmed via `api/db/schema.rb` and migration `20230426204217`. Add exactly
 one new derived accessor, not a new column: `Attachment#transcript` strips
 VTT timing/cue markup down to plain text (a small parser, same rough shape
@@ -120,6 +125,7 @@ for debugging (`TranscribeAttachmentJob.perform_async` return value), mainly
 useful for support/ops.
 
 ### 4. Enqueue trigger: extend `Attachment`'s existing `after_create_commit` hook
+
 `Attachment#enqueue_dimensions_job` already fires on create for
 image/video. Add a sibling `enqueue_transcription_job` in the same
 `after_create_commit :broadcast_attachments_stale` chain, gated on
@@ -127,6 +133,7 @@ image/video. Add a sibling `enqueue_transcription_job` in the same
 a new callback style or an out-of-band poller.
 
 ### 5. Exposing transcripts to agents: extend the existing serializer + one new MCP tool, no new REST endpoint
+
 Because `AttachmentSerializer` is shared between the REST API and every MCP
 tool that returns attachments (`upload_attachment`, `attach_file`,
 and any post/note/comment/message read path that eager-loads attachments),
@@ -141,11 +148,12 @@ re-fetching the whole parent post/note/thread. Mirrors the existing
 subject).
 
 ### 6. TTS: provider-strategy service object, Edge-TTS default, ElevenLabs opt-in
+
 `Tts::Service.call(text:, voice_id:)` dispatches to a provider chosen by
 `Rails.application.credentials.dig(:tts, :provider)` (default `"edge"` if
 unset). `EdgeTtsProvider` shells out to the `edge-tts` CLI (Python package,
 wraps Microsoft's consumer Edge Read-Aloud endpoint) — **note this is a free
-*cloud* endpoint, not local inference**; it requires outbound HTTPS but no
+_cloud_ endpoint, not local inference**; it requires outbound HTTPS but no
 API key/account, which satisfies "free default" from the proposal without
 overclaiming it as offline. `ElevenLabsProvider` calls the ElevenLabs REST
 API using a new `elevenlabs` credentials key (absent by default; provider
@@ -160,6 +168,7 @@ shared method, `AttachmentUploader.put_and_attach!`, called by both
 the S3-put logic).
 
 ### 7. Per-agent voice identity: `voice_id` column on `User`, not a new model
+
 Per the Tier 1/2 MCP design, each agent that talks to Campsite over MCP is
 its own Campsite `User` (real account, OAuth-scoped). A single nullable
 `voice_id` string column on `users` is enough to give each agent a distinct

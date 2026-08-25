@@ -134,7 +134,7 @@ function InnerAttachmentLightbox({
   return (
     <ScopeProvider atoms={[zoomAtom, hoveredCanvasCommentAtom, displayCanvasCommentsAtom, newCommentCoordinatesAtom]}>
       <m.header
-        className={cn('drag flex h-14 flex-row items-center justify-between border-b pl-4 pr-3 text-sm', {
+        className={cn('drag flex h-14 flex-row items-center justify-between border-b pr-3 pl-4 text-sm', {
           'pl-22': isDesktopApp && isMacOs
         })}
       >

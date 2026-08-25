@@ -7,7 +7,7 @@ export function TextBubble({ message, className }: { message: Message; position:
 
   return (
     <div
-      className={cn('relative flex w-full select-none flex-col', className, {
+      className={cn('relative flex w-full flex-col select-none', className, {
         'bg-quaternary text-primary': !message.viewer_is_sender && !hasReactionsOnly,
         'bg-blue-500 text-white': message.viewer_is_sender && !hasReactionsOnly,
         'px-3.5 py-3 lg:px-3': !hasReactionsOnly,

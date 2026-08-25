@@ -78,10 +78,7 @@ export function ZoomCanvasTileRenderer({ width, height, src, backgroundSrc, styl
 
     if (d3Container && d3Zoom) {
       // this will end up drawing the canvas again
-      d3Zoom.transform(
-        d3Container as Parameters<typeof d3Zoom.transform>[0],
-        getCurrentTransform(d3Container)
-      )
+      d3Zoom.transform(d3Container as Parameters<typeof d3Zoom.transform>[0], getCurrentTransform(d3Container))
     }
   }, [d3Container, d3Zoom, viewport.height, viewport.width])
 

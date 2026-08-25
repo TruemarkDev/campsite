@@ -108,7 +108,7 @@ function ActiveCallHeader() {
 
   return (
     <div className='flex w-full items-center justify-between'>
-      <div className='flex flex-1 select-none items-center gap-1'>
+      <div className='flex flex-1 items-center gap-1 select-none'>
         <UIText element='span' weight='font-semibold'>
           {title}
         </UIText>

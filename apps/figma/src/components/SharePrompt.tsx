@@ -67,7 +67,7 @@ export function SharePrompt({ post }: SharePromptProps) {
           size='large'
           leftSlot={isCopied ? <CheckIcon /> : <LinkIcon />}
           className={cn({
-            '!border-transparent !bg-green-500 !text-white !shadow-none !outline-none !ring-0': isCopied
+            '!border-transparent !bg-green-500 !text-white !shadow-none !ring-0 !outline-none': isCopied
           })}
           onClick={async (evt) => {
             if (isCopied) return

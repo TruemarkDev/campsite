@@ -220,7 +220,7 @@ function TextBubble({
       label={longTimestamp(message.created_at, { month: 'short' })}
     >
       <div
-        className={cn('chat-prose relative select-text whitespace-pre-wrap break-words', className, {
+        className={cn('chat-prose relative break-words whitespace-pre-wrap select-text', className, {
           'bg-quaternary text-primary': !message.viewer_is_sender && !hasReactionsOnly,
           'bg-blue-500 text-white': message.viewer_is_sender && !message.discarded_at && !hasReactionsOnly,
           'bg-quaternary text-tertiary': message.discarded_at && !hasReactionsOnly,

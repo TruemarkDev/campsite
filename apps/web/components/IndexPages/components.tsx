@@ -65,7 +65,7 @@ export function IndexSearchInput({ query, setQuery, isSearchLoading }: IndexSear
       </span>
       <input
         ref={ref}
-        className='flex-1 border-none bg-transparent p-0 text-sm outline-none ring-0 focus:ring-0'
+        className='flex-1 border-none bg-transparent p-0 text-sm ring-0 outline-none focus:ring-0'
         placeholder='Search...'
         role='searchbox'
         autoComplete='off'

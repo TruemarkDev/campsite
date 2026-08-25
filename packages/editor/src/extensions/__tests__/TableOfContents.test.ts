@@ -38,8 +38,6 @@ describe('TableOfContents', () => {
 
     expect(editor.state.doc.child(0).attrs['data-toc-id']).toBe('existing')
     expect(editor.state.doc.child(1).attrs['data-toc-id']).toBeNull()
-    expect(editor.getHTML()).toBe(
-      '<h2 id="existing" data-toc-id="existing">Existing</h2><h2>Overview</h2>'
-    )
+    expect(editor.getHTML()).toBe('<h2 id="existing" data-toc-id="existing">Existing</h2><h2>Overview</h2>')
   })
 })

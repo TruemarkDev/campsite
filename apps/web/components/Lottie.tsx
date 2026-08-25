@@ -1,5 +1,5 @@
-import dynamic from 'next/dynamic'
 import { useEffect, useRef, useState } from 'react'
+import dynamic from 'next/dynamic'
 
 const LottieLight = dynamic(() => import('react-lottie-player/dist/LottiePlayerLight'), { ssr: false })
 

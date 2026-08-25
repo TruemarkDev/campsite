@@ -42,7 +42,7 @@ export function DesktopScreenShareSourcesDialog({ open, onOpenChanged, onSelectS
         {sources.map((source) => (
           <button
             key={source.id}
-            className='h-38 hover:bg-tertiary flex flex-col items-center justify-center gap-2 rounded object-contain px-2 py-4'
+            className='hover:bg-tertiary flex h-38 flex-col items-center justify-center gap-2 rounded object-contain px-2 py-4'
             onClick={() => onSelectSource(source)}
           >
             <Image

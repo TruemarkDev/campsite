@@ -24,6 +24,7 @@ logic, migration, or inference.
 ## Decisions
 
 ### Decision 1 — `whoami` returns identity + per-org member ids
+
 `UsersController#me` serializes the user with `CurrentUserSerializer` (id,
 username, display_name, …) but the user-level identity is not enough for a loop:
 mentions and DM recipients use the **org member** public id, which differs per
@@ -32,11 +33,13 @@ array of `{ org_slug, org_name, member_id }` built from the user's kept
 memberships. It is **not** org-scoped (no `org_slug` argument) because its job is
 to tell the agent which orgs exist and what its id is in each. Gated by the `mcp`
 scope only (pure read of self).
-- *Alternative considered:* an org-scoped `whoami(org_slug)` returning one
+
+- _Alternative considered:_ an org-scoped `whoami(org_slug)` returning one
   `OrganizationMember`. Rejected: the agent would have to already know its orgs,
   which is the thing `whoami` is supposed to reveal.
 
 ### Decision 2 — `list_notifications` is the inbox, org-scoped
+
 Wraps `NotificationsController#index`, reading
 `current_organization_membership.inbox_notifications` (or `.activity` for the
 `activity` filter), with an `unread` boolean and cursor pagination via the shared
@@ -47,16 +50,19 @@ they belong to — the `organization_context!` membership check already guarante
 no cross-org leakage.
 
 ### Decision 3 — `mark_notification_read` is self-only, gated by `mcp` only
+
 Wraps `Notifications::ReadsController#create`: looks the notification up via
 `current_organization_membership.notifications.find_by!(public_id:)` and marks the
 same-member-and-target siblings read. It mutates only the acting user's own inbox
 state, carries no cross-user effect, and the REST API does not put it behind an
 OAuth write scope, so this tool requires the `mcp` scope only (no `write_*`).
-- *Alternative considered:* gating behind a write scope. Rejected: inconsistent
+
+- _Alternative considered:_ gating behind a write scope. Rejected: inconsistent
   with the self-only, low-risk nature and with the REST contract; it would force
   every loop connector to request a write scope just to keep its inbox tidy.
 
 ### Decision 4 — `create_note` requires a new `write_note` scope
+
 Note creation is a genuine write, and the established convention is that write
 tools call `require_scope!("write_<thing>")`. No `write_note` scope exists yet, so
 add `write_note` to `optional_scopes` in `config/initializers/doorkeeper.rb` and
@@ -67,6 +73,7 @@ body via `enrich_mentions`, authorizing with `:create_note?`, serializing with
 `NoteSerializer`.
 
 ### Decision 5 — `update_note` covers `title` only; body editing is deferred
+
 The REST `NotesController#update` accepts only `title`. A note's body is
 collaborative: it is written through `Notes::SyncStatesController#update`, which
 requires `description_html` **and** a matching `description_state` (the Yjs/
@@ -79,6 +86,7 @@ produce a valid collaborative state. The loop pattern is "create a fresh note pe
 run", not "append to a shared note".
 
 ### Decision 6 — Tier 2/3 are specified in the proposal but not built here
+
 To keep this change small and verifiable, only Tier 1 is implemented. Tier 2
 (follow-ups, post resolve/edit, project create) and Tier 3 (attachments, MCP
 resources/prompts) are captured in the proposal for prioritization and will land

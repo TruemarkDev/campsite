@@ -25,7 +25,7 @@ class MyDocument extends Document {
 
         <body
           className={cn(
-            'bg-primary text-primary fixed isolate select-none overflow-hidden antialiased',
+            'bg-primary text-primary fixed isolate overflow-hidden antialiased select-none',
             // force the body to be full width and height, so that libraries
             // like vaul can't highjack the dimensions and screw the layout
             '!h-full !w-full'

@@ -87,12 +87,14 @@ mutation themselves.
 ## Capabilities
 
 ### Modified Capabilities
+
 - `mcp-tools`: adds the attachment tool set (`create_upload`, `attach_file`,
   `upload_attachment`) to the catalog. `create_upload` gates on `mcp` only (mints
   credentials, writes nothing); `attach_file`/`upload_attachment` require the write
   scope matching the subject (`write_post`/`write_note`/`write_message`).
 
 ### Added Capabilities
+
 - `mcp-resources`: the server advertises the `resources` capability and exposes
   Campsite entities as `campsite://` URIs (list, templates, read), authorized by the
   same Pundit policies as the read tools. Change subscriptions are specified but

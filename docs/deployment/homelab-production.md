@@ -12,17 +12,17 @@ deployments.
 
 ## Service placement
 
-| Component                  | Kamal unit  | Host                 | Ceiling           | Persistence                 | Health signal                   |
-| -------------------------- | ----------- | -------------------- | ----------------- | --------------------------- | ------------------------------- |
-| Next.js web                | application | Odin `192.168.10.7`  | 512 MiB           | none                        | HTTP `/up`                      |
-| Rails API/auth             | application | Odin                 | 768 MiB           | none                        | HTTP `/up`                      |
-| Sidekiq                    | application | Odin                 | 512 MiB           | none                        | process plus queue latency      |
-| Sync server                | application | Odin                 | 256 MiB           | none                        | HTTP `/up` and WebSocket probe  |
-| Styled-text server         | application | Odin                 | 256 MiB           | none                        | HTTP `/up`                      |
-| HTML-to-image              | application | Odin                 | 512 MiB           | none                        | HTTP `/up` and PNG render probe |
-| MySQL 8                    | accessory   | Odin                 | 1 GiB             | local named volume          | `mysqladmin ping`               |
-| Redis                      | accessory   | Odin                 | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
-| S3-compatible object store | accessory   | Odin                 | 512 MiB           | local named volume          | readiness endpoint              |
+| Component                  | Kamal unit  | Host                  | Ceiling           | Persistence                 | Health signal                   |
+| -------------------------- | ----------- | --------------------- | ----------------- | --------------------------- | ------------------------------- |
+| Next.js web                | application | Odin `192.168.10.7`   | 512 MiB           | none                        | HTTP `/up`                      |
+| Rails API/auth             | application | Odin                  | 768 MiB           | none                        | HTTP `/up`                      |
+| Sidekiq                    | application | Odin                  | 512 MiB           | none                        | process plus queue latency      |
+| Sync server                | application | Odin                  | 256 MiB           | none                        | HTTP `/up` and WebSocket probe  |
+| Styled-text server         | application | Odin                  | 256 MiB           | none                        | HTTP `/up`                      |
+| HTML-to-image              | application | Odin                  | 512 MiB           | none                        | HTTP `/up` and PNG render probe |
+| MySQL 8                    | accessory   | Odin                  | 1 GiB             | local named volume          | `mysqladmin ping`               |
+| Redis                      | accessory   | Odin                  | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
+| S3-compatible object store | accessory   | Odin                  | 512 MiB           | local named volume          | readiness endpoint              |
 | Elasticsearch 9.5          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
 
 ⚠️ The 2 GiB / 1 GiB-heap figure was measured against Elasticsearch 8.8; it has
@@ -46,15 +46,15 @@ unavailable until Fly/provider authentication is restored.
 The production declaration will be split into these destination-specific files
 while sharing host, registry, secret, and network conventions:
 
-| File                                | Responsibility                                                    |
-| ----------------------------------- | ----------------------------------------------------------------- |
-| `deploy.campsite-web.yml`           | Next.js web                                                       |
-| `deploy.campsite-api.yml`           | Rails web and the authenticated Shuri Elasticsearch declaration   |
-| `deploy.campsite-worker.yml`        | Sidekiq only; explicit writer-custody activation                   |
-| `deploy.campsite-sync.yml`          | Sync server                                                       |
-| `deploy.campsite-styled-text.yml`   | Styled-text server                                                |
-| `deploy.campsite-html-to-image.yml` | HTML-to-image                                                     |
-| `deploy.campsite-shadow.yml`        | Isolated HTML-to-image plus loopback-only shadow Elasticsearch    |
+| File                                | Responsibility                                                  |
+| ----------------------------------- | --------------------------------------------------------------- |
+| `deploy.campsite-web.yml`           | Next.js web                                                     |
+| `deploy.campsite-api.yml`           | Rails web and the authenticated Shuri Elasticsearch declaration |
+| `deploy.campsite-worker.yml`        | Sidekiq only; explicit writer-custody activation                |
+| `deploy.campsite-sync.yml`          | Sync server                                                     |
+| `deploy.campsite-styled-text.yml`   | Styled-text server                                              |
+| `deploy.campsite-html-to-image.yml` | HTML-to-image                                                   |
+| `deploy.campsite-shadow.yml`        | Isolated HTML-to-image plus loopback-only shadow Elasticsearch  |
 
 The Rails web and Sidekiq services deliberately do not share a Kamal config.
 Deploying `deploy.campsite-api.yml` therefore cannot start a queue consumer.
@@ -164,16 +164,16 @@ Mail is delivered by the homelab Stalwart service on `vyas` (192.168.10.9), not
 by Postmark. Its runbook lives in the `homelab` repository at
 `runbooks/stalwart-on-vyas.md`; this repository owns only the client side.
 
-| Setting | Value |
-|---|---|
-| `SMTP_ADDRESS` | `smtp.home` |
-| `SMTP_PORT` | `25` |
-| `SMTP_DOMAIN` | `agents.home` |
-| `SMTP_AUTHENTICATION` | `none` |
-| `SMTP_STARTTLS` | `false` |
-| `SMTP_OPEN_TIMEOUT` | `15` |
-| `SMTP_READ_TIMEOUT` | `25` |
-| `MAILER_FROM` | `Campsite <campsite@agents.home>` |
+| Setting               | Value                             |
+| --------------------- | --------------------------------- |
+| `SMTP_ADDRESS`        | `smtp.home`                       |
+| `SMTP_PORT`           | `25`                              |
+| `SMTP_DOMAIN`         | `agents.home`                     |
+| `SMTP_AUTHENTICATION` | `none`                            |
+| `SMTP_STARTTLS`       | `false`                           |
+| `SMTP_OPEN_TIMEOUT`   | `15`                              |
+| `SMTP_READ_TIMEOUT`   | `25`                              |
+| `MAILER_FROM`         | `Campsite <campsite@agents.home>` |
 
 The endpoint is unauthenticated and plaintext, and is reachable only inside the
 homelab. `config/environments/production.rb` therefore omits `user_name`,

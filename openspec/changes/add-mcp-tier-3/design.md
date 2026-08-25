@@ -24,6 +24,7 @@ ordered C → B → A → subscriptions by ascending risk so the safe wins land 
 ## Decisions
 
 ### Decision A1 — mirror the REST two-step upload as the canonical path
+
 The web app uploads in two steps: `GET …/presigned-fields` to mint an S3 POST policy,
 upload bytes straight to S3, then `POST …/attachments` with the returned `file_path`
 (the S3 key) and `file_type`. MCP exposes the same two steps as `create_upload` and
@@ -36,6 +37,7 @@ mints S3 credentials), so it gates on `mcp` only; `attach_file` creates the
 authorizes the subject `:update?` (matching `Posts::AttachmentsController#create`).
 
 ### Decision A2 — `upload_attachment` is a bounded server-side convenience, not the default
+
 The canonical path (A1) assumes the client can perform a multipart POST to S3 with
 the exact presigned fields. Many MCP clients (including agent runtimes whose only
 egress is the MCP transport) cannot — yet the headline Tier 3 use case is an
@@ -49,6 +51,7 @@ rejects anything larger with a `ToolError` pointing at `create_upload` +
 `:update?` authorization as `attach_file`.
 
 ### Decision A3 — attachment subject is polymorphic, write scope follows the subject
+
 `attach_file`/`upload_attachment` take a `subject_type` (`post`/`note`/`comment`/
 `message`) + `subject_id`, resolved within the org, and create through that subject's
 `attachments` association. The required write scope follows the subject:
@@ -60,6 +63,7 @@ Attachment **delete** and **reorder** are deliberately excluded (additive-only, 
 prior tiers).
 
 ### Decision B1 — resources reuse read serializers and read scopes; no new read surface
+
 A resource read is the same data a `read_*` tool returns. `resources/read` parses a
 `campsite://{org_slug}/{type}/{public_id}` URI, resolves the org membership exactly
 like `organization_context!`, loads the record under `policy_scope`, and renders the
@@ -69,6 +73,7 @@ the existing read scope for that type. Resources add **addressability and
 browsability**, not new data or new authorization.
 
 ### Decision B2 — static `resources` list is bounded; arbitrary entities go through templates
+
 `resources/list` advertises only a small, bounded set (e.g. the connecting user's N
 most-recent posts/notes across orgs) so the catalog never unbounded-paginates the
 whole workspace. Any specific entity is addressable via the advertised
@@ -77,6 +82,7 @@ directly — the client does not need it to appear in `list` first. `list` is fo
 discovery; templates are for addressing.
 
 ### Decision B3 — subscriptions are spiked before they are promised
+
 `resources/subscribe` + `notifications/resources/updated` require the server to push
 to the client **after** the request completes, which needs a live server→client
 stream. Campsite's remote MCP runs over Streamable HTTP behind Hatchbox/nginx with
@@ -90,13 +96,15 @@ re-defer the subscription requirement. Resource change events, if built, should 
 the existing Pusher/`*_stale` invalidation signals rather than introduce a new bus.
 
 ### Decision C1 — prompts are static templates, never mutate
-Prompts returned by `prompts/get` are message templates that *instruct* the client to
+
+Prompts returned by `prompts/get` are message templates that _instruct_ the client to
 call existing tools; the prompt handler itself performs no Campsite write and runs no
 inference. It may read (e.g. interpolate the user's name from `whoami`) but its output
 is text/messages. This keeps prompts safe to expose under `mcp` alone and keeps all
 mutation behind the already-scoped tools.
 
 ### Decision C2 — wire capabilities explicitly in `McpServer.build`
+
 `McpServer.build` passes `prompts:` and `resources:` (and `resource_templates:`) and
 an explicit `capabilities:` hash: `{ tools: {}, prompts: { listChanged: true },
 resources: { listChanged: true } }`, adding `subscribe: true` to `resources` **only**

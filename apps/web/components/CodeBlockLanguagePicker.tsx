@@ -108,7 +108,7 @@ export function CodeBlockLanguagePicker({ editor }: Props) {
         <PopoverElementAnchor element={element} />
         <PopoverPortal>
           <PopoverContent
-            className={cn('scrollable min-w-[365px] max-w-[365px]', CONTAINER_STYLES.base)}
+            className={cn('scrollable max-w-[365px] min-w-[365px]', CONTAINER_STYLES.base)}
             side='bottom'
             align='end'
             onKeyDown={() => setInitialOpen(false)}

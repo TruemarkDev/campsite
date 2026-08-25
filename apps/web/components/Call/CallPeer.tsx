@@ -107,7 +107,7 @@ export function CallPeer({
                   alt=''
                   width={256}
                   height={256}
-                  className='aspect-square h-auto max-h-[50%] min-h-[32px] w-auto min-w-[32px] max-w-[50%] flex-none select-none rounded-full'
+                  className='aspect-square h-auto max-h-[50%] min-h-[32px] w-auto max-w-[50%] min-w-[32px] flex-none rounded-full select-none'
                 />
               )}
             </>
@@ -118,16 +118,16 @@ export function CallPeer({
       )}
 
       {((peer.isLocal && !minimized) || !peer.isLocal) && (
-        <div className='absolute bottom-2.5 right-2.5 text-sm font-medium text-white opacity-80 transition-opacity [text-shadow:_0_1px_1px_rgba(0,0,0,0.24)] group-hover/peer:opacity-100'>
+        <div className='absolute right-2.5 bottom-2.5 text-sm font-medium text-white opacity-80 transition-opacity [text-shadow:_0_1px_1px_rgba(0,0,0,0.24)] group-hover/peer:opacity-100'>
           {peer.name}
         </div>
       )}
 
-      <div className='absolute right-1.5 top-1.5 flex items-center gap-1'>
+      <div className='absolute top-1.5 right-1.5 flex items-center gap-1'>
         {peer.isLocal && !disableMinimize && (
           <button
             onClick={onMinimize}
-            className={cn('rounded-md p-1 opacity-0 backdrop-blur-lg hover:bg-black group-hover/peer:opacity-100', {
+            className={cn('rounded-md p-1 opacity-0 backdrop-blur-lg group-hover/peer:opacity-100 hover:bg-black', {
               'bg-black/50 hover:bg-black/90': videoEnabled,
               'bg-white/10 hover:bg-white/20': !videoEnabled
             })}
