@@ -1,9 +1,9 @@
 'use client'
 
 import * as React from 'react'
-import { ButtonHTMLAttributes, useMemo, useRef } from 'react'
+import { ButtonHTMLAttributes, useMemo } from 'react'
 import { add, format, sub } from 'date-fns'
-import { DayPicker, useDayRender, useNavigation } from 'react-day-picker'
+import { DayPicker, useDayPicker } from 'react-day-picker'
 
 import { Button } from '../Button'
 import { ChevronLeftIcon, ChevronRightIcon } from '../Icons'
@@ -17,14 +17,17 @@ export function Calendar({ className, classNames, showOutsideDays = true, ...pro
     <DayPicker
       showOutsideDays={showOutsideDays}
       className={className}
+      // The month caption below renders our own previous/next buttons, so the
+      // built-in nav would be a second set of controls.
+      hideNavigation
       classNames={{
         months: 'flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0',
         month: 'space-y-2',
-        table: 'w-full border-collapse space-y-1',
-        head_row: 'flex',
-        head_cell: 'text-muted-foreground rounded-md w-8 m-0.5 font-normal text-[0.8rem]',
-        row: 'flex w-full',
-        cell: cn(
+        month_grid: 'w-full border-collapse space-y-1',
+        weekdays: 'flex',
+        weekday: 'text-muted-foreground rounded-md w-8 m-0.5 font-normal text-[0.8rem]',
+        week: 'flex w-full',
+        day: cn(
           'focus:ring-0 relative p-0 m-0.5 text-center text-sm focus-within:relative focus-within:z-20 [&:has([aria-selected])]:bg-accent [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected].day-range-end)]:rounded-r-md',
           props.mode === 'range'
             ? '[&:has(>.day-range-end)]:rounded-r-md [&:has(>.day-range-start)]:rounded-l-md first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md'
@@ -33,38 +36,32 @@ export function Calendar({ className, classNames, showOutsideDays = true, ...pro
         ...classNames
       }}
       components={{
-        Day: ({ date, ...props }) => {
-          const buttonRef = useRef<HTMLButtonElement & HTMLAnchorElement>(null)
-          const { buttonProps, activeModifiers } = useDayRender(
-            date,
-            props.displayMonth,
-            buttonRef as React.RefObject<HTMLButtonElement>
-          )
+        DayButton: ({ day, modifiers, className: dayButtonClassName, ...buttonProps }) => {
           const buttonVariant = useMemo(() => {
-            if (activeModifiers.selected) return 'important'
-            if (activeModifiers.today) return 'flat'
-            if (activeModifiers.hidden) return 'none'
+            if (modifiers.selected) return 'important'
+            if (modifiers.today) return 'flat'
+            if (modifiers.hidden) return 'none'
             return 'plain'
-          }, [activeModifiers])
+          }, [modifiers])
 
           return (
             <Button
               {...(buttonProps as ButtonHTMLAttributes<HTMLButtonElement>)}
-              ref={buttonRef}
               className={cn(
                 'm-0 h-8 w-8 p-0',
-                activeModifiers.outside && 'opacity-60',
-                activeModifiers.selected && 'focus:ring-0',
-                buttonProps.className
+                modifiers.outside && 'opacity-60',
+                modifiers.selected && 'focus:ring-0',
+                dayButtonClassName
               )}
               variant={buttonVariant}
             >
-              {date.getDate()}
+              {day.date.getDate()}
             </Button>
           )
         },
-        Caption: ({ displayMonth }) => {
-          const { previousMonth, nextMonth, goToMonth } = useNavigation()
+        MonthCaption: ({ calendarMonth }) => {
+          const { previousMonth, nextMonth, goToMonth } = useDayPicker()
+          const displayMonth = calendarMonth.date
 
           return (
             <div className='relative flex'>

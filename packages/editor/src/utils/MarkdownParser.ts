@@ -12,8 +12,7 @@ import {
   DOMParser as ProseMirrorDOMParser,
   Schema
 } from '@tiptap/pm/model'
-import MarkdownIt from 'markdown-it'
-import Token from 'markdown-it/lib/token'
+import type { Env, MarkdownIt, Token } from 'markdown-it'
 
 function maybeMerge(a: Node, b: Node): Node | undefined {
   if (a.isText && b.isText && Mark.sameSet(a.marks, b.marks)) return (a as any).withText(a.text! + b.text!)
@@ -501,7 +500,7 @@ export class MarkdownParser {
   /// The second argument, when given, is passed through to the
   /// [Markdown
   /// parser](https://markdown-it.github.io/markdown-it/#MarkdownIt.parse).
-  parse(text: string, markdownEnv: Object = {}) {
+  parse(text: string, markdownEnv: Env = {}) {
     let state = new MarkdownParseState(this.schema, this.tokenHandlers, this.domParser, this.document),
       doc
 

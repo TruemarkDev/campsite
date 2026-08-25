@@ -1,5 +1,5 @@
 import { ComponentPropsWithoutRef } from 'react'
-import { uniqBy } from 'remeda'
+import { uniqueBy } from 'remeda'
 
 import { Mention } from '@campsite/editor/extensions'
 import { OrganizationMember, SyncOrganizationMember } from '@campsite/types/generated'
@@ -44,7 +44,7 @@ function InnerMentionList({ editor, defaultMentions }: Pick<Props, 'editor' | 'd
   const { data: apps = [] } = useGetOauthApplications()
   const isEmptySearch = useSuggestionEmpty()
   const members = isEmptySearch && defaultMentions && defaultMentions.length > 0 ? defaultMentions : allMembers
-  const dedupedMembers = uniqBy(members, (m) => m.id)
+  const dedupedMembers = uniqueBy(members, (m) => m.id)
 
   const items = [
     ...dedupedMembers,

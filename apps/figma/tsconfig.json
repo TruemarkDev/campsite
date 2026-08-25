@@ -14,8 +14,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
     "target": "ES5",
-    "typeRoots": ["node_modules/@figma", "node_modules/@types"],
-    "baseUrl": "."
+    "typeRoots": ["./node_modules/@figma", "./node_modules/@types"]
   },
   "include": ["global.d.ts", "src/**/*.ts", "src/**/*.tsx"]
 }

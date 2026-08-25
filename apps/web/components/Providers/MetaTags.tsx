@@ -1,5 +1,5 @@
 import { atom, useAtomValue } from 'jotai'
-import { DefaultSeo } from 'next-seo'
+import { generateDefaultSeo } from 'next-seo/pages'
 import { useTheme } from 'next-themes'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
@@ -56,44 +56,46 @@ export function MetaTags(props: Props) {
     <>
       {postSeoInfo ? (
         <>
-          <DefaultSeo
-            title={postSeoInfo.seo_title}
-            description={postSeoInfo.seo_description}
-            openGraph={{
-              title: postSeoInfo.seo_title,
-              description: postSeoInfo.seo_description,
-              images: postSeoInfo.open_graph_image_url
-                ? [
-                    {
-                      url: postSeoInfo.open_graph_image_url,
-                      alt: `Feature image for ${postSeoInfo.seo_title}`
-                    }
-                  ]
-                : DEFAULT_SEO.openGraph.images,
-              videos: postSeoInfo.open_graph_video_url
-                ? [
-                    {
-                      url: postSeoInfo.open_graph_video_url,
-                      alt: `Feature video for ${postSeoInfo.seo_title}`
-                    }
-                  ]
-                : []
-            }}
-          />
           <Head>
             <title>{postSeoInfo.seo_title}</title>
+            {generateDefaultSeo({
+              title: postSeoInfo.seo_title,
+              description: postSeoInfo.seo_description,
+              openGraph: {
+                title: postSeoInfo.seo_title,
+                description: postSeoInfo.seo_description,
+                images: postSeoInfo.open_graph_image_url
+                  ? [
+                      {
+                        url: postSeoInfo.open_graph_image_url,
+                        alt: `Feature image for ${postSeoInfo.seo_title}`
+                      }
+                    ]
+                  : DEFAULT_SEO.openGraph.images,
+                videos: postSeoInfo.open_graph_video_url
+                  ? [
+                      {
+                        url: postSeoInfo.open_graph_video_url,
+                        alt: `Feature video for ${postSeoInfo.seo_title}`
+                      }
+                    ]
+                  : []
+              }
+            })}
           </Head>
         </>
       ) : (
-        <DefaultSeo
-          {...DEFAULT_SEO}
-          title={isOrgPage ? 'Campsite' : DEFAULT_SEO.title}
-          openGraph={{
-            ...DEFAULT_SEO.openGraph,
-            // exclude open graph images from org pages because they don't provide value in Slack, iMessage, etc.
-            images: isOrgPage ? [] : DEFAULT_SEO.openGraph.images
-          }}
-        />
+        <Head>
+          {generateDefaultSeo({
+            ...DEFAULT_SEO,
+            title: isOrgPage ? 'Campsite' : DEFAULT_SEO.title,
+            openGraph: {
+              ...DEFAULT_SEO.openGraph,
+              // exclude open graph images from org pages because they don't provide value in Slack, iMessage, etc.
+              images: isOrgPage ? [] : DEFAULT_SEO.openGraph.images
+            }
+          })}
+        </Head>
       )}
       <GlobalMetaTags />
     </>

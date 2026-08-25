@@ -3,17 +3,17 @@
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", "**/*.config.js", ".next/types/**/*.ts"],
   "exclude": ["node_modules"],
   "compilerOptions": {
-    "baseUrl": ".",
     // Declaration emit is disabled to avoid non-portable inferred type
     // errors (TS2742) from workspace-hoisted deps (same as apps/web).
     "declaration": false,
     "declarationMap": false,
     "paths": {
-      "@/components/*": ["components/*"],
-      "@/lib/*": ["lib/*"],
-      "@/types/*": ["types/*"],
-      "@/pages/*": ["pages/*"],
-      "@/sanity/*": ["sanity/*"]
+      "*": ["./*"],
+      "@/components/*": ["./components/*"],
+      "@/lib/*": ["./lib/*"],
+      "@/types/*": ["./types/*"],
+      "@/pages/*": ["./pages/*"],
+      "@/sanity/*": ["./sanity/*"]
     },
     "plugins": [
       {

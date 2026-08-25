@@ -1,6 +1,5 @@
 import React from 'react'
 import type { Meta, StoryObj } from '@storybook/nextjs'
-import { noop } from 'remeda'
 
 import { SidebarUnreadBadge } from '@/components/Sidebar/SidebarUnreadBadge'
 
@@ -8,8 +7,10 @@ import { iconForFavoritableType } from './SidebarFavorite'
 import { SidebarLink } from './SidebarLink'
 
 function Template({ children }: React.PropsWithChildren) {
-  return <div className='w-53 flex flex-col flex-nowrap'>{children}</div>
+  return <div className='flex w-53 flex-col flex-nowrap'>{children}</div>
 }
+
+const noop = () => {}
 
 const meta = {
   title: 'Components/Sidebar/SidebarLink',

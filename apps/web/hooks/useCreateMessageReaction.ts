@@ -66,7 +66,11 @@ export function useCreateMessageReaction() {
 
       return { client_id }
     },
-    onSuccess(newReaction, { threadId, messageId }, { client_id }) {
+    onSuccess(newReaction, { threadId, messageId }, onMutateResult) {
+      const { client_id } = onMutateResult ?? {}
+
+      if (!client_id) return
+
       setTypedInfiniteQueriesData(queryClient, getMessages.requestKey({ orgSlug: `${scope}`, threadId }), (old) => {
         if (!old) return
 

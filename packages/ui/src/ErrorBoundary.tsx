@@ -2,7 +2,8 @@ import * as Sentry from '@sentry/react'
 // eslint-disable-next-line no-restricted-imports
 import { ErrorBoundaryProps, ErrorBoundary as ReactErrorBoundary } from 'react-error-boundary'
 
-const logError = (error: Error) => {
+// react-error-boundary 6 widened onError's first argument to `unknown`.
+const logError = (error: unknown) => {
   Sentry.captureException(error)
 }
 
