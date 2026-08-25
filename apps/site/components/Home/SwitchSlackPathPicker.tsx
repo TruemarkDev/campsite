@@ -31,7 +31,7 @@ export function SwitchSlackPathPicker() {
 
   return (
     <div className='w-full'>
-      <div className='bg-elevated dark:bg-secondary mx-auto w-auto rounded-t-xl border border-b-0 p-2 uppercase shadow-sm'>
+      <div className='bg-elevated dark:bg-secondary mx-auto w-auto rounded-t-xl border border-b-0 p-2 uppercase shadow-xs'>
         <UIText tertiary size='text-xs' className='tracking-wide'>
           Choose your path
         </UIText>
@@ -46,7 +46,7 @@ export function SwitchSlackPathPicker() {
           <Item level='fresh' active={level === 'fresh'}>
             <div className='grid grid-rows-[1fr,32px]'>
               <div className='grid grid-cols-[32px,1fr] gap-3'>
-                <div className='dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-sm'>
+                <div className='dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-xs'>
                   {level === 'fresh' && <div className='h-4 w-4 flex-none rounded-full bg-blue-500' />}
                 </div>
 
@@ -85,7 +85,7 @@ export function SwitchSlackPathPicker() {
           <Item level='migrate' active={level === 'migrate'}>
             <div className='grid grid-rows-[1fr,32px]'>
               <div className='grid grid-cols-[32px,1fr] gap-3'>
-                <div className='bg-elevated dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-sm'>
+                <div className='bg-elevated dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-xs'>
                   {level === 'migrate' && <div className='h-4 w-4 flex-none rounded-full bg-blue-500' />}
                 </div>
 

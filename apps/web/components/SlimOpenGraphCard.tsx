@@ -81,7 +81,7 @@ export function SlimOpenGraphCard({ className, url }: OpenGraphCardProps) {
             <Image
               src={data.favicon_url ?? ''}
               alt={''}
-              className='flex rounded-sm object-cover object-center'
+              className='flex rounded-xs object-cover object-center'
               width={24}
               height={24}
               onError={() => setFaviconError(true)}

@@ -151,7 +151,7 @@ export function SuggestionReview({ editor, noteId }: Props) {
   return (
     <>
       <div
-        className='bg-elevated sticky top-2 z-30 mx-auto mb-2 flex w-fit max-w-[calc(100%-2rem)] items-center gap-1 rounded-full border px-2 py-1 shadow-sm'
+        className='bg-elevated sticky top-2 z-30 mx-auto mb-2 flex w-fit max-w-[calc(100%-2rem)] items-center gap-1 rounded-full border px-2 py-1 shadow-xs'
         aria-live='polite'
       >
         <SparklesIcon size={16} />

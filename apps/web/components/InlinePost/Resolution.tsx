@@ -63,7 +63,7 @@ export function Resolution({ post, display, className }: Props) {
   return (
     <div
       className={cn(
-        'group flex w-full flex-col overflow-hidden rounded-lg border shadow-sm',
+        'group flex w-full flex-col overflow-hidden rounded-lg border shadow-xs',
         {
           'bg-elevated': display === 'page' || display === 'hovercard',
           'bg-secondary dark:bg-elevated mt-4 -mb-1': display === 'feed'

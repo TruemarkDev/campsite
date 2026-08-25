@@ -122,7 +122,7 @@ function BubbleReactions({ message }: { message: Message }) {
   return (
     <div
       className={cn(
-        'ring-primary bg-primary dark:ring-gray-850 flex h-5.5 flex-wrap items-center gap-0.5 rounded-full px-px shadow-sm ring-2 dark:bg-gray-800',
+        'ring-primary bg-primary dark:ring-gray-850 flex h-5.5 flex-wrap items-center gap-0.5 rounded-full px-px shadow-xs ring-2 dark:bg-gray-800',
         {
           'flex-row-reverse': message.viewer_is_sender
         }

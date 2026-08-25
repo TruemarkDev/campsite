@@ -12,6 +12,31 @@
 @import 'tailwind-scrollbar-hide/v4';
 @import 'tailwindcss-safe-area';
 
+
+@layer base {
+  /*
+    Tailwind v3's preflight defaulted every border to the theme's
+    borderColor.DEFAULT; v4's preflight uses currentColor instead, which would
+    silently repaint every bare `border` utility in the text colour. Restore
+    the v3 behaviour.
+  */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border-primary, currentColor);
+  }
+
+  /*
+    v3's preflight gave buttons `cursor: pointer`; v4 defers to the browser
+    default (an arrow). Restore the pointer for enabled buttons.
+  */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 @layer base {
   * {
     scrollbar-width: thin;
@@ -262,7 +287,7 @@
     }
 
     mark {
-      @apply -mx-0.5 rounded-sm bg-amber-100 px-0.5 text-amber-950 dark:bg-amber-500/30 dark:text-amber-200;
+      @apply -mx-0.5 rounded-xs bg-amber-100 px-0.5 text-amber-950 dark:bg-amber-500/30 dark:text-amber-200;
     }
   }
 

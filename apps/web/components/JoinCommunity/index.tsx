@@ -96,7 +96,7 @@ export function JoinCommunityPageComponent() {
             </div>
           </div>
 
-          <div className='bg-secondary flex flex-col gap-6 rounded-xl border p-6 shadow-sm'>
+          <div className='bg-secondary flex flex-col gap-6 rounded-xl border p-6 shadow-xs'>
             <div className='prose'>
               <p>
                 Campsite is also a tool for teams. Hundreds of companies use Campsite every day to share

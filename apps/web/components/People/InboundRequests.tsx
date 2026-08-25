@@ -21,7 +21,7 @@ export function InboundRequests() {
   if (!requests?.length) return null
 
   return (
-    <SettingsSection.Section className='shadow-sm'>
+    <SettingsSection.Section className='shadow-xs'>
       <SettingsSection.Header>
         <SettingsSection.Title>Needs review</SettingsSection.Title>
       </SettingsSection.Header>

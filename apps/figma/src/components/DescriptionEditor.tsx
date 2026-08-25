@@ -17,7 +17,7 @@ export const DescriptionEditor = forwardRef<{ editor: Editor | null }, {}>(funct
       attributes: {
         class: cn(
           'prose editing bg-elevated focus:outline-none w-full max-w-full overflow-y-auto select-auto px-3 py-2.5 h-[64px]',
-          'shadow-sm border rounded-lg text-sm text-primary'
+          'shadow-xs border rounded-lg text-sm text-primary'
         )
       }
     },

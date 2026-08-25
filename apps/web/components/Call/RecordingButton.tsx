@@ -91,7 +91,7 @@ export function RecordingButton() {
       <div
         className={cn('h-3.5 w-3.5', {
           'rounded-full bg-white': !isRecording,
-          'animate-pulse rounded-sm bg-red-500': isRecording
+          'animate-pulse rounded-xs bg-red-500': isRecording
         })}
       />
     </div>

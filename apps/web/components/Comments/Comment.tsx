@@ -66,7 +66,7 @@ export const CommentComponent = memo(
           className={cn(
             'divide-secondary relative isolate divide-y',
             !isCanvas &&
-              'bg-elevated dark:bg-secondary my-3 overflow-hidden rounded-lg border-[0.5px] shadow-sm dark:border-0 dark:shadow-[inset_0_0.5px_0_rgb(255_255_255/0.06),_inset_0_0_0.5px_rgb(255_255_255/0.1)]'
+              'bg-elevated dark:bg-secondary my-3 overflow-hidden rounded-lg border-[0.5px] shadow-xs dark:border-0 dark:shadow-[inset_0_0.5px_0_rgb(255_255_255/0.06),_inset_0_0_0.5px_rgb(255_255_255/0.1)]'
           )}
         >
           {/* Comment Root */}

@@ -338,7 +338,7 @@ function CompactPost({ post, className }: { post: Post | null; className?: strin
   return (
     <div
       className={cn(
-        'bg-elevated group relative flex min-h-17 w-full scroll-m-1 gap-3 rounded-xl border-[0.5px] px-4 py-3 shadow-sm select-none',
+        'bg-elevated group relative flex min-h-17 w-full scroll-m-1 gap-3 rounded-xl border-[0.5px] px-4 py-3 shadow-xs select-none',
         className
       )}
     >

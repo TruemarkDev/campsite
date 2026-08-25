@@ -10,6 +10,31 @@
 }
 @config '../../tailwind.config.js';
 
+
+@layer base {
+  /*
+    Tailwind v3's preflight defaulted every border to the theme's
+    borderColor.DEFAULT; v4's preflight uses currentColor instead, which would
+    silently repaint every bare `border` utility in the text colour. Restore
+    the v3 behaviour.
+  */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border-primary, currentColor);
+  }
+
+  /*
+    v3's preflight gave buttons `cursor: pointer`; v4 defers to the browser
+    default (an arrow). Restore the pointer for enabled buttons.
+  */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 :root,
 .light {
   @apply text-primary;

@@ -188,11 +188,11 @@
     }
 
     [data-suggestion-insert] {
-      @apply rounded-sm bg-green-500/10 text-green-900 underline decoration-green-500 decoration-2 underline-offset-2 dark:text-green-200;
+      @apply rounded-xs bg-green-500/10 text-green-900 underline decoration-green-500 decoration-2 underline-offset-2 dark:text-green-200;
     }
 
     [data-suggestion-delete] {
-      @apply rounded-sm bg-red-500/10 text-red-800 line-through decoration-red-500 decoration-2 dark:text-red-200;
+      @apply rounded-xs bg-red-500/10 text-red-800 line-through decoration-red-500 decoration-2 dark:text-red-200;
     }
 
     [data-suggestion-insert][data-actor-type='ai']::after,

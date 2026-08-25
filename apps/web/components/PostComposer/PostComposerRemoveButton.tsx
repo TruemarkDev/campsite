@@ -41,7 +41,7 @@ export function PostComposerRemoveButton({
       disabled={disabled}
       className={cn(
         'pointer-events-auto absolute -top-2 -left-2 z-10',
-        'bg-elevated flex h-6 w-6 items-center justify-center gap-3 rounded-full border shadow-sm dark:bg-gray-700',
+        'bg-elevated flex h-6 w-6 items-center justify-center gap-3 rounded-full border shadow-xs dark:bg-gray-700',
         'hover:border-red-500 hover:bg-red-500 hover:text-white dark:hover:bg-red-500',
         'focus:border-red-500 focus:bg-red-500 focus:text-white focus:ring-0',
         'group/action',

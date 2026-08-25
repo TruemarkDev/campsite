@@ -1,6 +1,6 @@
 import { Selection as D3Selection } from 'd3-selection'
 
-import 'd3-transition'
+import type {} from 'd3-transition'
 
 import { ZoomBehavior, ZoomTransform } from 'd3-zoom'
 import { atom } from 'jotai'

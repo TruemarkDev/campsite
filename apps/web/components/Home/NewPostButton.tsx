@@ -28,7 +28,7 @@ export function NewPostButton({ className }: { className?: string }) {
       <div
         className={cn(
           'text-tertiary relative -mx-2 flex items-center gap-3 rounded-lg',
-          'hover:bg-elevated dark:bg-secondary dark:hover:bg-tertiary border-0 bg-[#fcfcfc] px-4 py-3 shadow-sm ring-[0.5px] ring-black/[0.08] transition-all hover:shadow dark:shadow-[inset_0px_0px_0px_0.5px_rgb(255_255_255_/_0.06),_0px_1px_2px_rgb(0_0_0_/_0.2),_0px_2px_4px_rgb(0_0_0_/_0.12),_0px_0px_0px_0.5px_rgb(0_0_0_/_0.12)]',
+          'hover:bg-elevated dark:bg-secondary dark:hover:bg-tertiary border-0 bg-[#fcfcfc] px-4 py-3 shadow-xs ring-[0.5px] ring-black/[0.08] transition-all hover:shadow dark:shadow-[inset_0px_0px_0px_0.5px_rgb(255_255_255_/_0.06),_0px_1px_2px_rgb(0_0_0_/_0.2),_0px_2px_4px_rgb(0_0_0_/_0.12),_0px_0px_0px_0.5px_rgb(0_0_0_/_0.12)]',
           className
         )}
       >
