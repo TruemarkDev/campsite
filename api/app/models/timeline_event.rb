@@ -27,12 +27,15 @@ class TimelineEvent < ApplicationRecord
       subject_pinned: 16,
       subject_unpinned: 17,
       subject_title_updated: 18,
+      note_suggestion_proposed: 19,
+      note_suggestion_resolved: 20,
     },
     suffix: true
 
   store_accessor :metadata, :from_visibility, :to_visibility, prefix: :post_updated
   store_accessor :metadata, :from_project_id, :to_project_id, prefix: :subject_updated
   store_accessor :metadata, :from_title, :to_title, prefix: :subject_updated
+  store_accessor :metadata, :batch_id, :actor_name, :instruction, :resolution, prefix: :note_suggestion
 
   SERIALIZER_PRELOADS = [
     actor: OrganizationMembership::SERIALIZER_EAGER_LOAD,

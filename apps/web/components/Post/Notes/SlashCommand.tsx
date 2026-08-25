@@ -17,6 +17,7 @@ import {
   PlayIcon,
   PostIcon,
   QuoteIcon,
+  SparklesIcon,
   TextAlignLeftIcon,
   UIText,
   UnorderedListIcon,
@@ -197,14 +198,32 @@ const COMMANDS: CommandItemProps[] = [
 
 type Props = Pick<ComponentPropsWithoutRef<typeof SuggestionRoot>, 'editor'> & {
   upload: ReturnType<typeof useUploadNoteAttachments>
+  onAiEdit?: (range: Range) => void
 }
 
 const pluginKey = new PluginKey('slashCommand')
 
-export function SlashCommand({ editor, upload }: Props) {
+export function SlashCommand({ editor, upload, onAiEdit }: Props) {
+  const commands: CommandItemProps[] = [
+    ...(onAiEdit
+      ? [
+          {
+            title: 'Edit with AI',
+            searchTerms: ['ai', 'rewrite', 'draft'],
+            icon: <SparklesIcon />,
+            command: ({ editor, range }: CommandProps) => {
+              editor.chain().focus().deleteRange(range).run()
+              onAiEdit({ from: range.from, to: range.from })
+            }
+          }
+        ]
+      : []),
+    ...COMMANDS
+  ]
+
   return (
     <SuggestionRoot editor={editor} char='/' pluginKey={pluginKey}>
-      {COMMANDS.map((item) => {
+      {commands.map((item) => {
         return (
           <SuggestionItem
             editor={editor}

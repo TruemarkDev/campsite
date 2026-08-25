@@ -9,12 +9,18 @@ const mocks = vi.hoisted(() => ({
   generateJSON: vi.fn(),
   getNoteExtensions: vi.fn(() => []),
   getRequest: vi.fn(),
+  getAgentRequest: vi.fn(),
   putRequest: vi.fn(),
+  putAgentRequest: vi.fn(),
+  resolveSuggestions: vi.fn((document) => document),
   setContext: vi.fn(),
   toYdoc: vi.fn()
 }))
 
-vi.mock('@campsite/editor', () => ({ getNoteExtensions: mocks.getNoteExtensions }))
+vi.mock('@campsite/editor', () => ({
+  getNoteExtensions: mocks.getNoteExtensions,
+  resolveSuggestions: mocks.resolveSuggestions
+}))
 vi.mock('@hocuspocus/transformer', () => ({
   TiptapTransformer: {
     fromYdoc: mocks.fromYdoc,
@@ -31,6 +37,10 @@ vi.mock('@tiptap/html', () => ({
 }))
 vi.mock('../api', () => ({
   api: {
+    agentSyncGrants: {
+      getAgentSyncGrantsNotesSyncState: () => ({ request: mocks.getAgentRequest }),
+      putAgentSyncGrantsNotesSyncState: () => ({ request: mocks.putAgentRequest })
+    },
     organizations: {
       getNotesSyncState: () => ({ request: mocks.getRequest }),
       putNotesSyncState: () => ({ request: mocks.putRequest })
@@ -39,6 +49,7 @@ vi.mock('../api', () => ({
 }))
 
 const context = {
+  actorType: 'human' as const,
   organization: 'acme',
   schemaVersion: 3,
   token: 'secret',
@@ -76,6 +87,25 @@ describe('getResource', () => {
       getResource({ token: 'secret', id: 'post-1', type: 'Post', organization: 'acme' })
     ).resolves.toBeUndefined()
     expect(mocks.getRequest).not.toHaveBeenCalled()
+  })
+
+  it('loads an agent grant through the note-scoped endpoint', async () => {
+    const state = { description_schema_version: 9 }
+
+    mocks.getAgentRequest.mockResolvedValueOnce(state)
+
+    await expect(
+      getResource({
+        token: 'grant-token',
+        id: 'note-1',
+        type: 'Note',
+        organization: 'acme',
+        actorType: 'agent'
+      })
+    ).resolves.toBe(state)
+    expect(mocks.getAgentRequest).toHaveBeenCalledWith('note-1', {
+      headers: { Authorization: 'Bearer grant-token' }
+    })
   })
 })
 
@@ -169,8 +199,34 @@ describe('database fetch', () => {
       organization: 'acme',
       type: 'Note'
     })
-    expect(mocks.setContext).toHaveBeenCalledWith('context', { schemaVersion: 3, token: 'secret' })
+    expect(mocks.setContext).toHaveBeenCalledWith('context', {
+      actorType: 'human',
+      grantId: undefined,
+      schemaVersion: 3
+    })
     expect(mocks.captureException).toHaveBeenCalledWith(error)
+  })
+
+  it('stores agent state through the note-scoped endpoint', async () => {
+    const ydoc = new Y.Doc()
+    const agentContext = { ...context, actorType: 'agent' as const, grantId: 'grant-1', token: 'grant-token' }
+
+    mocks.fromYdoc.mockReturnValueOnce({ type: 'doc' })
+    mocks.generateHTML.mockReturnValueOnce('<p>Agent edit</p>')
+    mocks.putAgentRequest.mockResolvedValueOnce(undefined)
+
+    await database.configuration.store({
+      lastContext: agentContext,
+      documentName: 'note-1',
+      document: ydoc
+    } as never)
+
+    expect(mocks.putAgentRequest).toHaveBeenCalledWith(
+      'note-1',
+      expect.objectContaining({ description_html: '<p>Agent edit</p>', description_schema_version: 3 }),
+      { headers: { Authorization: 'Bearer grant-token' } }
+    )
+    expect(mocks.putRequest).not.toHaveBeenCalled()
   })
 })
 
@@ -194,6 +250,7 @@ describe('database store', () => {
     await store({ lastContext: context, documentName: 'note-1', document: ydoc } as never)
 
     expect(mocks.fromYdoc).toHaveBeenCalledWith(ydoc, 'default')
+    expect(mocks.resolveSuggestions).toHaveBeenCalledWith({ type: 'doc' }, 'strip')
     expect(mocks.generateHTML).toHaveBeenCalledWith({ type: 'doc' }, [])
     expect(mocks.putRequest).toHaveBeenCalledWith(
       'acme',
@@ -221,7 +278,11 @@ describe('database store', () => {
       organization: 'acme',
       type: 'Note'
     })
-    expect(mocks.setContext).toHaveBeenCalledWith('context', { schemaVersion: 3, token: 'secret' })
+    expect(mocks.setContext).toHaveBeenCalledWith('context', {
+      actorType: 'human',
+      grantId: undefined,
+      schemaVersion: 3
+    })
     expect(mocks.captureException).toHaveBeenCalledWith(error)
   })
 })

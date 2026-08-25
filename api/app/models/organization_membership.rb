@@ -45,6 +45,7 @@ class OrganizationMembership < ApplicationRecord
   has_many :follow_ups, dependent: :destroy_async
   has_many :unshown_follow_ups, -> { unshown }, class_name: "FollowUp"
   has_many :notes, dependent: :destroy_async
+  has_many :agent_sync_grants, dependent: :destroy
   has_many :kept_notes, -> { kept }, class_name: "Note"
   has_many :kept_active_project_membership_notes, through: :kept_projects, source: :kept_notes
   has_many :kept_subscribed_notes, ->(organization_membership) { joins(:member).where(member: { organization_id: organization_membership.organization_id }) }, through: :user

@@ -28,8 +28,9 @@ class Llm
     @client = create_client
   end
 
-  def chat(messages:, &block)
+  def chat(messages:, schema: nil, &block)
     chat_client = RubyLLM.chat(model: @model, provider: @provider)
+    chat_client.with_schema(schema) if schema
 
     if block_given?
       chat_client.ask(messages, &block)

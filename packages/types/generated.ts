@@ -20,6 +20,41 @@ export type OrganizationActivityViewsPostRequest = {
   last_seen_at: string
 }
 
+export type VerifyAgentSyncGrantPostResponse = {
+  grant_id: string
+  note_id: string
+  organization: string
+  actor_id: string
+  actor_name: string
+  invoked_by: string
+  expires_at: string
+}
+
+export type VerifyAgentSyncGrantPostRequest = {
+  note_id: string
+}
+
+export type AgentSyncGrantStateGetResponse = {
+  description_html: string
+  description_state?: string
+  description_schema_version: number
+}
+
+export type AgentSyncGrantsNotesNoteIdSyncStatePutResponse = object
+
+export type AgentSyncGrantsNotesNoteIdSyncStatePutRequest = {
+  description_html: string
+  description_state: string
+  description_schema_version: number
+}
+
+export type AgentSyncGrantsNotesNoteIdAttributionsPostResponse = object
+
+export type AgentSyncGrantsNotesNoteIdAttributionsPostRequest = {
+  batch_id: string
+  instruction?: string
+}
+
 export type AvatarUrls = {
   xs: string
   sm: string
@@ -101,6 +136,8 @@ export type Attachment = {
   remote_figma_url: string | null
   no_video_track: boolean
   gallery_id: string | null
+  transcript: string | null
+  transcription_job_status: string | null
   type_name: string
   subject_id: string | null
   is_subject_comment: boolean
@@ -565,6 +602,7 @@ export type Note = {
   description_html: string
   description_state: string | null
   project: Project | null
+  attachments: Attachment[]
   follow_ups: FollowUp[]
   type_name: string
   url: string
@@ -726,8 +764,14 @@ export type TimelineEvent = {
     | 'subject_pinned'
     | 'subject_unpinned'
     | 'subject_title_updated'
+    | 'note_suggestion_proposed'
+    | 'note_suggestion_resolved'
   subject_updated_from_title: string | null
   subject_updated_to_title: string | null
+  note_suggestion_batch_id: string | null
+  note_suggestion_actor_name: string | null
+  note_suggestion_instruction: string | null
+  note_suggestion_resolution: string | null
   subject_updated_from_project: MiniProject | null
   subject_updated_to_project: MiniProject | null
   comment_reference_subject_type: string | null
@@ -1253,6 +1297,46 @@ export type OrganizationMessageReactionsPostRequest = {
   custom_content_id?: string
 }
 
+export type OrganizationNoteAgentSyncGrantsPostResponse = {
+  id: string
+  token: string
+  expires_at: string
+}
+
+export type OrganizationNoteAgentSyncGrantsPostRequest = {
+  actor_id: string
+  actor_name: string
+  expires_in?: number
+}
+
+export type OrganizationNoteAgentSyncGrantDeleteResponse = object
+
+export type OrganizationNoteAiEditsPostResponse = {
+  batch_id: string
+  actor_id: string
+  actor_type: 'ai'
+  invoked_by: string
+  created_at: string
+  instruction: string
+  operations: {
+    type: 'replace_range' | 'insert_at_cursor'
+    text: string
+  }[]
+}
+
+export type OrganizationNoteAiEditsPostRequest = {
+  instruction: string
+  range: {
+    from: number
+    to: number
+  }
+  context: {
+    selected_text: string
+    before: string
+    after: string
+  }
+}
+
 export type CommentPage = {
   next_cursor?: string | null
   prev_cursor?: string | null
@@ -1376,6 +1460,13 @@ export type PublicNote = {
   og_org_avatar: string
   member: PublicOrganizationMember
   organization: PublicOrganization
+}
+
+export type OrganizationNoteSuggestionResolutionsPostResponse = object
+
+export type OrganizationNoteSuggestionResolutionsPostRequest = {
+  batch_id: string
+  resolution: 'accept' | 'reject'
 }
 
 export type NoteSync = {
@@ -1867,6 +1958,7 @@ export type OrganizationFeaturesGetResponse = {
     | 'channel_split_view'
     | 'no_emoji_accessories'
     | 'export'
+    | 'ai_note_editing'
     | 'api_endpoint_list_members'
     | 'api_endpoint_list_posts'
     | 'multi_org_apps'
@@ -1928,6 +2020,7 @@ export type Organization = {
     | 'channel_split_view'
     | 'no_emoji_accessories'
     | 'export'
+    | 'ai_note_editing'
     | 'api_endpoint_list_members'
     | 'api_endpoint_list_posts'
     | 'multi_org_apps'
@@ -2775,6 +2868,7 @@ export type CurrentUser = {
   unconfirmed_email: string | null
   created_at: string | null
   timezone: string | null
+  voice_id: string | null
   email_confirmed: boolean
   managed: boolean
   two_factor_enabled: boolean | null
@@ -2800,6 +2894,7 @@ export type CurrentUser = {
     | 'channel_split_view'
     | 'no_emoji_accessories'
     | 'export'
+    | 'ai_note_editing'
     | 'force_dev_slackbot'
   )[]
   logged_in: boolean
@@ -3034,6 +3129,14 @@ export type FigmaKeyPair = {
 }
 
 export type PostActivityViewsData = UserNotificationCounts
+
+export type PostAgentSyncGrantsVerifyData = VerifyAgentSyncGrantPostResponse
+
+export type GetAgentSyncGrantsNotesSyncStateData = AgentSyncGrantStateGetResponse
+
+export type PutAgentSyncGrantsNotesSyncStateData = AgentSyncGrantsNotesNoteIdSyncStatePutResponse
+
+export type PostAgentSyncGrantsNotesAttributionsData = AgentSyncGrantsNotesNoteIdAttributionsPostResponse
 
 export type GetAttachmentsCommentersData = OrganizationMember[]
 
@@ -3281,6 +3384,12 @@ export type DeleteMessagesAttachmentsByIdData = OrganizationMessageAttachmentDel
 
 export type PostMessagesReactionsData = Reaction
 
+export type PostNotesAgentSyncGrantsData = OrganizationNoteAgentSyncGrantsPostResponse
+
+export type DeleteNotesAgentSyncGrantsByIdData = OrganizationNoteAgentSyncGrantDeleteResponse
+
+export type PostNotesAiEditsData = OrganizationNoteAiEditsPostResponse
+
 export type GetNotesAttachmentsCommentsParams = {
   after?: string
   limit?: number
@@ -3331,6 +3440,8 @@ export type PutNotesProjectPermissionsData = Note
 export type DeleteNotesProjectPermissionsData = OrganizationsOrgSlugNotesNoteIdProjectPermissionsDeleteResponse
 
 export type GetNotesPublicNotesData = PublicNote
+
+export type PostNotesSuggestionResolutionsData = OrganizationNoteSuggestionResolutionsPostResponse
 
 export type GetNotesSyncStateData = NoteSync
 
@@ -6412,6 +6523,86 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
     /**
      * No description
      *
+     * @name PostNotesAgentSyncGrants
+     * @request POST:/v1/organizations/{org_slug}/notes/{note_id}/agent_sync_grants
+     */
+    postNotesAgentSyncGrants: () => {
+      const base = 'POST:/v1/organizations/{org_slug}/notes/{note_id}/agent_sync_grants' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostNotesAgentSyncGrantsData>([base]),
+        requestKey: (orgSlug: string, noteId: string) =>
+          dataTaggedQueryKey<PostNotesAgentSyncGrantsData>([base, orgSlug, noteId]),
+        request: (
+          orgSlug: string,
+          noteId: string,
+          data: OrganizationNoteAgentSyncGrantsPostRequest,
+          params: RequestParams = {}
+        ) =>
+          this.request<PostNotesAgentSyncGrantsData>({
+            path: `/v1/organizations/${orgSlug}/notes/${noteId}/agent_sync_grants`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name DeleteNotesAgentSyncGrantsById
+     * @request DELETE:/v1/organizations/{org_slug}/notes/{note_id}/agent_sync_grants/{id}
+     */
+    deleteNotesAgentSyncGrantsById: () => {
+      const base = 'DELETE:/v1/organizations/{org_slug}/notes/{note_id}/agent_sync_grants/{id}' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<DeleteNotesAgentSyncGrantsByIdData>([base]),
+        requestKey: (orgSlug: string, noteId: string, id: string) =>
+          dataTaggedQueryKey<DeleteNotesAgentSyncGrantsByIdData>([base, orgSlug, noteId, id]),
+        request: (orgSlug: string, noteId: string, id: string, params: RequestParams = {}) =>
+          this.request<DeleteNotesAgentSyncGrantsByIdData>({
+            path: `/v1/organizations/${orgSlug}/notes/${noteId}/agent_sync_grants/${id}`,
+            method: 'DELETE',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PostNotesAiEdits
+     * @request POST:/v1/organizations/{org_slug}/notes/{note_id}/ai_edits
+     */
+    postNotesAiEdits: () => {
+      const base = 'POST:/v1/organizations/{org_slug}/notes/{note_id}/ai_edits' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostNotesAiEditsData>([base]),
+        requestKey: (orgSlug: string, noteId: string) =>
+          dataTaggedQueryKey<PostNotesAiEditsData>([base, orgSlug, noteId]),
+        request: (
+          orgSlug: string,
+          noteId: string,
+          data: OrganizationNoteAiEditsPostRequest,
+          params: RequestParams = {}
+        ) =>
+          this.request<PostNotesAiEditsData>({
+            path: `/v1/organizations/${orgSlug}/notes/${noteId}/ai_edits`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
      * @name GetNotesAttachmentsComments
      * @request GET:/v1/organizations/{org_slug}/notes/{note_id}/attachments/{attachment_id}/comments
      */
@@ -6861,6 +7052,35 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetNotesPublicNotesData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/public_notes`,
             method: 'GET',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PostNotesSuggestionResolutions
+     * @request POST:/v1/organizations/{org_slug}/notes/{note_id}/suggestion_resolutions
+     */
+    postNotesSuggestionResolutions: () => {
+      const base = 'POST:/v1/organizations/{org_slug}/notes/{note_id}/suggestion_resolutions' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostNotesSuggestionResolutionsData>([base]),
+        requestKey: (orgSlug: string, noteId: string) =>
+          dataTaggedQueryKey<PostNotesSuggestionResolutionsData>([base, orgSlug, noteId]),
+        request: (
+          orgSlug: string,
+          noteId: string,
+          data: OrganizationNoteSuggestionResolutionsPostRequest,
+          params: RequestParams = {}
+        ) =>
+          this.request<PostNotesSuggestionResolutionsData>({
+            path: `/v1/organizations/${orgSlug}/notes/${noteId}/suggestion_resolutions`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
             ...params
           })
       }
@@ -11130,6 +11350,101 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/tags/${tagName}/posts`,
             method: 'GET',
             query: query,
+            ...params
+          })
+      }
+    }
+  }
+  agentSyncGrants = {
+    /**
+     * No description
+     *
+     * @name PostAgentSyncGrantsVerify
+     * @request POST:/v1/agent-sync-grants/verify
+     */
+    postAgentSyncGrantsVerify: () => {
+      const base = 'POST:/v1/agent-sync-grants/verify' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostAgentSyncGrantsVerifyData>([base]),
+        requestKey: () => dataTaggedQueryKey<PostAgentSyncGrantsVerifyData>([base]),
+        request: (data: VerifyAgentSyncGrantPostRequest, params: RequestParams = {}) =>
+          this.request<PostAgentSyncGrantsVerifyData>({
+            path: `/v1/agent-sync-grants/verify`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name GetAgentSyncGrantsNotesSyncState
+     * @request GET:/v1/agent-sync-grants/notes/{note_id}/sync-state
+     */
+    getAgentSyncGrantsNotesSyncState: () => {
+      const base = 'GET:/v1/agent-sync-grants/notes/{note_id}/sync-state' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<GetAgentSyncGrantsNotesSyncStateData>([base]),
+        requestKey: (noteId: string) => dataTaggedQueryKey<GetAgentSyncGrantsNotesSyncStateData>([base, noteId]),
+        request: (noteId: string, params: RequestParams = {}) =>
+          this.request<GetAgentSyncGrantsNotesSyncStateData>({
+            path: `/v1/agent-sync-grants/notes/${noteId}/sync-state`,
+            method: 'GET',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PutAgentSyncGrantsNotesSyncState
+     * @request PUT:/v1/agent-sync-grants/notes/{note_id}/sync-state
+     */
+    putAgentSyncGrantsNotesSyncState: () => {
+      const base = 'PUT:/v1/agent-sync-grants/notes/{note_id}/sync-state' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PutAgentSyncGrantsNotesSyncStateData>([base]),
+        requestKey: (noteId: string) => dataTaggedQueryKey<PutAgentSyncGrantsNotesSyncStateData>([base, noteId]),
+        request: (noteId: string, data: AgentSyncGrantsNotesNoteIdSyncStatePutRequest, params: RequestParams = {}) =>
+          this.request<PutAgentSyncGrantsNotesSyncStateData>({
+            path: `/v1/agent-sync-grants/notes/${noteId}/sync-state`,
+            method: 'PUT',
+            body: data,
+            type: ContentType.Json,
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PostAgentSyncGrantsNotesAttributions
+     * @request POST:/v1/agent-sync-grants/notes/{note_id}/attributions
+     */
+    postAgentSyncGrantsNotesAttributions: () => {
+      const base = 'POST:/v1/agent-sync-grants/notes/{note_id}/attributions' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostAgentSyncGrantsNotesAttributionsData>([base]),
+        requestKey: (noteId: string) => dataTaggedQueryKey<PostAgentSyncGrantsNotesAttributionsData>([base, noteId]),
+        request: (
+          noteId: string,
+          data: AgentSyncGrantsNotesNoteIdAttributionsPostRequest,
+          params: RequestParams = {}
+        ) =>
+          this.request<PostAgentSyncGrantsNotesAttributionsData>({
+            path: `/v1/agent-sync-grants/notes/${noteId}/attributions`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
             ...params
           })
       }

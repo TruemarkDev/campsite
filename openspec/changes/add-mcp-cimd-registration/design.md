@@ -23,8 +23,9 @@ exactly matches a document entry. Valid metadata may be cached in accordance
 with HTTP caching semantics. Fetch failure aborts authorization.
 
 This adds an outbound request from an unauthenticated OAuth entry point. The
-CIMD draft recommends a 5 KiB maximum response and calls out SSRF, DNS/private
-addresses, metadata-cache correctness, redirect trust, and display identity as
+active July 2026 CIMD draft recommends a 5 KiB maximum response, requires
+non-200 responses (including redirects) to fail, and calls out SSRF,
+DNS/private addresses, metadata-cache correctness, and display identity as
 security concerns. Optional URLs inside the document are data, not permission
 to fetch more resources.
 
@@ -78,6 +79,17 @@ when redeeming it. Resolving only in the custom authorization controller is
 insufficient because Doorkeeper performs its own client lookup during preflight
 and token exchange.
 
+**Verified representation (2026-08-25):** use a controlled persisted, public
+`OauthApplication` marked with the otherwise-unused `provider` enum value 3
+(`mcp_cimd`). Doorkeeper 5.6.9's `Authorization::Code` writes
+`pre_auth.client.id` into the non-null `oauth_access_grants.application_id`;
+token redemption then requires that grant ID to equal the resolved client's ID,
+and access tokens also require a non-null application ID. A transient adapter
+would therefore need to recreate persistence and revocation semantics. The
+controlled row keeps the client ID URL as `uid`, stores no usable client secret,
+and is refreshed only after a valid metadata fetch. Existing non-CIMD rows keep
+the ordinary `kept` lookup path and are never silently reinterpreted.
+
 - *Alternative considered:* create CIMD applications through `POST
   /oauth/register`. Rejected: CIMD's client ID is the metadata URL and requires
   no registration request; forcing DCR would defeat the new mechanism.
@@ -89,24 +101,23 @@ and token exchange.
 
 Only the client-ID URL itself is fetched. The fetcher uses verified TLS, allows
 HTTP GET over HTTPS only, sends no Campsite credentials or ambient cookies, and
-applies strict connection/read/total timeouts. It limits redirect count,
-revalidates every redirect target, bounds the response to 5 KiB before JSON
-parsing, and accepts a JSON object only.
+applies strict connection/read/total timeouts. It rejects redirects, bounds the
+response to 5 KiB before JSON parsing, and accepts a JSON object only.
 
-Before each network connection, resolve the hostname and reject the request if
+Before the network connection, resolve the hostname and reject the request if
 any candidate address is private, loopback, link-local, multicast, unspecified,
 reserved, or otherwise non-public. Connect only to an address that passed that
-check while preserving the original hostname for TLS and HTTP Host validation;
-repeat the process for redirects. This prevents a pre-check followed by a fresh,
-attacker-controlled DNS lookup from becoming a rebinding bypass.
+check while preserving the original hostname for TLS and HTTP Host validation.
+This prevents a pre-check followed by a fresh, attacker-controlled DNS lookup
+from becoming a rebinding bypass.
 
-No redirect may downgrade to HTTP, introduce userinfo, or reach a disallowed
-address. Fetch failures and policy rejections abort authorization without
-falling back to a similarly named persisted client.
+HTTP redirects are not followed, matching section 5 of the active July 2026
+CIMD draft. Fetch failures and policy rejections abort authorization without
+falling back to a similarly named CIMD client.
 
 - *Alternative considered:* use the application's ordinary HTTP client with a
   scheme check. Rejected: a scheme check alone does not cover private DNS
-  answers, rebinding, redirect pivots, or response exhaustion.
+  answers, rebinding, or response exhaustion.
 
 ### Decision 3 — validate the normative metadata and exact redirect before consent
 
@@ -128,12 +139,13 @@ Optional metadata is ignored unless a later reviewed change gives it semantics.
 
 ### Decision 4 — cache valid documents only and keep freshness policy bounded
 
-The resolver may cache a successfully fetched and validated document. It honors
-HTTP freshness metadata but clamps freshness to configured lower/upper bounds so
-an attacker cannot force a fetch on every authorization request or make stale
-metadata effectively permanent. Cache keys use the exact client-ID URL. Invalid
-documents, network failures, non-2xx responses, and policy rejections are never
-cached as client metadata.
+The resolver caches successfully fetched and validated documents in the
+existing Redis-backed `Rails.cache`. `no-store`, `no-cache`, and non-positive
+freshness are not cached. Positive `s-maxage`/`max-age` or `Expires` freshness is
+clamped to 60 seconds through 1 hour; a valid response without explicit
+freshness uses a 5-minute default. Cache keys are SHA-256 digests of the exact
+client-ID URL. Invalid documents, network failures, non-200 responses, and
+policy rejections are never cached as client metadata.
 
 Redirect validation always reads from the same validated cached document used to
 construct the client identity. Expiry causes a refetch and complete revalidation;
@@ -167,10 +179,14 @@ and any enabled form-post response construction as well as non-redirected error
 serialization, so an error path cannot be silently omitted.
 
 Doorkeeper 5.6.9 does not expose evident native support in the installed source.
-The implementation starts with an extension-point proof and chooses the
-narrowest supported route: a documented Doorkeeper hook/override if stable, or
-a separately reviewed dependency upgrade if not. It must not monkey-patch an
-opaque private method without characterization tests.
+Source comparison against installed Doorkeeper 5.9.6 also finds no RFC 9207
+response support, so an upgrade would not supply the feature. The verified route
+is the application's existing `CustomAuthorizationsController`: override its
+protected `redirect_or_render` boundary and decorate Doorkeeper's public response
+object so query redirects and rendered error bodies receive the same request
+origin as `iss`. Campsite advertises query response mode only. Characterization
+tests cover success, redirected errors, and non-redirectable errors; this avoids
+patching an opaque gem method.
 
 ### Decision 7 — advertise CIMD last and fail closed operationally
 
@@ -181,11 +197,20 @@ policy rejection, invalid document, redirect mismatch, and successful CIMD
 authorization without logging authorization codes, client secrets, tokens, or
 document bodies.
 
+Rollout uses a separate, global `mcp_cimd_registration` Flipper feature that is
+disabled unless explicitly created and enabled. The resolver and both discovery
+indicators are gated together; the existing `mcp_server` per-user kill switch
+cannot safely control unauthenticated discovery. Initial domain policy accepts
+all public HTTPS hosts. It rejects userinfo, fragments, query strings, root
+paths, dot segments, IP literals, and any DNS answer that is not globally
+routable. An allowlist remains a future deployment option; explicit consent
+shows both client-ID and redirect hosts.
+
 ## Risks / Trade-offs
 
 - **SSRF or DNS rebinding through attacker-controlled client IDs** → Centralize
-  fetching; validate and pin public addresses on every hop; bound redirects,
-  time, bytes, and parsing; test private/reserved IPv4 and IPv6 targets.
+  fetching; validate and pin a public address; reject redirects; bound time,
+  bytes, and parsing; test private/reserved IPv4 and IPv6 targets.
 - **A cached redirect remains valid after the client removes it** → Honor HTTP
   freshness with a finite upper bound; never serve stale metadata after expiry.
 - **Doorkeeper assumes a persisted application foreign key** → Prove the full
@@ -216,19 +241,6 @@ document bodies.
 
 ## Open Questions
 
-- What cache store and minimum/maximum freshness bounds best fit Campsite's
-  deployment? The protocol requires cache-header-aware behavior but does not set
-  deployment TTLs.
-- Should CIMD resolution inherit the existing `mcp_server` Flipper kill-switch,
-  use a separate rollout flag, or rely only on the discovery indicator? This is
-  an operational rollout choice; all options preserve the behavior contract.
-- Which Doorkeeper-compatible representation should bind a CIMD client to access
-  grants/tokens: a controlled persisted application row or a supported transient
-  adapter plus explicit grant binding? The extension-point spike must choose the
-  option that preserves PKCE, token redemption, revocation, and metadata refresh.
-- Can RFC 9207 be added through a stable Doorkeeper 5.6.9 extension point, or is a
-  dependency upgrade safer? `Gemfile.lock` alone cannot answer this, and the
-  installed 5.6.9 response source shows no native `iss` field.
-- Should Campsite initially accept every public HTTPS CIMD domain or add a trust
-  policy before advertising support? Domain policy is optional in the CIMD
-  draft; SSRF safety and explicit consent identity remain mandatory either way.
+No implementation-blocking questions remain. Production enablement still
+requires an operator decision to create and enable the
+`mcp_cimd_registration` feature after the quality gates pass.

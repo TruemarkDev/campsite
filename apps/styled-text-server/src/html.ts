@@ -17,6 +17,10 @@ const Html = ({ html }: Props) => {
 
   const $ = cheerio.load(`<Root>${html}</Root>`, { xmlMode: true })
 
+  // Derived representations expose effective/accepted note content only.
+  $('[data-suggestion-delete]').remove()
+  $('[data-suggestion-insert]').replaceWith((_, el) => $(el).contents())
+
   const stripElements = ['label', 'div', 'u', 'details']
 
   stripElements.forEach((el) => $(el).replaceWith((_, el) => $(el).contents()))

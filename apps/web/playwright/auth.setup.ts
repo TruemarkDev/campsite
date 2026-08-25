@@ -12,6 +12,6 @@ setup('authenticate', async ({ page }) => {
   await page.getByLabel('Email').fill('ranger.rick@demo.campsite.com')
   await page.getByLabel('Password').fill('CampsiteDesign!')
   await page.getByRole('button', { name: 'Sign in' }).click()
-  await page.waitForURL('http://app.campsite.test:3000/frontier-forest')
+  await page.waitForURL('http://app.campsite.test:3000/frontier-forest/posts')
   await page.context().storageState({ path: authFile })
 })

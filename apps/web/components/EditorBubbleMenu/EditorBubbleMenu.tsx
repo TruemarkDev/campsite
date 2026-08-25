@@ -20,6 +20,7 @@ import {
   OrderedListIcon,
   PencilIcon,
   QuoteIcon,
+  SparklesIcon,
   SpeechBubblePlusIcon,
   StrikeIcon,
   TextCapitalizeIcon,
@@ -73,6 +74,7 @@ interface Props {
   enableCodeBlock?: boolean
   // Use this to append the menu to a different element other than the editor's parent
   appendBubbleMenuTo?: () => HTMLElement | null
+  onAiEdit?: (range: { from: number; to: number }) => void
 }
 
 export const EditorBubbleMenu = memo(function EditorBubbleMemo({
@@ -83,7 +85,8 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
   enableBlockquote = true,
   enableUnderline = true,
   enableCodeBlock = true,
-  appendBubbleMenuTo
+  appendBubbleMenuTo,
+  onAiEdit
 }: Props) {
   const [linkEditorOpen, setLinkEditorOpen] = useState(false)
   const [url, setUrl] = useState(editor?.getAttributes('link').href ?? '')
@@ -438,6 +441,24 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                   )}
 
                   <BubbleMenuSeparator />
+
+                  {onAiEdit && (
+                    <>
+                      <BubbleMenuButton
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onAiEdit({
+                            from: editor.state.selection.from,
+                            to: editor.state.selection.to
+                          })
+                        }}
+                        icon={<SparklesIcon />}
+                        aria-label='Edit with AI'
+                        tooltip='Edit with AI'
+                      />
+                      <BubbleMenuSeparator />
+                    </>
+                  )}
 
                   <BubbleMenuButton
                     onClick={openLinkEditor}

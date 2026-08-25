@@ -4,7 +4,7 @@ import { ORG_PATH } from '../playwright/consts'
 
 test('loads the dashboard', async ({ page }) => {
   await page.goto(ORG_PATH)
-  await page.waitForURL(ORG_PATH)
+  await page.waitForURL(`${ORG_PATH}/posts`)
   await expect(page.locator('body')).toHaveText(/Inbox/)
 })
 

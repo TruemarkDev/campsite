@@ -31,6 +31,7 @@ class Note < ApplicationRecord
   has_many :views, class_name: "NoteView", dependent: :destroy
   has_many :non_member_views, class_name: "NonMemberNoteView", dependent: :destroy_async
   has_many :timeline_events, as: :subject, dependent: :destroy_async
+  has_many :agent_sync_grants, dependent: :destroy
 
   enum :project_permission, { none: 0, view: 1, edit: 2 }, prefix: :project
   enum :visibility, { default: 0, public: 1 }, suffix: true

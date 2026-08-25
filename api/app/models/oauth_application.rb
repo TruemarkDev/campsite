@@ -28,10 +28,24 @@ class OauthApplication < ApplicationRecord
     editor_sync: 0,
     figma: 1,
     zapier: 2,
+    mcp_cimd: 3,
     cal_dot_com: 4,
   }
 
   CAMPSITE_NOTIFICATION_POST_ID = ENV["CAMPSITE_NOTIFICATION_POST_ID"] || "1su0bd0f2ojy"
+
+  class << self
+    def by_uid(uid)
+      existing = kept.find_by(uid: uid.to_s)
+      return existing unless Oauth::Cimd::ClientId.url_shaped?(uid)
+      return existing if existing && !existing.mcp_cimd?
+      return unless Oauth::Cimd.enabled?
+
+      Oauth::Cimd::Resolver.new.resolve!(uid.to_s)
+    rescue Oauth::Cimd::Error
+      nil
+    end
+  end
 
   def application?
     true
@@ -121,7 +135,7 @@ class OauthApplication < ApplicationRecord
   end
 
   def notify_campsite
-    return if editor_sync? || figma?
+    return if editor_sync? || figma? || mcp_cimd?
 
     return unless Rails.env.production?
 

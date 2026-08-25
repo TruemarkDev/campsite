@@ -10,7 +10,25 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2024_12_12_002307) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
+  create_table "agent_sync_grants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "public_id", limit: 12, null: false
+    t.bigint "note_id", null: false, unsigned: true
+    t.bigint "organization_membership_id", null: false, unsigned: true
+    t.string "actor_id", null: false
+    t.string "actor_name", null: false
+    t.string "token_digest", null: false
+    t.json "scopes", null: false
+    t.datetime "expires_at", null: false
+    t.datetime "revoked_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["note_id"], name: "index_agent_sync_grants_on_note_id"
+    t.index ["organization_membership_id"], name: "index_agent_sync_grants_on_organization_membership_id"
+    t.index ["public_id"], name: "index_agent_sync_grants_on_public_id", unique: true
+    t.index ["token_digest"], name: "index_agent_sync_grants_on_token_digest", unique: true
+  end
+
   create_table "attachments", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "public_id", limit: 12, null: false
     t.text "file_path", null: false
@@ -1472,6 +1490,7 @@ ActiveRecord::Schema[7.2].define(version: 2024_12_12_002307) do
     t.datetime "notification_pause_expires_at"
     t.string "preferred_timezone"
     t.datetime "notifications_paused_at"
+    t.string "voice_id"
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true, length: 320
     t.index ["login_token"], name: "index_users_on_login_token", unique: true

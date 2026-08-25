@@ -3,6 +3,8 @@ const mocks = vi.hoisted(() => ({
   database: { name: 'database' },
   dotenvConfig: vi.fn(),
   getResource: vi.fn(),
+  handleAgentEditRequest: vi.fn(),
+  verifyGrant: vi.fn(),
   init: vi.fn(),
   listen: vi.fn(),
   logger: { name: 'logger' },
@@ -38,6 +40,14 @@ vi.mock('../database', () => ({
   getResource: mocks.getResource,
   sendVersionToConnections: mocks.sendVersionToConnections
 }))
+vi.mock('../api', () => ({
+  api: {
+    agentSyncGrants: {
+      postAgentSyncGrantsVerify: () => ({ request: mocks.verifyGrant })
+    }
+  }
+}))
+vi.mock('../facade', () => ({ handleAgentEditRequest: mocks.handleAgentEditRequest }))
 
 async function loadServer() {
   await import('../index')
@@ -118,12 +128,14 @@ describe('sync server', () => {
     mocks.getResource.mockResolvedValueOnce({ description_schema_version: 4 })
 
     await expect(onAuthenticate(data)).resolves.toEqual({
+      actorType: 'human',
       organization: 'acme',
       schemaVersion: 3,
       token: 'secret',
       type: 'Note'
     })
     expect(mocks.getResource).toHaveBeenCalledWith({
+      actorType: 'human',
       id: 'note-1',
       organization: 'acme',
       token: 'secret',
@@ -143,6 +155,53 @@ describe('sync server', () => {
 
     expect(mocks.sendVersionToConnections).not.toHaveBeenCalled()
     expect(data.connectionConfig.readOnly).toBe(false)
+  })
+
+  it('authenticates an agent from the note-scoped grant instead of trusting request identity', async () => {
+    const { onAuthenticate } = await loadServer()
+    const requestParameters = new URLSearchParams({ actorType: 'agent', schemaVersion: '9', type: 'Note' })
+
+    mocks.verifyGrant.mockResolvedValueOnce({
+      actor_id: 'summary-agent',
+      actor_name: 'Summary agent',
+      grant_id: 'grant-1',
+      invoked_by: 'member-1',
+      note_id: 'note-1',
+      organization: 'verified-org'
+    })
+    mocks.getResource.mockResolvedValueOnce({ description_schema_version: 9 })
+
+    await expect(onAuthenticate(authenticationData({ requestParameters, token: 'grant-token' }))).resolves.toEqual({
+      actorId: 'summary-agent',
+      actorName: 'Summary agent',
+      actorType: 'agent',
+      grantId: 'grant-1',
+      invokedBy: 'member-1',
+      organization: 'verified-org',
+      schemaVersion: 9,
+      token: 'grant-token',
+      type: 'Note'
+    })
+    expect(mocks.getResource).toHaveBeenCalledWith({
+      actorType: 'agent',
+      id: 'note-1',
+      organization: 'verified-org',
+      token: 'grant-token',
+      type: 'Note'
+    })
+  })
+
+  it('rechecks agent grants on token sync and rejects revoked grants', async () => {
+    const { onTokenSync } = await loadServer()
+    const data = {
+      context: { actorType: 'agent' },
+      documentName: 'note-1',
+      token: 'grant-token'
+    }
+
+    mocks.verifyGrant.mockRejectedValueOnce(new Error('revoked'))
+
+    await expect(onTokenSync(data)).rejects.toMatchObject({ reason: 'invalid-grant' })
   })
 
   it('treats a missing schema version as version zero', async () => {
@@ -168,7 +227,7 @@ describe('sync server', () => {
       organization: 'acme',
       type: 'Note'
     })
-    expect(mocks.setContext).toHaveBeenCalledWith('context', { schemaVersion: 3, token: 'secret' })
+    expect(mocks.setContext).toHaveBeenCalledWith('context', { actorType: 'human', schemaVersion: 3 })
     expect(mocks.captureException).toHaveBeenCalledWith(expect.objectContaining({ reason: 'invalid-type' }))
   })
 

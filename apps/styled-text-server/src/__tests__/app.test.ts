@@ -89,6 +89,19 @@ describe('app', () => {
       expect(res.body).toEqual(expectedBlocks)
     })
 
+    it('uses accepted content for unresolved suggestions', async () => {
+      const html = `<p>Keep <span data-suggestion-delete="" data-batch-id="one">old</span><span data-suggestion-insert="" data-batch-id="one">new</span></p>`
+
+      const res = await supertest(app)
+        .post('/html_to_slack')
+        .set('Content-Type', 'application/json')
+        .set('Authorization', `Bearer ${process.env.AUTHTOKEN}`)
+        .send({ html })
+
+      expect(res.statusCode).toEqual(200)
+      expect(res.body[0].text.text).toBe('Keep new')
+    })
+
     it('converts tables to readable Slack rows', async () => {
       const html = `<table><tbody>
         <tr><th><p>Name</p></th><th><p>Status</p></th></tr>

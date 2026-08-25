@@ -196,6 +196,8 @@ async function optimisticUpdate({
       size: null,
       comments_count: 0,
       type_name: 'attachment',
+      transcript: null,
+      transcription_job_status: null,
       gallery_id: null
     }
   })

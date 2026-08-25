@@ -3,6 +3,8 @@
 class LlmResponseWrapper
   TokenUsage = Struct.new(:prompt_tokens, :completion_tokens, :total_tokens, :cached_tokens, keyword_init: true)
 
+  attr_reader :content
+
   def initialize(response)
     @response = response
     @content = response.content

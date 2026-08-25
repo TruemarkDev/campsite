@@ -15,9 +15,9 @@ window.
   require the authorization request's redirect URI to exactly match one of the
   document's registered redirect URIs.
 - Make metadata retrieval safe for an unauthenticated, attacker-controlled URL:
-  enforce HTTPS and a path component, block private/loopback/link-local and
-  other non-public destinations across DNS resolution and redirects, bound
-  redirects/time/response size, accept valid JSON only, and cache only valid
+  enforce HTTPS and a non-root path, block private/loopback/link-local and
+  other non-public destinations across DNS resolution, reject HTTP redirects,
+  bound time/response size, accept valid JSON only, and cache only valid
   documents while respecting HTTP cache headers.
 - Advertise CIMD support with
   `client_id_metadata_document_supported: true` in RFC 8414 authorization-server
@@ -57,8 +57,8 @@ window.
   and RFC 9207 support indicators; the existing RFC 9728 protected-resource
   metadata remains unchanged.
 - **New security boundary**: the authorization server fetches an untrusted URL,
-  requiring a centralized outbound-fetch policy, bounded parsing, safe redirect
-  handling, and non-error caching.
+  requiring a centralized outbound-fetch policy, bounded parsing, redirect
+  rejection, and non-error caching.
 - **Compatibility**: `Oauth::RegistrationsController`, `POST /oauth/register`,
   and its Rack::Attack throttle continue to serve DCR clients throughout the
   minimum compatibility window.

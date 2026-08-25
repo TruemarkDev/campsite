@@ -85,6 +85,7 @@ class Attachment < ApplicationRecord
 
   before_create :set_dimensions_on_create
   after_create_commit :enqueue_dimensions_job
+  after_create_commit :enqueue_transcription_job
   after_commit :broadcast_attachments_stale
 
   acts_as_list scope: [:subject, :gallery_id], add_new_at: :bottom, top_of_list: 0
@@ -244,6 +245,17 @@ class Attachment < ApplicationRecord
     file_type.starts_with?("audio") || (file_type.starts_with?("video") && no_video_track?)
   end
 
+  def transcript
+    return if transcription_vtt.blank?
+
+    transcription_vtt
+      .lines
+      .map(&:strip)
+      .compact_blank
+      .reject { |line| line == "WEBVTT" || line.match?(/\A(?:\d+\s*)?\d{2}:\d{2}(?::\d{2})?[.,]\d{3}\s+-->\s+/) }
+      .join(" ")
+  end
+
   def video?
     file_type.starts_with?("video") && !no_video_track?
   end
@@ -341,6 +353,13 @@ class Attachment < ApplicationRecord
     return if !image? && !video?
 
     AttachmentDimensionsJob.perform_async(id)
+  end
+
+  def enqueue_transcription_job
+    return unless audio?
+
+    job_id = TranscribeAttachmentJob.perform_async(id)
+    update_columns(transcription_job_id: job_id, transcription_job_status: "pending")
   end
 
   def broadcast_attachments_stale

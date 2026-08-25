@@ -187,6 +187,20 @@
       @apply bg-blue-500/20;
     }
 
+    [data-suggestion-insert] {
+      @apply rounded-sm bg-green-500/10 text-green-900 underline decoration-green-500 decoration-2 underline-offset-2 dark:text-green-200;
+    }
+
+    [data-suggestion-delete] {
+      @apply rounded-sm bg-red-500/10 text-red-800 line-through decoration-red-500 decoration-2 dark:text-red-200;
+    }
+
+    [data-suggestion-insert][data-actor-type='ai']::after,
+    [data-suggestion-delete][data-actor-type='ai']::after {
+      @apply ml-0.5 inline-block rounded bg-blue-500/10 px-1 align-text-top text-[0.625rem] font-semibold leading-4 text-blue-700 no-underline dark:text-blue-300;
+      content: 'AI';
+    }
+
     /* Add space above/below galleries at the edges to prevent focus outline clipping */
     > .node-mediaGallery:first-child {
       @apply mt-0;
@@ -240,8 +254,8 @@
       font-size: 1rem;
 
       :where(h1, h2, h3, h4, h5, h6, h1 strong, h2 strong, h3 strong, h4 strong, h5 strong, h6 strong):not(
-          :where([class~='not-prose']) *
-        ) {
+        :where([class~='not-prose']) *
+      ) {
         @apply font-bold leading-[1.3];
       }
 

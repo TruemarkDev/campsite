@@ -33,6 +33,7 @@ env:
     MARKETING_SITE_URL: http://camp.home
     STYLED_TEXT_API_URL: http://styled-text.camp.home
     HTML_TO_IMAGE_URL: http://html-to-image.camp.home
+    SYNC_SERVER_URL: http://sync.camp.home
     MEDIA_PROVIDER: cloudflare
     MEDIA_CDN_URL: http://cdn.camp.home
     API_SUBDOMAIN: api

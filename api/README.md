@@ -45,6 +45,36 @@ click the link in the email :)
 
 ## Deploying
 
+The current deployment source of truth is
+[`docs/deployment/homelab-production.md`](../docs/deployment/homelab-production.md).
+The legacy hosted-provider steps below are retained for historical context and
+are ⚠️ non-conformant with the current operator-run Kamal deployment.
+
+### Voice-note worker prerequisites
+
+Audio attachments are transcribed by the Sidekiq worker. The worker runtime SHALL
+provide all of the following (Verification: Inspection):
+
+- `ffmpeg` (already present in `api/Dockerfile`);
+- the official `whisper-cli` binary from `ggml-org/whisper.cpp`;
+- a compatible GGML model file, with its absolute path supplied as
+  `WHISPER_CPP_MODEL_PATH` (the binary can be overridden with
+  `WHISPER_CPP_BINARY`); and
+- `edge-tts` for the default credential-free TTS provider (the executable can be
+  overridden with `EDGE_TTS_BINARY`). Edge TTS uses Microsoft's hosted Read
+  Aloud service and therefore requires outbound HTTPS; it is not offline TTS.
+
+The model SHALL NOT be committed to this repository (Verification: Inspection).
+Before enabling worker custody, the operator SHALL demonstrate `whisper-cli --help`, an actual short WAV
+transcription with the configured model, and an `edge-tts` MP3 generation from
+inside the exact worker image (Verification: Demonstration). ❌ The current `api/Dockerfile` does not yet install
+`whisper-cli`, its model, Python, or `edge-tts`, and no Odin runtime verification
+has been recorded. Until those are added to the immutable image and proven, audio
+attachments remain usable but transcription/TTS jobs will fail with explicit
+errors. ElevenLabs is an opt-in alternative configured with
+`tts.provider: elevenlabs` and `elevenlabs.api_key`; callers must also supply or
+inherit a valid ElevenLabs voice id.
+
 ### Steps
 
 1. Open a PR, get an approval, merge to `main`.

@@ -31,6 +31,23 @@
     <% end %>
   </p>
 
+  <% if application.mcp_cimd? %>
+    <dl class="w-full pt-4 text-sm text-tertiary dark:text-white">
+      <div>
+        <dt class="font-medium">Client</dt>
+        <dd><%= URI.parse(application.uid).host %></dd>
+      </div>
+      <div class="pt-2">
+        <dt class="font-medium">Redirect destination</dt>
+        <dd><%= URI.parse(@pre_auth.redirect_uri).host %></dd>
+      </div>
+      <div class="pt-2">
+        <dt class="font-medium">Requested scopes</dt>
+        <dd><%= @pre_auth.scopes.to_a.join(", ") %></dd>
+      </div>
+    </dl>
+  <% end %>
+
   <div class="w-full pt-6">
     <%= form_tag request.path, method: :post do %>
       <% if org_resource_owner %>

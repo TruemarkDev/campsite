@@ -30,5 +30,6 @@ env:
     NODE_ENV: production
     PORT: "9000"
     API_BASE_URL: http://api.camp.home
+    STYLED_TEXT_API_URL: http://styled-text.camp.home
 ssh:
   user: debian

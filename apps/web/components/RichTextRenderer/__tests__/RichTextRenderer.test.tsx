@@ -26,4 +26,13 @@ describe('prepareRichTextContent', () => {
     expect(headings.map((heading) => heading.id)).toEqual(['overview', 'overview-2'])
     expect(output.content?.[0]?.attrs?.id).toBe('overview')
   })
+
+  it('renders effective content when suggestion marks are unresolved', () => {
+    const content = `<p>Keep <span data-suggestion-delete="" data-actor-id="assistant" data-actor-type="ai" data-batch-id="one" data-created-at="2026-08-25T00:00:00Z">old</span><span data-suggestion-insert="" data-actor-id="assistant" data-actor-type="ai" data-batch-id="one" data-created-at="2026-08-25T00:00:00Z">new</span></p>`
+    const { output } = prepareRichTextContent(content, getNoteExtensions())
+    const textNodes = output.content?.[0]?.content
+
+    expect(textNodes?.map((node) => node.text).join('')).toBe('Keep new')
+    expect(textNodes?.flatMap((node) => node.marks || [])).toEqual([])
+  })
 })

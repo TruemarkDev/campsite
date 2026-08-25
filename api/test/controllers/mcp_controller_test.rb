@@ -266,6 +266,72 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_equal 1, structured_content(result).dig("comments", "data").length
     end
 
+    test "read_note exposes attachment transcript fields" do
+      note = create(:note, member: @member)
+      TranscribeAttachmentJob.stubs(:perform_async).returns("job-1")
+      attachment = create(
+        :attachment,
+        subject: note,
+        file_type: "audio/webm",
+        transcription_job_status: "succeeded",
+        transcription_vtt: "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nHello agent",
+      )
+      attachment.update_column(:transcription_job_status, "succeeded")
+
+      result = call_tool("read_note", { org_slug: @org.slug, note_id: note.public_id })
+      serialized = structured_content(result)["attachments"].find { |item| item["id"] == attachment.public_id }
+
+      assert_not tool_error?(result)
+      assert_equal "Hello agent", serialized["transcript"]
+      assert_equal "succeeded", serialized["transcription_job_status"]
+    end
+
+    test "read_post exposes attachment transcript fields" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      TranscribeAttachmentJob.stubs(:perform_async).returns("job-1")
+      attachment = create(
+        :attachment,
+        subject: post,
+        file_type: "audio/webm",
+        transcription_vtt: "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nPost transcript",
+      )
+
+      result = call_tool("read_post", { org_slug: @org.slug, post_id: post.public_id })
+      serialized = structured_content(result).dig("post", "attachments").find { |item| item["id"] == attachment.public_id }
+
+      assert_not tool_error?(result)
+      assert_equal "Post transcript", serialized["transcript"]
+      assert_equal "pending", serialized["transcription_job_status"]
+    end
+
+    test "get_attachment_transcript returns an authorized voice note" do
+      note = create(:note, member: @member)
+      TranscribeAttachmentJob.stubs(:perform_async).returns("job-1")
+      attachment = create(
+        :attachment,
+        subject: note,
+        file_type: "audio/webm",
+        transcription_vtt: "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nHello agent",
+      )
+
+      result = call_tool("get_attachment_transcript", { org_slug: @org.slug, attachment_id: attachment.public_id })
+
+      assert_not tool_error?(result)
+      assert_equal "Hello agent", structured_content(result)["transcript"]
+      assert_equal note.public_id, structured_content(result)["subject_id"]
+    end
+
+    test "get_attachment_transcript denies an attachment from another organization" do
+      note = create(:note)
+      TranscribeAttachmentJob.stubs(:perform_async).returns("job-1")
+      attachment = create(:attachment, subject: note, file_type: "audio/webm")
+
+      result = call_tool("get_attachment_transcript", { org_slug: @org.slug, attachment_id: attachment.public_id })
+
+      assert tool_error?(result)
+      assert_match(/could not be found/i, tool_text(result))
+    end
+
     test "an org the user does not belong to is denied (no cross-org leakage)" do
       other_org = create(:organization)
       create_list(:post, 2, organization: other_org, project: create(:project, organization: other_org))
@@ -320,6 +386,25 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       messages_result = call_tool("read_messages", { org_slug: @org.slug, thread_id: thread.public_id })
       assert_not tool_error?(messages_result)
       assert_equal 1, structured_content(messages_result)["data"].length
+    end
+
+    test "read_messages exposes attachment transcript fields" do
+      thread = create(:message_thread, :dm, owner: @member)
+      message = thread.send_message!(sender: @member, content: "voice note")
+      TranscribeAttachmentJob.stubs(:perform_async).returns("job-1")
+      attachment = create(
+        :attachment,
+        subject: message,
+        file_type: "audio/webm",
+        transcription_vtt: "WEBVTT\n\n00:00:00.000 --> 00:00:01.000\nMessage transcript",
+      )
+
+      result = call_tool("read_messages", { org_slug: @org.slug, thread_id: thread.public_id })
+      serialized = structured_content(result)["data"].first["attachments"].find { |item| item["id"] == attachment.public_id }
+
+      assert_not tool_error?(result)
+      assert_equal "Message transcript", serialized["transcript"]
+      assert_equal "pending", serialized["transcription_job_status"]
     end
 
     test "search_posts returns authorized matches" do
@@ -1254,6 +1339,55 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
       assert tool_error?(result)
       assert_match(/write_post/, tool_text(result))
+    end
+  end
+
+  describe "speak_reply" do
+    test "synthesizes and attaches an audio reply" do
+      note = create(:note, member: @member)
+      Tts::Service.expects(:call).with(text: "Hello", voice_id: nil).returns(bytes: "mp3", content_type: "audio/mpeg")
+      S3_BUCKET.stubs(:object).returns(stub(put: true))
+
+      result = call_tool("speak_reply", {
+        org_slug: @org.slug,
+        subject_type: "note",
+        subject_id: note.public_id,
+        text: "Hello",
+      })
+
+      assert_not tool_error?(result)
+      assert_equal "audio/mpeg", structured_content(result)["file_type"]
+      assert_equal 1, note.reload.attachments.count
+    end
+
+    test "uses the calling user's voice id by default" do
+      note = create(:note, member: @member)
+      @user.update!(voice_id: "voice-1")
+      Tts::Service.expects(:call).with(text: "Hello", voice_id: "voice-1").returns(bytes: "mp3", content_type: "audio/mpeg")
+      S3_BUCKET.stubs(:object).returns(stub(put: true))
+
+      result = call_tool("speak_reply", {
+        org_slug: @org.slug,
+        subject_type: "note",
+        subject_id: note.public_id,
+        text: "Hello",
+      })
+
+      assert_not tool_error?(result)
+    end
+
+    test "requires the subject's write scope" do
+      note = create(:note, member: @member)
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_note")
+
+      result = call_tool(
+        "speak_reply",
+        { org_slug: @org.slug, subject_type: "note", subject_id: note.public_id, text: "Hello" },
+        token: token.plaintext_token,
+      )
+
+      assert tool_error?(result)
+      assert_match(/write_note/, tool_text(result))
     end
   end
 

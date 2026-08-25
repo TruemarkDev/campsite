@@ -16,7 +16,7 @@ import { SoftbreakMarkdownParser } from './extensions/SoftbreakMarkdownParser'
  * - Do NOT remove any extensions. If you want to, we should deprecate its use instead
  * - If you reorder the extensions, you do not need to bump the version number
  */
-export const NOTE_SCHEMA_VERSION = 8
+export const NOTE_SCHEMA_VERSION = 9
 
 export interface GetNoteExtensionsOptions {
   link?: Partial<E.LinkOptions>
@@ -68,8 +68,11 @@ export interface GetNoteExtensionsOptions {
 }
 
 export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
-  const { enabled: tableOfContentsEnabled = true, updateDocument = true, ...tableOfContentsOptions } =
-    options?.tableOfContents || {}
+  const {
+    enabled: tableOfContentsEnabled = true,
+    updateDocument = true,
+    ...tableOfContentsOptions
+  } = options?.tableOfContents || {}
 
   return [
     E.BlockDocument,
@@ -85,6 +88,8 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
     E.Blockquote,
     E.Italic,
     E.Strike,
+    E.SuggestionInsert,
+    E.SuggestionDelete,
     E.OrderedList,
     E.BulletList,
     E.Dropcursor.configure(options?.dropcursor),
@@ -154,9 +159,7 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
     }).configure(options?.resourceMention),
 
     ...(tableOfContentsEnabled
-      ? [
-          (updateDocument ? E.TableOfContents : E.ReadOnlyTableOfContents).configure(tableOfContentsOptions)
-        ]
+      ? [(updateDocument ? E.TableOfContents : E.ReadOnlyTableOfContents).configure(tableOfContentsOptions)]
       : []),
 
     ...(options?.comment?.enabled !== false ? [E.Comment.configure(options?.comment)] : [])

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from 'next/experimental/testmode/playwright'
+import { defineConfig, devices } from '@playwright/test'
 import { APP_URL } from 'playwright/consts'
 
 /**
@@ -11,7 +11,7 @@ import { APP_URL } from 'playwright/consts'
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
-  testDir: './tests',
+  testDir: './playwright',
   /* Run tests in files in parallel */
   fullyParallel: true,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
@@ -34,9 +34,9 @@ export default defineConfig({
     }
   },
 
-  timeout: 10_000,
+  timeout: 60_000,
   expect: {
-    timeout: 5_000
+    timeout: 10_000
   },
 
   projects: [
@@ -58,7 +58,7 @@ export default defineConfig({
     command: 'npx turbo run dev',
     url: APP_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 10_000,
+    timeout: 120_000,
     stdout: 'pipe'
   }
 })

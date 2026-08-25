@@ -332,6 +332,9 @@ Rails.application.routes.draw do
           resource :public_notes, only: [:show]
           resource :project_permissions, only: [:update, :destroy]
           resource :sync_state, only: [:show, :update]
+          resource :ai_edits, only: [:create]
+          resources :agent_sync_grants, only: [:create, :destroy]
+          resources :suggestion_resolutions, only: [:create]
           resource :follow_up, only: [:create]
           resource :favorite, only: [:create, :destroy]
           resource :pin, only: [:create]
@@ -579,6 +582,11 @@ Rails.application.routes.draw do
 
     # editor sync token generation
     post "/users/me/sync-token", to: "users/editor_sync_tokens#create", as: :current_user_editor_sync_tokens
+
+    post "/agent-sync-grants/verify", to: "agent_sync_grants#verify", as: :verify_agent_sync_grant
+    get "/agent-sync-grants/notes/:note_id/sync-state", to: "agent_sync_grants#show_state", as: :agent_sync_grant_state
+    put "/agent-sync-grants/notes/:note_id/sync-state", to: "agent_sync_grants#update_state"
+    post "/agent-sync-grants/notes/:note_id/attributions", to: "agent_sync_grants#create_attribution"
 
     namespace :users do
       scope "me" do

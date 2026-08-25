@@ -38,10 +38,12 @@ module McpTools
 
       bytes = decode_content!
 
-      key = organization.generate_post_s3_key(file_type)
-      S3_BUCKET.object(key).put(body: bytes, content_type: file_type)
-
-      attachment = subject.attachments.create!(file_path: key, file_type: file_type, name: input[:name])
+      attachment = AttachmentUploader.put_and_attach!(
+        subject: subject,
+        bytes: bytes,
+        file_type: file_type,
+        name: input[:name],
+      )
       data = serialize(AttachmentSerializer, attachment, organization: organization, member: member)
       data_response(data)
     end

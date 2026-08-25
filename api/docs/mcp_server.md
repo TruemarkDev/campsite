@@ -23,8 +23,8 @@ API subdomain.
 Examples:
 
 - Campsite.com prod: `https://api.campsite.com/mcp`
-- polo-apps (Hatchbox) deploy: `https://camp-api.polo-apps.com/mcp` (web host is
-  `camp.polo-apps.com` — do not use it)
+- Homelab deployment: use the API hostname configured for the deployment (the
+  web hostname remains a separate Next.js service and must not be used)
 - Locally: `http://api.campsite.test:3001/mcp`
 
 The client then performs the standard remote-MCP OAuth dance automatically — no
@@ -36,10 +36,19 @@ admin needs to hand-provision credentials:
    pointing at the same metadata.
 2. It fetches `/.well-known/oauth-authorization-server` (RFC 8414) for the
    authorize/token/registration endpoints, supported scopes, and PKCE support.
-3. It **dynamically registers** itself via `POST /oauth/register` (RFC 7591),
-   receiving a `client_id` (and `client_secret` for confidential clients).
-4. It runs Doorkeeper's authorization-code + PKCE flow. The user signs in and sees a
+3. When `client_id_metadata_document_supported` is advertised, the client uses
+   its HTTPS Client ID Metadata Document (CIMD) URL as `client_id`. Campsite
+   fetches and validates that document. Older clients can still **dynamically
+   register** via `POST /oauth/register` (RFC 7591), receiving a `client_id` and,
+   for confidential clients, a `client_secret`.
+4. It runs Doorkeeper's authorization-code + S256 PKCE flow. The user signs in and sees a
    Campsite consent screen, then approval issues an `mcp`-scoped access token.
+
+🟡 CIMD is implemented but disabled until an operator creates and globally enables
+the `mcp_cimd_registration` Flipper feature. While disabled, discovery does not
+advertise CIMD or RFC 9207 support and clients continue to use pre-registration or
+DCR. When enabled, authorization responses include RFC 9207 `iss`, exactly matching
+the discovery document's `issuer`.
 
 All of this is served same-origin **on the API host** (`/mcp`, the `/.well-known/*`
 discovery paths, and `/oauth/*` all live on `<api-host>`) and backed by Campsite's
@@ -58,7 +67,7 @@ scopes:
 | `write_message`   | `send_message`, `create_message_thread`.                      |
 | `write_note`      | `create_note`, `update_note`.                                 |
 | `write_project`   | `create_project`.                                             |
-| `attach_file` / `upload_attachment` | gated by the subject's write scope (`write_post` for posts, `write_note` for notes); `create_upload` needs only `mcp`. |
+| `attach_file` / `upload_attachment` / `speak_reply` | gated by the subject's write scope (`write_post` for posts, `write_note` for notes); `create_upload` needs only `mcp`. |
 
 The access token is **user-scoped**, so one connection works across *every*
 organization the user belongs to. Tools act as the user (the same authorization as
@@ -89,6 +98,7 @@ discover the organizations and slugs available.
 | `list_notifications`   | The user's inbox (or activity) notifications in an org. |
 | `mark_notification_read` | Mark one of the user's own notifications as read (mutates self only; no extra scope). |
 | `create_follow_up`     | Set a personal follow-up reminder on a post, note, or comment for yourself (mutates self only; no extra scope beyond `mcp`). |
+| `get_attachment_transcript` | Get transcription status and plain text for an attachment the caller can view. |
 
 ### Write tools (additive only)
 
@@ -108,12 +118,20 @@ discover the organizations and slugs available.
 | `create_upload`         | Get presigned S3 fields to upload a file (mints credentials only, no Campsite write). | `mcp` |
 | `attach_file`           | Attach an already-uploaded file (by S3 key) to a post or note. | `write_post` / `write_note` |
 | `upload_attachment`     | Upload a small file inline (base64, ≤5 MB) and attach it to a post or note. | `write_post` / `write_note` |
+| `speak_reply`           | Synthesize an MP3 and attach it to a post or note; accepts an optional provider-specific `voice_id`. | `write_post` / `write_note` |
 
 > **Attaching files.** Two paths: for any file, `create_upload` → upload the bytes to
 > the returned S3 `url` → `attach_file` with the returned `key` as `file_path`. For
 > small files (≤5 MB), `upload_attachment` does it in one call with inline base64.
 > Both attach to a **post or note**; the write scope follows the subject. Attaching to
 > comments or messages is set at creation time in the REST API and is not exposed here.
+
+> **Voice attachments.** Attachment payloads include nullable `transcript` and
+> `transcription_job_status` fields. Audio attachments are processed asynchronously;
+> poll `get_attachment_transcript` when the status is `pending`. `speak_reply`
+> defaults to the connected user's nullable `voice_id` (also returned by `whoami`)
+> when no override is supplied. The default Edge provider requires outbound HTTPS;
+> ElevenLabs is optional and falls back to Edge if its credentials or request fail.
 
 > **Note bodies are write-once.** A note's body (`description_html`) can only be
 > set at `create_note` time. Editing an existing note's body is **unsupported** —
@@ -179,10 +197,30 @@ the subscription spike in the `add-mcp-tier-3` change.
   for a gradual rollout or incident), register and turn off the Flipper feature
   `mcp_server` (globally, or per-user). When the feature is unregistered, `/mcp` is
   on.
+- **CIMD rollout:** `mcp_cimd_registration` is a separate global Flipper feature
+  and is off when unregistered. Enable it only after the focused OAuth tests pass.
+  The feature gates URL-client resolution and the two discovery indicators
+  (`client_id_metadata_document_supported` and
+  `authorization_response_iss_parameter_supported`) together. Roll back by
+  disabling this feature first; existing DCR and manually registered clients are
+  unaffected.
+- **CIMD fetch/cache policy:** client IDs must be public HTTPS hostnames with a
+  non-root path and no userinfo, query, fragment, IP literal, or dot segment.
+  Campsite resolves the hostname once, rejects the entire result if any address is
+  special-use, pins one accepted address for the verified TLS connection, follows
+  no redirects, and reads at most 5 KiB. Only valid JSON documents are cached in
+  `Rails.cache`: explicit `no-store`, `no-cache`, or `private` responses are not
+  cached; positive freshness is clamped to 1 minute through 1 hour; absent
+  freshness defaults to 5 minutes. Expired metadata is never used after a failed
+  refresh. Logs contain only outcome categories and hostnames, never document
+  bodies, authorization codes, tokens, secrets, or full client-ID URLs.
 - **Abuse control:** dynamic client registration (`POST /oauth/register`) is open
   (so the connector flow needs no manual provisioning) but rate-limited per IP via
   Rack::Attack, and it grants no access on its own — a human still signs in and
   consents before any token is issued.
+- **DCR compatibility boundary:** DCR remains supported and advertised through at
+  least 2027-07-28. Removal after that date requires usage evidence, a migration
+  plan, a separate OpenSpec change, and release communication.
 - **Routing:** `/mcp`, the `/.well-known/*` discovery paths, and `/oauth/*` are
   served by Rails on the **API host** (e.g. `camp-api.polo-apps.com`). They must be
   proxied straight through to Rails by that host's web server (Hatchbox/nginx) and
@@ -195,7 +233,8 @@ the subscription spike in the `add-mcp-tier-3` change.
 - Endpoint: `app/controllers/mcp_controller.rb` (auth + dispatch via the `mcp` gem).
 - Discovery: `app/controllers/well_known_controller.rb`,
   `app/controllers/concerns/mcp_discoverable.rb`.
-- Dynamic client registration: `app/controllers/oauth/registrations_controller.rb`.
+- Client registration: `lib/oauth/cimd/` and `app/models/oauth_application.rb`
+  (CIMD); `app/controllers/oauth/registrations_controller.rb` (DCR fallback).
 - Tool layer: `app/mcp/` (`McpServer`, `McpTool`, `McpToolRegistry`,
   `McpRequestContext`, and `McpTools::*`).
 - Prompt layer: `app/mcp/` (`McpPrompt`, `McpPromptRegistry`, and `McpPrompts::*`).

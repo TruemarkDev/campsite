@@ -55,6 +55,20 @@ Deploying `deploy.campsite-api.yml` therefore cannot start a queue consumer.
 until the writer-custody gate explicitly authorizes queue consumption. Its
 scheduler is also disabled by default and requires a separate promotion step.
 
+### Voice-note runtime gate
+
+Voice-note processing runs inside the Sidekiq container, so installing speech
+tools only on the Odin host does not satisfy the runtime contract. The immutable
+worker image SHALL contain `whisper-cli`, its separately supplied GGML model,
+and `edge-tts` (Verification: Inspection); see `api/README.md` for environment
+names and smoke tests.
+❌ The current worker image contains `ffmpeg` but does not contain the other
+speech dependencies, and the smoke tests have not been demonstrated on Odin.
+Worker promotion with voice notes enabled is therefore blocked until a subsequent
+image/provisioning change supplies and verifies them. The check SHALL run before
+writer custody is activated and SHALL be repeated after a speech-tool or base-image
+upgrade (Verification: Demonstration).
+
 All application images are immutable and tagged with the exact Git revision.
 Build placement follows the destination architecture. Custom images deployed to
 the arm64 Shuri host are built locally on the operator's arm64 Mac. Custom images

@@ -6,11 +6,11 @@ The proven, revenue-earning shape of AI in editors (Tiptap AI Toolkit, Harvey/Sp
 
 ## What Changes
 
-- **Suggestion-mode marks in the note schema** (core, **BREAKING** for persisted docs): insertion/deletion suggestion marks carrying actor attribution, individually accept/rejectable, collab-safe. Modeled on the MIT `tiptap-track-changes` approach, implemented as `packages/editor` extensions. Requires a `NOTE_SCHEMA_VERSION` bump (batch with UniqueID, bead campsite-7j7, to pay the deploy cost once).
+- **Suggestion-mode marks in the note schema** (core, **BREAKING** for persisted docs): insertion/deletion suggestion marks carrying actor attribution, individually accept/rejectable, collab-safe. Modeled on the MIT `tiptap-track-changes` approach, implemented as `packages/editor` extensions. Ships behind a `NOTE_SCHEMA_VERSION` bump; UniqueID remains a separately tracked follow-up (bead campsite-7j7) because the latest compatible package has not aged through the repository's supply-chain policy.
 - **Accept/reject review UI** in `apps/web`: per-suggestion inline controls + a review summary affordance ("N suggested changes — accept all / review"). Suggestions render distinctly (authorship color + agent badge).
 - **Command surface**: "Edit with AI" from the selection bubble menu and a slash-command — instruction goes to a Rails AI endpoint with the selected range/note context; the response is applied as suggestions, never direct writes, when a human is present.
 - **Agent edit infrastructure** (retained from the original framing, now explicitly subordinate): scoped agent auth (Rails-issued grants) and a server-side edit facade colocated with the sync-server, so producers apply schema-valid edits through the live collaborative session. This is what makes AI edits land in an open note in real time instead of via stale-write REST.
-- **Pilot for live streaming** (the one case where liveness is the point): `generate_call_recording_summary_section_job` streams the summary into the meeting note while participants still have it open — as suggestions when viewers are present, direct write otherwise.
+- **Dropped after implementation discovery**: the proposed call-recording pilot. Calls store meeting notes in `Call#summary`, while the facade is deliberately scoped to collaborative `Note` records. There is no call-to-note ownership relationship from which to authorize a grant, so the existing HTML summary job remains unchanged. A future pilot requires a separate call-to-collaborative-note product contract.
 - **Dropped from scope**: Aegis/external-integration narrative. Periodic report notes need only the existing REST/MCP `update_note` path; no CRDT streaming, no special surface. External producer grants remain possible via the same auth model but are not a goal of this change.
 - Not in scope: ghost-text autocomplete, chat sidebar, AI reads/analysis endpoints, any Tiptap Cloud service.
 
@@ -26,8 +26,8 @@ The proven, revenue-earning shape of AI in editors (Tiptap AI Toolkit, Harvey/Sp
 
 ## Impact
 
-- `packages/editor`: new suggestion mark extensions (insertion/deletion + actor attrs), accept/reject commands, `NOTE_SCHEMA_VERSION` bump (**BREAKING** — old clients go read-only until refresh; batch with UniqueID).
+- `packages/editor`: new suggestion mark extensions (insertion/deletion + actor attrs), accept/reject commands, `NOTE_SCHEMA_VERSION` bump (**BREAKING** — old clients go read-only until refresh; UniqueID follows separately).
 - `apps/web`: review UI (inline widgets + summary bar), "Edit with AI" in `EditorBubbleMenu` + slash command, agent-aware caret rendering in `useNoteEditor`.
-- `api` (Rails): AI edit endpoint (instruction + range → edit operations), agent grant model + token issuance, pilot job migration behind a feature flag.
+- `api` (Rails): AI edit endpoint (instruction + range → edit operations), agent grant model + token issuance, and activity attribution behind a feature flag.
 - `apps/sync-server`: agent token validation in `onAuthenticate`, HTTP edit facade (high-level ops, markdown/HTML ingestion through the schema, rate limits), attribution callbacks.
 - Deploy coupling: API + sync-server together (token path); the schema bump follows the established schema-version rollout; web can trail for caret rendering but not for the review UI.

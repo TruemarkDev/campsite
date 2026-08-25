@@ -6,7 +6,7 @@ import { generateHTML, generateJSON } from '@tiptap/html'
 import { fromUint8Array, toUint8Array } from 'js-base64'
 import * as Y from 'yjs'
 
-import { getNoteExtensions } from '@campsite/editor'
+import { getNoteExtensions, resolveSuggestions } from '@campsite/editor'
 
 import { api } from './api'
 import { Context } from './types'
@@ -35,10 +35,17 @@ type GetResourceProps = {
   id: string
   type: string | null
   organization: string
+  actorType?: Context['actorType']
 }
 
-export async function getResource({ token, id, type, organization }: GetResourceProps) {
+export async function getResource({ token, id, type, organization, actorType = 'human' }: GetResourceProps) {
   if (type === 'Note') {
+    if (actorType === 'agent') {
+      return api.agentSyncGrants.getAgentSyncGrantsNotesSyncState().request(id, {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+    }
+
     return api.organizations.getNotesSyncState().request(organization, id, {
       headers: { Authorization: `Bearer ${token}` }
     })
@@ -59,7 +66,7 @@ export const database = new Database({
     try {
       if (!organization) return new Uint8Array()
 
-      const state = await getResource({ token: context.token, id, type, organization })
+      const state = await getResource({ token: context.token, id, type, organization, actorType: context.actorType })
 
       if (!state) {
         return new Uint8Array()
@@ -85,7 +92,8 @@ export const database = new Database({
       })
       Sentry.setContext('context', {
         schemaVersion: context.schemaVersion,
-        token: context.token
+        actorType: context.actorType,
+        grantId: context.grantId
       })
       Sentry.captureException(error)
       throw error
@@ -110,21 +118,21 @@ export const database = new Database({
 
       // Generate HTML from the Yjs document
       const json = TiptapTransformer.fromYdoc(data.document, 'default')
-      const html = generateHTML(json, extensions)
+      const html = generateHTML(resolveSuggestions(json, 'strip'), extensions)
 
       // Push the state (for Y.js) and the HTML (for our API) to Campsite
-      await api.organizations.putNotesSyncState().request(
-        organization,
-        id,
-        {
-          description_html: html,
-          description_state: dbDocument,
-          description_schema_version: context.schemaVersion
-        },
-        {
-          headers: { Authorization: `Bearer ${context.token}` }
-        }
-      )
+      const payload = {
+        description_html: html,
+        description_state: dbDocument,
+        description_schema_version: context.schemaVersion
+      }
+      const requestParams = { headers: { Authorization: `Bearer ${context.token}` } }
+
+      if (context.actorType === 'agent') {
+        await api.agentSyncGrants.putAgentSyncGrantsNotesSyncState().request(id, payload, requestParams)
+      } else {
+        await api.organizations.putNotesSyncState().request(organization, id, payload, requestParams)
+      }
     } catch (error) {
       Sentry.setContext('document', {
         id,
@@ -133,7 +141,8 @@ export const database = new Database({
       })
       Sentry.setContext('context', {
         schemaVersion: context.schemaVersion,
-        token: context.token
+        actorType: context.actorType,
+        grantId: context.grantId
       })
       Sentry.captureException(error)
       throw error

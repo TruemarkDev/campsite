@@ -53,6 +53,8 @@ const videoAttachment: Attachment = {
   optimistic_preview_src: null,
   optimistic_ready: true,
   client_error: null,
+  transcript: null,
+  transcription_job_status: null,
   gallery_id: null
 }
 
@@ -120,6 +122,8 @@ const imageAttachment: Attachment = {
   optimistic_preview_src: null,
   optimistic_ready: true,
   client_error: null,
+  transcript: null,
+  transcription_job_status: null,
   gallery_id: null
 }
 

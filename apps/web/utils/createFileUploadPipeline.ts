@@ -12,7 +12,11 @@ import { getVideoThumbnailAndDuration } from '@/utils/getVideoThumbnailAndDurati
 import { fileIsLottie, generateImageValues } from '@/utils/transformFile'
 import { urlToHlsUrl } from '@/utils/urlToHlsUrl'
 
-interface Upload { file: File; attachment: Attachment; thumbnail?: File }
+interface Upload {
+  file: File
+  attachment: Attachment
+  thumbnail?: File
+}
 
 interface RemappedFileResult {
   type: 'gif' | 'heic' | 'image' | 'video' | 'audio' | 'origami' | 'principle' | 'stitch' | 'lottie' | 'other'
@@ -57,6 +61,8 @@ export function createOptimisticAttachment(value: Partial<Attachment>): Attachme
       comments_count: 0,
       type_name: 'attachment',
       no_video_track: false,
+      transcript: null,
+      transcription_job_status: null,
       gallery_id: null
     },
     ...value

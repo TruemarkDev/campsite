@@ -37,6 +37,7 @@ class User < ApplicationRecord
     :channel_split_view, # deprecated from client on 11/8/24
     :no_emoji_accessories,
     :export,
+    :ai_note_editing,
   ].freeze
 
   FRONTEND_FEATURES = SHARED_FEATURE_FLAGS + [

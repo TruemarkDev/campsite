@@ -13,6 +13,9 @@ module Campsite
   DEV_HTML_TO_IMAGE_URL = URI.parse("http://localhost:9222")
   PROD_HTML_TO_IMAGE_URL = URI.parse(ENV.fetch("HTML_TO_IMAGE_URL", "https://camp-html-to-image.polo-apps.com"))
 
+  DEV_SYNC_SERVER_URL = URI.parse("http://localhost:9000")
+  PROD_SYNC_SERVER_URL = URI.parse(ENV.fetch("SYNC_SERVER_URL", "https://camp-sync.polo-apps.com"))
+
   DEV_MARKETING_SITE_URL = URI.parse("http://localhost:3003")
   PROD_MARKETING_SITE_URL = URI.parse(ENV.fetch("MARKETING_SITE_URL", "https://campsite.com"))
 
@@ -66,6 +69,12 @@ module Campsite
     return PROD_HTML_TO_IMAGE_URL if Rails.env.production?
 
     DEV_HTML_TO_IMAGE_URL
+  end
+
+  def self.base_sync_server_url
+    return PROD_SYNC_SERVER_URL if Rails.env.production?
+
+    DEV_SYNC_SERVER_URL
   end
 
   def self.user_settings_path

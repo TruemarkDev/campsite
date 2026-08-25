@@ -1,5 +1,7 @@
 import { Extensions, generateJSON, JSONContent } from '@tiptap/core'
 
+import { resolveSuggestions } from '@campsite/editor'
+
 export interface RichTextHeading {
   id: string
   level: number
@@ -19,7 +21,8 @@ function slugify(value: string) {
 }
 
 export function prepareRichTextContent(content: string | JSONContent, extensions: Extensions) {
-  const source = typeof content === 'string' ? (generateJSON(content, extensions) as JSONContent) : content
+  const unresolved = typeof content === 'string' ? (generateJSON(content, extensions) as JSONContent) : content
+  const source = resolveSuggestions(unresolved, 'strip')
   const headings: RichTextHeading[] = []
   const usedIds = new Set<string>()
 

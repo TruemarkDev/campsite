@@ -29,6 +29,7 @@ module McpToolRegistry
     # Campsite, so it gates on `mcp` alone — grouped with reads. The matching write
     # scope is enforced later by attach_file when the attachment is actually created.
     McpTools::CreateUpload,
+    McpTools::GetAttachmentTranscript,
   ].freeze
 
   WRITE_TOOLS = [
@@ -45,6 +46,7 @@ module McpToolRegistry
     McpTools::CreateProject,
     McpTools::AttachFile,
     McpTools::UploadAttachment,
+    McpTools::SpeakReply,
   ].freeze
 
   def tools

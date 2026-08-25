@@ -12,6 +12,16 @@ import {
 
 export type TimelineEventSubjectType = 'post' | 'note'
 
+export interface TimelineEventNoteSuggestion extends TimelineEvent {
+  action: 'note_suggestion_proposed' | 'note_suggestion_resolved'
+  note_suggestion_actor_name: string | null
+  note_suggestion_resolution: string | null
+}
+
+export function isTimelineEventNoteSuggestion(event: TimelineEvent): event is TimelineEventNoteSuggestion {
+  return event.action === 'note_suggestion_proposed' || event.action === 'note_suggestion_resolved'
+}
+
 // ----------------------------------------------------------------------------
 
 export interface TimelineEventSubjectTitleUpdated extends TimelineEvent {

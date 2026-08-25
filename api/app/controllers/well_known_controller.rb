@@ -26,7 +26,7 @@ class WellKnownController < ActionController::API
 
   # GET /.well-known/oauth-authorization-server(/mcp)
   def oauth_authorization_server
-    render(json: {
+    metadata = {
       issuer: authorization_server_issuer,
       authorization_endpoint: "#{request.base_url}/v2/oauth/authorize",
       token_endpoint: "#{request.base_url}/v2/oauth/token",
@@ -38,6 +38,13 @@ class WellKnownController < ActionController::API
       grant_types_supported: ["authorization_code", "refresh_token"],
       token_endpoint_auth_methods_supported: ["client_secret_basic", "client_secret_post", "none"],
       code_challenge_methods_supported: ["S256"],
-    })
+    }
+
+    if Oauth::Cimd.enabled?
+      metadata[:client_id_metadata_document_supported] = true
+      metadata[:authorization_response_iss_parameter_supported] = true
+    end
+
+    render(json: metadata)
   end
 end

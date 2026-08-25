@@ -55,19 +55,19 @@ issuance and token redemption under the existing S256 PKCE and scope rules.
 ### Requirement: Metadata retrieval is resistant to SSRF and resource exhaustion
 
 The authorization server MUST fetch CIMD metadata without credentials using
-verified HTTPS, MUST reject non-public destinations, MUST apply the same checks
-after DNS resolution and at every redirect, and MUST bound redirects, connection
-and response time, response bytes, and JSON parsing. It MUST NOT fetch optional
+verified HTTPS, MUST reject non-public destinations after DNS resolution, MUST
+NOT follow redirects, and MUST bound connection and response time, response
+bytes, and JSON parsing. It MUST NOT fetch optional
 URLs found inside the metadata document as part of client resolution.
 
 #### Scenario: Client ID resolves to an internal destination
 
-- **WHEN** the client-ID host or a redirect target resolves to a private, loopback, link-local, multicast, unspecified, reserved, or otherwise non-public address
+- **WHEN** the client-ID host resolves to a private, loopback, link-local, multicast, unspecified, reserved, or otherwise non-public address
 - **THEN** the server makes no request to that destination and rejects the client
 
-#### Scenario: Redirect attempts to escape fetch policy
+#### Scenario: Metadata endpoint redirects
 
-- **WHEN** metadata retrieval redirects to HTTP, a URL with userinfo, a disallowed address, or beyond the redirect limit
+- **WHEN** metadata retrieval returns any HTTP redirect
 - **THEN** retrieval stops and authorization fails without issuing a code or token
 
 #### Scenario: Metadata refers to an optional asset
