@@ -1000,7 +1000,7 @@ function RecordButton() {
       <motion.div
         animate={{ scale: isRecording ? 1.2 : 1 }}
         className={cn(
-          'absolute inset-0 rounded-full border-opacity-50 bg-clip-border before:absolute before:-inset-[3px] before:rounded-full before:border-[2px] before:content-[""]',
+          'absolute inset-0 rounded-full bg-clip-border before:absolute before:-inset-[3px] before:rounded-full before:border-[2px] before:content-[""]',
           {
             'before:animate-spin': isStarting || isStopping,
             'before:border-red/50 before:border-t-red-500': isRecording && isStopping,

@@ -203,7 +203,7 @@ export const TextField = forwardRef<HTMLInputElement, Props>(function TextField(
     {
       'border-red-600 focus:ring-red-100 bg-red-50 focus:border-red-600': inlineError,
       'pr-10': clickToCopy,
-      'text-opacity-50': readOnly,
+      'text-primary/50': readOnly,
       'rounded-md': !prefix,
       'rounded-l-none': prefix,
       'opacity-50': disabled,

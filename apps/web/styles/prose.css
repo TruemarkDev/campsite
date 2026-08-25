@@ -1,4 +1,4 @@
-@tailwind components;
+@reference './global.css';
 
 @layer components {
   /* 

@@ -54,6 +54,7 @@
     "@campsite/tsconfig": "workspace:*",
     "@eslint/eslintrc": "3.3.6",
     "@eslint/js": "10.0.1",
+    "@tailwindcss/postcss": "catalog:",
     "@types/mdx": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
@@ -62,7 +63,9 @@
     "eslint": "catalog:",
     "eslint-config-next": "catalog:",
     "postcss": "catalog:",
+    "tailwind-scrollbar-hide": "catalog:",
     "tailwindcss": "catalog:",
+    "tailwindcss-safe-area": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -1,6 +1,16 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/*
+  The JS config replaces theme.spacing outright, which drops the --spacing base
+  variable v4 core utilities derive from. The scale there is n * 4px, so restore
+  the same base here.
+*/
+@theme {
+  --spacing: 4px;
+}
+@config '../tailwind.config.js';
+@import 'tailwind-scrollbar-hide/v4';
+@import 'tailwindcss-safe-area';
 
 @layer base {
   * {
@@ -143,7 +153,7 @@
   }
 
   .prose img {
-    @apply my-4 rounded-lg ring-1 ring-black ring-opacity-5 dark:ring-white/10;
+    @apply my-4 rounded-lg ring-1 ring-black/5 dark:ring-white/10;
   }
 
   .underline-link {

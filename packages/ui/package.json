@@ -44,6 +44,7 @@
     "@storybook/react": "catalog:",
     "@tailwindcss/container-queries": "catalog:",
     "@tailwindcss/forms": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@types/react": "catalog:",
     "eslint": "catalog:",

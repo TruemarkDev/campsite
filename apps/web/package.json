@@ -125,6 +125,7 @@
     "@storybook/addon-links": "catalog:",
     "@storybook/nextjs": "catalog:",
     "@storybook/react": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
     "@tanstack/react-query-devtools": "catalog:",
     "@testing-library/react": "catalog:",
     "@tiptap/core": "catalog:",
@@ -142,7 +143,9 @@
     "eslint-plugin-storybook": "catalog:",
     "postcss": "catalog:",
     "storybook": "catalog:",
+    "tailwind-scrollbar-hide": "catalog:",
     "tailwindcss": "catalog:",
+    "tailwindcss-safe-area": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

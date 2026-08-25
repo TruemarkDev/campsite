@@ -246,7 +246,7 @@ function AvatarComponent(props: Props) {
             )}
 
             {!showImage && (
-              <span className='text-dark flex text-opacity-60'>
+              <span className='text-dark/60 flex'>
                 <UIText inherit className='mix-blend-color-burn saturate-150' weight='font-medium' size={textSize}>
                   {name?.slice(0, 1).toUpperCase()}
                 </UIText>

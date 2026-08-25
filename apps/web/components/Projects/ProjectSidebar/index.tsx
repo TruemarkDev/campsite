@@ -54,7 +54,7 @@ export function ProjectMobileSidebar({ project }: ProjectSidebarProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: isMobileProjectSidebarOpen ? 1 : 0 }}
         transition={{ duration: 0.2 }}
-        className={cn('fixed inset-0 z-20 bg-black bg-opacity-20 lg:hidden dark:bg-opacity-50', {
+        className={cn('fixed inset-0 z-20 bg-black/20 lg:hidden dark:bg-black/50', {
           'pointer-events-none': !isMobileProjectSidebarOpen
         })}
         onClick={() => setIsMobileProjectSidebarOpen((prev) => !prev)}

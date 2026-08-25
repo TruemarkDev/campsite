@@ -20,7 +20,7 @@ export function FeedbackFilePreview(props: Props) {
   return (
     <>
       {reorderable && (
-        <div className='text-tertiary flex items-center justify-center rounded-md p-1 hover:bg-black hover:bg-opacity-5 hover:text-opacity-70'>
+        <div className='text-tertiary flex items-center justify-center rounded-md p-1 hover:bg-black/5 hover:text-tertiary/70'>
           <ReorderDotsIcon className='translate-x-0.5' />
         </div>
       )}
@@ -29,9 +29,9 @@ export function FeedbackFilePreview(props: Props) {
 
       <p
         className={cn('flex-1 break-all font-mono text-sm', {
-          'text-opacity-50': !file.key,
+          'text-primary/50': !file.key,
           'text-primary': file.key,
-          'text-red-500 text-opacity-100': file.error
+          'text-red-500': file.error
         })}
       >
         {file.raw.name}

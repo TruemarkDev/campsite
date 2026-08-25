@@ -33,7 +33,7 @@ export default function ChangelogListItem(props: Props) {
             src={changelog.data.feature_image}
             width={1200}
             height={600}
-            className='flex aspect-[2/1] w-full rounded-lg object-cover ring-1 ring-black ring-opacity-5 dark:ring-white/10'
+            className='flex aspect-[2/1] w-full rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10'
           />
         </Link>
       )}

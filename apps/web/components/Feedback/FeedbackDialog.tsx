@@ -255,7 +255,7 @@ export function FeedbackDialog() {
               target='_blank'
               rel='noopener noreferrer'
               href='https://twitter.com/trycampsite'
-              className='text-tertiary hover:text-secondary group hidden items-center justify-center gap-2 px-2 hover:text-opacity-100 sm:flex'
+              className='text-tertiary hover:text-secondary group hidden items-center justify-center gap-2 px-2 sm:flex'
             >
               <Image
                 src='/img/services/twitter.png'

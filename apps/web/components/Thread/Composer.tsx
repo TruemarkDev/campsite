@@ -219,7 +219,7 @@ export const Composer = forwardRef<HTMLFormElement, Props>(function Composer(
                 'relative flex min-h-[36px] flex-1 flex-col rounded-[18px]',
                 'bg-elevated border-1',
                 dropzone.isDragActive &&
-                  'border-blue-500 bg-blue-50 ring-2 ring-blue-100 hover:bg-blue-100/20 dark:bg-blue-900/20 dark:ring-blue-600 dark:ring-opacity-20'
+                  'border-blue-500 bg-blue-50 ring-2 ring-blue-100 hover:bg-blue-100/20 dark:bg-blue-900/20 dark:ring-blue-600/20'
               )}
               data-filled={hasContent}
             >
