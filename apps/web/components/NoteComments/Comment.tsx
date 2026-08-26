@@ -16,6 +16,7 @@ import { TimelineEventComment } from '@/components/TimelineEvent'
 import { useScope } from '@/contexts/scope'
 import { getImmediateScrollableNode } from '@/utils/scroll'
 import { scrollInputIntoView } from '@/utils/scrollInputIntoView'
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
 import { longTimestamp } from '@/utils/timestamp'
 
 import { hoveredCanvasCommentAtom } from '../CanvasComments/CanvasComment'
@@ -275,7 +276,7 @@ const CommentDetails = (props: CommentProps) => {
                     >
                       <span
                         className='prose text-secondary line-clamp-3 pl-3 leading-normal before:absolute before:top-0 before:bottom-0 before:left-0 before:w-[3px] before:rounded-full before:bg-yellow-300 dark:before:bg-yellow-500'
-                        dangerouslySetInnerHTML={{ __html: comment.note_highlight }}
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(comment.note_highlight) }}
                       ></span>
                     </button>
                   )}

@@ -18,7 +18,7 @@ module Api
             @integration = create(:integration, provider: :slack, owner: @organization)
             @slack_team_id = create(:slack_team_id, integration: @integration).value
             @state = SecureRandom.uuid
-            get new_integrations_auth_url, params: { auth_url: "https://example.com?state=#{@state}", host: "auth.campsite.com" }
+            get new_integrations_auth_url, params: { auth_url: "https://slack.com/oauth/v2/authorize?state=#{@state}", host: "auth.campsite.com" }
           end
 
           describe "#show" do

@@ -21,6 +21,8 @@ import { AlertIcon, UIText } from '@campsite/ui'
 import { useHasMounted } from '@campsite/ui/src/hooks'
 import { cn } from '@campsite/ui/src/utils'
 
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
+
 function TweetContainer({
   className,
   children,
@@ -190,7 +192,7 @@ function QuotedTweetBody({ tweet }: { tweet: EnrichedQuotedTweet }) {
     <p className='not-prose m-0 text-[15px] leading-normal font-normal break-words whitespace-pre-wrap'>
       {tweet.entities.map((item, i) => (
         // eslint-disable-next-line react/no-array-index-key
-        <span key={i} className='not-prose' dangerouslySetInnerHTML={{ __html: item.text }} />
+        <span key={i} className='not-prose' dangerouslySetInnerHTML={{ __html: sanitizeHtml(item.text) }} />
       ))}
     </p>
   )

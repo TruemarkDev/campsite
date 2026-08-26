@@ -381,7 +381,27 @@ module Doorkeeper
           resource_owner_id: @user.id,
         }
 
-        assert_response :not_found
+        assert_response :bad_request
+        assert_equal "invalid_request", json_response["error"]
+        assert_equal "Unsupported resource owner type.", json_response["error_description"]
+        assert_nil AccessGrant.last
+      end
+
+      test "rejects unknown resource owner types on the v2 authorization route" do
+        oauth_application = create(:oauth_application)
+        sign_in @user
+
+        post oauth_v2_authorizations_path, params: {
+          client_id: oauth_application.uid,
+          state: "state",
+          redirect_uri: oauth_application.redirect_uri,
+          response_type: "code",
+          resource_owner_type: "Object::NestedConstant",
+          resource_owner_id: @user.id,
+        }
+
+        assert_response :bad_request
+        assert_equal "invalid_request", json_response["error"]
         assert_nil AccessGrant.last
       end
 

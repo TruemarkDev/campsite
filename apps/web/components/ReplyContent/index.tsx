@@ -5,6 +5,7 @@ import { Button, CloseIcon, UIText } from '@campsite/ui'
 
 import { EMPTY_HTML } from '@/atoms/markdown'
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
 
 export function ReplyContent({
   content,
@@ -33,7 +34,7 @@ export function ReplyContent({
         </div>
         <div className='text-tertiary chat-prose line-clamp-1 text-sm'>
           {replyHasContent ? (
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
           ) : (
             <p>
               {attachments.length} {pluralize('attachment', attachments.length)}

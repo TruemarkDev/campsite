@@ -54,6 +54,7 @@
     "fast-deep-equal": "catalog:",
     "framer-motion": "catalog:",
     "gray-matter": "catalog:",
+    "isomorphic-dompurify": "catalog:",
     "jotai": "catalog:",
     "jotai-scope": "catalog:",
     "js-base64": "catalog:",

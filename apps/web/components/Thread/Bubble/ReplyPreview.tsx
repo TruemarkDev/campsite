@@ -7,6 +7,7 @@ import { cn } from '@campsite/ui/src/utils'
 import { FileAttachment } from '@/components/FileAttachment'
 import { AttachmentCard } from '@/components/Thread/Bubble/AttachmentCard'
 import { isRenderable } from '@/utils/attachments'
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
 
 interface ReplyPreviewProps {
   message: Message
@@ -85,7 +86,7 @@ export function ReplyPreview({ message, thread, position }: ReplyPreviewProps) {
                   'text-tertiary chat-prose reply-prose max-w-md text-xs',
                   !replyOpen && 'break-anywhere line-clamp-1 break-all'
                 )}
-                dangerouslySetInnerHTML={{ __html: message.reply.content }}
+                dangerouslySetInnerHTML={{ __html: sanitizeHtml(message.reply.content) }}
               />
             </div>
           ) : (

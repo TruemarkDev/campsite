@@ -23,11 +23,13 @@ module Doorkeeper
 
     def ensure_current_user_is_authorized_for_resource_owner
       resource_owner_id = params[:resource_owner_id] || current_resource_owner.id
-      resource_owner_class = if params[:resource_owner_type]
-        RESOURCE_OWNER_CLASSES.fetch(params[:resource_owner_type]) { raise ActiveRecord::RecordNotFound }
+      resource_owner_class = if params.key?(:resource_owner_type)
+        RESOURCE_OWNER_CLASSES[params[:resource_owner_type]]
       else
         current_resource_owner.class
       end
+
+      return render_oauth_error("invalid_request", "Unsupported resource owner type.") unless resource_owner_class
 
       authorize(resource_owner_class.find(resource_owner_id), :create_oauth_access_grant?)
     end

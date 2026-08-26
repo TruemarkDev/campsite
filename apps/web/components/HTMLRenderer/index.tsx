@@ -5,6 +5,7 @@ import { cn } from '@campsite/ui/src/utils'
 
 import { useScope } from '@/contexts/scope'
 import { useReadOnlyOnCheckboxClick } from '@/hooks/useReadOnlyOnCheckboxClick'
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
 
 interface Props {
   text?: string
@@ -63,7 +64,7 @@ export function HTMLRenderer({
         'pointer-events-none blur filter will-change-transform select-none': blur,
         'truncate-links': !!linkOptions?.truncate
       })}
-      dangerouslySetInnerHTML={{ __html: text ?? '' }}
+      dangerouslySetInnerHTML={{ __html: sanitizeHtml(text) }}
     />
   )
 }

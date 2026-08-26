@@ -14,7 +14,7 @@ module Api
             @user = @member.user
             @organization = @user.organizations.first
             @state = SecureRandom.uuid
-            get new_integrations_auth_url, params: { auth_url: "https://example.com?state=#{@state}" }
+            get new_integrations_auth_url, params: { auth_url: "https://slack.com/oauth/v2/authorize?state=#{@state}" }
           end
 
           describe "#show" do
