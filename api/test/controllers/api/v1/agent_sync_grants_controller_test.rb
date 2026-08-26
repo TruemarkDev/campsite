@@ -55,6 +55,43 @@ module Api
         assert_response :ok
         assert_equal "<p>After</p>", @note.reload.description_html
         assert_equal "updated-state", @note.description_state
+        assert_equal "updated-state", json_response["description_state"]
+      end
+
+      test "initializes an absent Yjs state only once" do
+        @note.update!(description_state: nil)
+
+        put(
+          agent_sync_grant_state_path(@note.public_id),
+          params: {
+            description_html: "<p>First</p>",
+            description_state: "first-lineage",
+            description_schema_version: 9,
+            initialize: true,
+          },
+          headers: @headers,
+          as: :json,
+        )
+
+        assert_response :ok
+        assert_equal "first-lineage", json_response["description_state"]
+
+        put(
+          agent_sync_grant_state_path(@note.public_id),
+          params: {
+            description_html: "<p>Second</p>",
+            description_state: "second-lineage",
+            description_schema_version: 9,
+            initialize: true,
+          },
+          headers: @headers,
+          as: :json,
+        )
+
+        assert_response :ok
+        assert_equal "first-lineage", json_response["description_state"]
+        assert_equal "first-lineage", @note.reload.description_state
+        assert_equal "<p>First</p>", @note.description_html
       end
 
       test "rejects stale state and a revoked token" do

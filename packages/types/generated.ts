@@ -40,12 +40,17 @@ export type AgentSyncGrantStateGetResponse = {
   description_schema_version: number
 }
 
-export type AgentSyncGrantsNotesNoteIdSyncStatePutResponse = object
+export type AgentSyncGrantsNotesNoteIdSyncStatePutResponse = {
+  description_html: string
+  description_state?: string
+  description_schema_version: number
+}
 
 export type AgentSyncGrantsNotesNoteIdSyncStatePutRequest = {
   description_html: string
   description_state: string
   description_schema_version: number
+  initialize?: boolean
 }
 
 export type AgentSyncGrantsNotesNoteIdAttributionsPostResponse = object
@@ -1476,12 +1481,13 @@ export type NoteSync = {
   description_html: string
 }
 
-export type OrganizationsOrgSlugNotesNoteIdSyncStatePutResponse = object
+export type OrganizationsOrgSlugNotesNoteIdSyncStatePutResponse = NoteSync
 
 export type OrganizationsOrgSlugNotesNoteIdSyncStatePutRequest = {
   description_html: string
   description_state: string
   description_schema_version: number
+  initialize?: boolean
 }
 
 export type TimelineEventPage = {

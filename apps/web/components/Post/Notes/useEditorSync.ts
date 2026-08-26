@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
-import { HocuspocusProvider, WebSocketStatus } from '@hocuspocus/provider'
-import { toUint8Array } from 'js-base64'
-import * as Y from 'yjs'
+import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
 import { SYNC_URL } from '@campsite/config'
 import { NOTE_SCHEMA_VERSION } from '@campsite/editor'
@@ -18,28 +16,17 @@ type EditorSyncError = 'error' | 'invalid-schema'
 interface Props {
   resourceId: string
   resourceType: 'Post' | 'Note'
-  initialState: string | null | undefined
 }
 
-export function useEditorSync({ resourceId, resourceType, initialState }: Props) {
+export function useEditorSync({ resourceId, resourceType }: Props) {
   const { scope } = useScope()
   const isLoggedIn = useCurrentUserIsLoggedIn()
 
   const [syncError, setSyncError] = useState<EditorSyncError | null>(null)
   const [syncState, setSyncState] = useState<EditorSyncState>('connecting')
+  const [hasSynced, setHasSynced] = useState(false)
 
   const [provider] = useState(() => {
-    let document: Y.Doc | undefined
-
-    if (initialState) {
-      const ydoc = new Y.Doc()
-      const update = toUint8Array(initialState)
-
-      Y.applyUpdate(ydoc, update)
-
-      document = ydoc
-    }
-
     // v3 removed the `parameters` config option; pass them via the URL instead
     const parameters = new URLSearchParams({
       schemaVersion: String(NOTE_SCHEMA_VERSION),
@@ -47,8 +34,8 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
       type: resourceType
     })
 
-    const hocuspocusProvider = new HocuspocusProvider({
-      document,
+    const configuration: HocuspocusProviderConfiguration & { autoConnect: boolean } = {
+      autoConnect: false,
       url: `${SYNC_URL}?${parameters}`,
       name: resourceId,
       token: () =>
@@ -78,28 +65,24 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
       },
       onStatus(data) {
         setSyncState(data.status)
+      },
+      onSynced({ state }) {
+        if (state) setHasSynced(true)
       }
-    })
+    }
 
-    // v3 removed the `connect` config option; providers connect on construction
-    if (!isLoggedIn) hocuspocusProvider.disconnect()
-
-    return hocuspocusProvider
+    return new HocuspocusProvider(configuration)
   })
 
   useEffect(() => {
-    const status = () => provider.configuration.websocketProvider.status
-
-    if (status() !== WebSocketStatus.Connected) {
-      provider.connect()
-    }
+    if (isLoggedIn) provider.connect()
 
     return () => {
-      if (status() === WebSocketStatus.Connected) {
-        provider.disconnect()
-      }
+      // This also cancels a socket that is still connecting. Checking only for
+      // Connected leaks providers during React Strict Mode's effect cleanup.
+      provider.disconnect()
     }
-  }, [provider])
+  }, [isLoggedIn, provider])
 
-  return [provider, syncState, syncError] as const
+  return [provider, syncState, syncError, hasSynced] as const
 }

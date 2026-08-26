@@ -126,7 +126,39 @@ module Api
             assert_equal "9876_cat_dog_5432", @note.reload.description_state
             assert_equal "<p>cat dog</p>", @note.description_html
             assert_equal 2, @note.description_schema_version
+            assert_equal "9876_cat_dog_5432", json_response["description_state"]
             assert_equal @member.user.display_name, @note.events.last.metadata.dig("actor_display_name")
+          end
+
+          test "initializes an absent Yjs state only once" do
+            @note.update!(description_state: nil)
+            sign_in(@member.user)
+
+            put organization_note_sync_state_path(@org.slug, @note.public_id),
+              params: {
+                description_html: "<p>first</p>",
+                description_state: "first-lineage",
+                description_schema_version: 2,
+                initialize: true,
+              },
+              as: :json
+
+            assert_response :ok
+            assert_equal "first-lineage", json_response["description_state"]
+
+            put organization_note_sync_state_path(@org.slug, @note.public_id),
+              params: {
+                description_html: "<p>second</p>",
+                description_state: "second-lineage",
+                description_schema_version: 2,
+                initialize: true,
+              },
+              as: :json
+
+            assert_response :ok
+            assert_equal "first-lineage", json_response["description_state"]
+            assert_equal "first-lineage", @note.reload.description_state
+            assert_equal "<p>first</p>", @note.description_html
           end
 
           test "cannot update with older schema" do

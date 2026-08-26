@@ -43,29 +43,40 @@ module Api
         )
       end
 
-      response code: 200
+      response code: 200 do
+        {
+          description_html: { type: :string },
+          description_state: { type: :string, required: false },
+          description_schema_version: { type: :integer },
+        }
+      end
       request_params do
         {
           description_html: { type: :string },
           description_state: { type: :string },
           description_schema_version: { type: :integer },
+          initialize: { type: :boolean, required: false },
         }
       end
       def update_state
         note = @grant.note
         version = params[:description_schema_version].to_i
-        return render(status: :unprocessable_content, json: { code: "stale_schema" }) if version < note.description_schema_version
 
-        note.event_actor = @grant.organization_membership
-        if note.update(
-          description_html: params[:description_html],
-          description_state: params[:description_state],
-          description_schema_version: version,
-        )
-          return render(json: {}, status: :ok)
+        note.with_lock do
+          return render_state(note) if params[:initialize] && note.description_state.present?
+          return render(status: :unprocessable_content, json: { code: "stale_schema" }) if version < note.description_schema_version
+
+          note.event_actor = @grant.organization_membership
+          unless note.update(
+            description_html: params[:description_html],
+            description_state: params[:description_state],
+            description_schema_version: version,
+          )
+            return render(status: :unprocessable_content, json: { code: "invalid_sync_state", errors: note.errors.full_messages })
+          end
         end
 
-        render(status: :unprocessable_content, json: { code: "invalid_sync_state", errors: note.errors.full_messages })
+        render_state(note)
       end
 
       response code: 201
@@ -106,6 +117,17 @@ module Api
 
       def render_unauthorized
         render(status: :unauthorized, json: { code: "invalid_agent_sync_grant" })
+      end
+
+      def render_state(note)
+        render(
+          json: {
+            description_html: note.description_html.to_s,
+            description_state: note.description_state,
+            description_schema_version: note.description_schema_version,
+          },
+          status: :ok,
+        )
       end
 
       def grant_payload
