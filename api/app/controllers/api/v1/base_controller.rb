@@ -111,14 +111,7 @@ module Api
       end
 
       def safe_current_organization_membership
-        if params[:org_slug]
-          begin
-            current_organization_membership
-          rescue
-            # rescue any error that might happen here,
-            # since we don't want to break the whole request
-          end
-        end
+        current_organization_membership if params[:org_slug]
       end
 
       def analytics
@@ -239,7 +232,7 @@ module Api
       end
 
       def client_ip
-        request.env["HTTP_FLY_CLIENT_IP"] || request.remote_ip
+        request.env["HTTP_CF_CONNECTING_IP"] || request.env["HTTP_FLY_CLIENT_IP"] || request.remote_ip
       end
 
       def set_user_preferred_timezone

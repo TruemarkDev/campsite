@@ -17,7 +17,8 @@ class CallRoomPolicy < ApplicationPolicy
 
   def subject_member?
     return false unless @record.subject.respond_to?(:memberships)
+    return false unless user
 
-    @record.subject.memberships.where(organization_membership: user&.organization_memberships).any?
+    @record.subject.memberships.exists?(organization_membership: user.organization_memberships)
   end
 end
