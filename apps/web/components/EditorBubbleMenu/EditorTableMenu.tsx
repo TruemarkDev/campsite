@@ -21,8 +21,24 @@ interface Props {
   appendTo?: HTMLElement
 }
 
+const unavailableTableCommands = {
+  addRowBefore: false,
+  addRowAfter: false,
+  addColumnBefore: false,
+  addColumnAfter: false,
+  deleteRow: false,
+  deleteColumn: false,
+  mergeCells: false,
+  splitCell: false,
+  toggleHeaderRow: false,
+  toggleHeaderColumn: false,
+  setCellAttribute: false,
+  setBackgroundColor: false,
+  clearBackgroundColor: false
+}
+
 export function EditorTableMenu({ editor, appendTo }: Props) {
-  if (!editor.schema.nodes.table) return null
+  if (editor.isDestroyed || !editor.schema?.nodes.table) return null
 
   return <EditorTableMenuContent editor={editor} appendTo={appendTo} />
 }
@@ -30,21 +46,28 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
 function EditorTableMenuContent({ editor, appendTo }: Props) {
   const commandAvailability = useEditorState({
     editor,
-    selector: ({ editor }) => ({
-      addRowBefore: editor.can().addRowBefore(),
-      addRowAfter: editor.can().addRowAfter(),
-      addColumnBefore: editor.can().addColumnBefore(),
-      addColumnAfter: editor.can().addColumnAfter(),
-      deleteRow: editor.can().deleteRow(),
-      deleteColumn: editor.can().deleteColumn(),
-      mergeCells: editor.can().mergeCells(),
-      splitCell: editor.can().splitCell(),
-      toggleHeaderRow: editor.can().toggleHeaderRow(),
-      toggleHeaderColumn: editor.can().toggleHeaderColumn(),
-      setCellAttribute: editor.can().setCellAttribute('align', 'left'),
-      setBackgroundColor: editor.can().setCellAttribute('backgroundColor', 'var(--bg-quaternary)'),
-      clearBackgroundColor: editor.can().setCellAttribute('backgroundColor', null)
-    })
+    selector: ({ editor }) => {
+      // Collaboration replaces the editor once the Yjs document has synced.
+      // useEditorState can take one final snapshot after the old editor has
+      // been destroyed and its command manager has been cleared.
+      if (!editor || editor.isDestroyed) return unavailableTableCommands
+
+      return {
+        addRowBefore: editor.can().addRowBefore(),
+        addRowAfter: editor.can().addRowAfter(),
+        addColumnBefore: editor.can().addColumnBefore(),
+        addColumnAfter: editor.can().addColumnAfter(),
+        deleteRow: editor.can().deleteRow(),
+        deleteColumn: editor.can().deleteColumn(),
+        mergeCells: editor.can().mergeCells(),
+        splitCell: editor.can().splitCell(),
+        toggleHeaderRow: editor.can().toggleHeaderRow(),
+        toggleHeaderColumn: editor.can().toggleHeaderColumn(),
+        setCellAttribute: editor.can().setCellAttribute('align', 'left'),
+        setBackgroundColor: editor.can().setCellAttribute('backgroundColor', 'var(--bg-quaternary)'),
+        clearBackgroundColor: editor.can().setCellAttribute('backgroundColor', null)
+      }
+    }
   })
 
   const runCellAttribute = (name: string, value: string | null) =>

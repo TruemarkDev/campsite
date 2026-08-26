@@ -57,6 +57,16 @@ describe('EditorTableMenu', () => {
     expect(container.innerHTML).toBe('')
   })
 
+  it('survives editor destruction during a collaboration remount', () => {
+    const instance = editor!
+    const { rerender } = render(<EditorTableMenu editor={instance} />)
+
+    act(() => instance.destroy())
+
+    expect(() => rerender(<EditorTableMenu editor={instance} />)).not.toThrow()
+    editor = undefined
+  })
+
   it('reacts to table selection changes and executes every row and column command', () => {
     const instance = editor!
 
