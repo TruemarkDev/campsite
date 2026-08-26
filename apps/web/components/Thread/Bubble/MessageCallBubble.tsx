@@ -47,7 +47,7 @@ function ActiveMessageCall({
     <button
       onClick={() => joinCall()}
       className={cn(
-        'bg-primary dark:bg-elevated dark relative flex w-full max-w-sm flex-1 items-center p-3 text-left',
+        'bg-primary dark:bg-elevated dark relative flex w-full max-w-96 flex-1 items-center p-3 text-left',
         className
       )}
       disabled={!canJoin}
@@ -100,7 +100,7 @@ function CompletedMessageCall({
 
   return (
     <>
-      <div className={cn('bg-primary dark:bg-elevated dark relative flex w-full max-w-sm flex-col p-3', className)}>
+      <div className={cn('bg-primary dark:bg-elevated dark relative flex w-full max-w-96 flex-col p-3', className)}>
         <Tooltip
           align={message.viewer_is_sender ? 'end' : 'start'}
           label={longTimestamp(message.created_at, { month: 'short' })}

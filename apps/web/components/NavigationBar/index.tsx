@@ -93,14 +93,14 @@ const CreateProjectDialog = dynamic(
 export function NavigationBar() {
   const isDesktop = useIsDesktopApp()
   const wrapperClasses = cn(
-    '  lg:hidden min-h-[--navbar-height] z-10 drag border-b transition-shadow flex-none bg-primary'
+    '  lg:hidden min-h-[var(--navbar-height)] z-10 drag border-b transition-shadow flex-none bg-primary'
   )
 
   return (
     <>
       <m.nav onDoubleClick={() => isDesktop && nativeWindow.maximize()} className={wrapperClasses}>
         <div
-          className={cn('mx-auto grid h-[--navbar-height] max-w-7xl grid-cols-5 items-center', {
+          className={cn('mx-auto grid h-[var(--navbar-height)] max-w-7xl grid-cols-5 items-center', {
             'pl-24 2xl:px-3': isDesktop && isMacOs,
             'px-3': !isDesktop || !isMacOs
           })}
@@ -141,7 +141,7 @@ export function SignedOutNavigationBar() {
   return (
     <nav
       onDoubleClick={() => isDesktop && nativeWindow.maximize()}
-      className='drag bg-primary sticky inset-x-0 top-0 z-10 min-h-[--navbar-height] border-b transition-shadow'
+      className='drag bg-primary sticky inset-x-0 top-0 z-10 min-h-[var(--navbar-height)] border-b transition-shadow'
     >
       <div className='mx-auto grid h-14 grid-cols-3 items-center gap-4 px-3'>
         {accessory}

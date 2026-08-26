@@ -76,7 +76,7 @@ export function HomeSidebar() {
       transition={{ duration: 0.15, ease: 'easeInOut' }}
       style={{ minWidth: 0 }}
     >
-      <div className='bg-secondary dark:bg-primary relative hidden h-screen w-[--sidebar-width] flex-col overflow-hidden border-l lg:flex'>
+      <div className='bg-secondary dark:bg-primary relative hidden h-screen w-[var(--sidebar-width)] flex-col overflow-hidden border-l lg:flex'>
         <SearchInput query={query} setQuery={setQuery} />
         <MembersLists query={query} />
       </div>
@@ -332,7 +332,7 @@ function SearchInput({ query, setQuery }: { query: string; setQuery: (query: str
     <div className='text-quaternary relative'>
       <SearchIcon className='absolute top-1/2 left-3 -translate-y-1/2' />
       <TextField
-        additionalClasses='bg-transparent pl-10 h-[--navbar-height] focus:ring-0 pr-10 dark:bg-transparent rounded-none border-0'
+        additionalClasses='bg-transparent pl-10 h-[var(--navbar-height)] focus:ring-0 pr-10 dark:bg-transparent rounded-none border-0'
         placeholder='Search people...'
         value={query}
         onChange={setQuery}

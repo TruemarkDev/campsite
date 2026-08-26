@@ -347,11 +347,11 @@ export function Select<T>({
               {...POPOVER_MOTION}
               className={cn(
                 'text-gray-150 shadow-popover bg-primary dark:bg-elevated dark rounded-lg border-black/50 bg-black py-1 select-none dark:border',
-                'max-h-[--radix-select-content-available-height]',
-                'z-[9999] origin-[--radix-popper-transform-origin]',
+                'max-h-[var(--radix-select-content-available-height)]',
+                'z-[9999] origin-[var(--radix-popper-transform-origin)]',
                 {
                   'w-[220px]': !fullWidth,
-                  'w-[--radix-popper-anchor-width]': fullWidth
+                  'w-[var(--radix-popper-anchor-width)]': fullWidth
                 }
               )}
             >

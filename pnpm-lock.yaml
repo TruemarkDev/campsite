@@ -1956,8 +1956,8 @@ importers:
         specifier: 'catalog:'
         version: 6.1.3(@types/react@19.2.18)(react@19.2.8)
       react-hot-toast:
-        specifier: ^2.4.0
-        version: 2.4.0(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+        specifier: 'catalog:'
+        version: 2.6.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
       react-hotkeys-hook:
         specifier: 'catalog:'
         version: 5.3.3(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -10089,11 +10089,6 @@ packages:
   globrex@0.1.2:
     resolution: {integrity: sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==}
 
-  goober@2.1.12:
-    resolution: {integrity: sha512-yXHAvO08FU1JgTXX6Zn6sYCUFfB/OJSX8HHjDSgerZHZmFKAb08cykp5LBw5QnmyMcZyPRMqkdyHUSSzge788Q==}
-    peerDependencies:
-      csstype: ^3.0.10
-
   goober@2.1.19:
     resolution: {integrity: sha512-U7veizMqxyKlM58+Z5j2ngJBH/r9siDmxpvNxSw0PylF6WQvrASJEZrxh1hidRBJc2jqoBVSyOban5u8m+6Rxg==}
     peerDependencies:
@@ -13022,13 +13017,6 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
-
-  react-hot-toast@2.4.0:
-    resolution: {integrity: sha512-qnnVbXropKuwUpriVVosgo8QrB+IaPJCpL8oBI6Ov84uvHZ5QQcTp2qg6ku2wNfgJl6rlQXJIQU5q+5lmPOutA==}
-    engines: {node: '>=10'}
-    peerDependencies:
-      react: '>=16'
-      react-dom: '>=16'
 
   react-hot-toast@2.6.0:
     resolution: {integrity: sha512-bH+2EBMZ4sdyou/DPrfgIouFpcRLCJ+HoCA32UoAYHn6T3Ur5yfcDCeSr5mwldl6pFOsiocmrXMuoCJ1vV8bWg==}
@@ -24722,10 +24710,6 @@ snapshots:
 
   globrex@0.1.2: {}
 
-  goober@2.1.12(csstype@3.2.3):
-    dependencies:
-      csstype: 3.2.3
-
   goober@2.1.19(csstype@3.2.3):
     dependencies:
       csstype: 3.2.3
@@ -28079,14 +28063,6 @@ snapshots:
   react-hook-form@7.85.0(react@19.2.8):
     dependencies:
       react: 19.2.8
-
-  react-hot-toast@2.4.0(csstype@3.2.3)(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
-    dependencies:
-      goober: 2.1.12(csstype@3.2.3)
-      react: 19.2.8
-      react-dom: 19.2.8(react@19.2.8)
-    transitivePeerDependencies:
-      - csstype
 
   react-hot-toast@2.6.0(react-dom@19.2.8(react@19.2.8))(react@19.2.8):
     dependencies:
