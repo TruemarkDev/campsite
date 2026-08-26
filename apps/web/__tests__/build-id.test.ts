@@ -1,7 +1,7 @@
 import type { NextApiRequest, NextApiResponse } from 'next'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
-import handler from './build-id'
+import handler from '../pages/api/build-id'
 
 describe('build-id API route', () => {
   afterEach(() => {
