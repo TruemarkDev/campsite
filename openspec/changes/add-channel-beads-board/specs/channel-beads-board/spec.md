@@ -6,27 +6,51 @@ Campsite.
 
 ## ADDED Requirements
 
-### Requirement: SyR-1 — Channel managers can attach one Beads source
+### Requirement: SyR-1 — Authorized channel managers can pair one Beads repository
 
-The system SHALL allow a member authorized to manage a channel's integrations
-to attach, replace, or detach one Beads source for that channel. The attachment
-SHALL identify the source by an opaque project id and display name and SHALL bind
-it to one OAuth application already attached to the channel.
+The system SHALL expose Connect Beads repository in Channel details only to a
+confirmed human with an explicit kept channel membership who passes the
+dedicated source-management policy and the existing integration-management
+policy. It SHALL allow that manager to pair, replace, or detach one Beads source
+for the channel. Pairing SHALL bind an opaque Beads project id and repository
+display name to one OAuth application already attached to the channel; a typed
+display name alone SHALL NOT prove repository control.
 
 **Verification:** Test
 
-#### Scenario: Manager attaches a source
+#### Scenario: Manager starts repository setup
 
-- **WHEN** a channel integration manager selects an attached OAuth application
-  and submits an opaque Beads project id and display name
-- **THEN** the channel has one Beads source and its Board can accept snapshots
-  only from that application
+- **WHEN** an explicitly attached, confirmed channel manager selects an attached
+  connector in Channel details and starts setup
+- **THEN** Campsite creates a single-use, expiring pairing challenge bound to
+  that channel, user, connector, and organization without enabling Board
+
+#### Scenario: Repository completes pairing
+
+- **WHEN** the chosen connector completes the challenge from a Beads workspace
+  whose `bd context` identity and compatibility data are valid and the manager
+  still passes every permission check
+- **THEN** Campsite consumes the challenge, verifies one source binding, and
+  enables Board in a waiting-for-first-snapshot state
 
 #### Scenario: Ordinary viewer cannot change the source
 
 - **WHEN** a member who can view the channel but cannot manage its integrations
   attempts to attach, replace, or detach a source
 - **THEN** the system rejects the action without changing the existing source
+
+#### Scenario: Organization updater is not a channel member
+
+- **WHEN** a user has broad public-channel view or update permission but no
+  explicit kept membership in this channel
+- **THEN** Connect Beads repository is not exposed and source-management APIs
+  reject that user
+
+#### Scenario: Pairing challenge is invalid
+
+- **WHEN** a challenge is expired, already consumed, belongs to another
+  channel/user/connector, or the initiating user's permission was revoked
+- **THEN** pairing fails, no source is verified, and Board remains disabled
 
 #### Scenario: Connector application is no longer attached
 
@@ -37,9 +61,15 @@ it to one OAuth application already attached to the channel.
 #### Scenario: Source is detached
 
 - **WHEN** an authorized manager detaches the Beads source
-- **THEN** the Board returns to its unattached empty state, cached Campsite
-  snapshots for that binding are deleted, and no Beads database or repository
-  data is modified
+- **THEN** Board navigation is disabled, a viewer currently on Board returns to
+  the channel root, cached Campsite snapshots for that binding are deleted, and
+  no Beads database or repository data is modified
+
+#### Scenario: Manager replaces a verified source
+
+- **WHEN** a manager starts pairing a replacement while a current source exists
+- **THEN** the current Board remains active until the replacement verifies and
+  the source cutover occurs atomically
 
 ### Requirement: SyR-2 — Snapshot ingest is authenticated, versioned, and atomic
 
@@ -180,10 +210,10 @@ reject an open issue that is neither Ready nor Blocked or is classified as both.
 ### Requirement: SyR-5 — Channel Board is the view after Calls
 
 The system SHALL expose a Board route through the existing channel view
-switcher. A post channel SHALL show Posts, Docs, Calls, and Board in that order;
-a chat channel SHALL preserve Chat and Calls and append Board. Existing view
-shortcuts SHALL remain stable, with Board using 4 for post channels and 3 for
-chat channels.
+switcher only after a Beads source is verified. A connected post channel SHALL
+show Posts, Docs, Calls, and Board in that order; a connected chat channel SHALL
+preserve Chat and Calls and append Board. Existing view shortcuts SHALL remain
+stable, with Board using 4 for post channels and 3 for chat channels.
 
 **Verification:** Demonstration + Test
 
@@ -198,11 +228,12 @@ chat channels.
 - **THEN** Board appears after Calls, Chat remains shortcut 1, Calls remains
   shortcut 2, and Board uses shortcut 3
 
-#### Scenario: Channel has no source
+#### Scenario: Channel has no verified source
 
-- **WHEN** a member opens Board before a Beads source is attached
-- **THEN** the route shows a neutral unattached state and shows setup controls
-  only to a member authorized to manage integrations
+- **WHEN** a channel is unattached or its pairing is still pending
+- **THEN** its view switcher and hotkeys omit Board, direct route access returns
+  to the channel root without source disclosure, and only an authorized manager
+  sees setup in Channel details
 
 #### Scenario: Board is opened on a narrow viewport
 
@@ -244,11 +275,13 @@ as plain text.
 
 ### Requirement: SyR-7 — Snapshot freshness and failure are explicit
 
-The system SHALL expose the current snapshot's Beads revision, collection time,
-and successful ingest time. It SHALL keep the last successful snapshot visible
-after a failed ingest and SHALL distinguish an unattached source, an attached
-source with no successful snapshot, and a source with a current snapshot. It
-SHALL NOT claim a synchronization SLA that the publisher has not established.
+The system SHALL expose the verified source's repository display name, opaque
+Beads project id, current snapshot revision, collection time, and successful
+ingest time in Board or safe Channel details. It SHALL keep the last successful
+snapshot visible after a failed ingest and SHALL distinguish verified-without-
+snapshot from current and last-good-after-error states. Pending/unverified setup
+SHALL NOT be exposed to ordinary members. It SHALL NOT claim a synchronization
+SLA that the publisher has not established.
 
 **Verification:** Test
 

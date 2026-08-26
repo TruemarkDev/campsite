@@ -17,9 +17,10 @@
       model/update validation, and verify schema load plus model tests preserve
       all existing OAuth applications as non-agent integrations.
 - [ ] 2.2 Add `project_beads_sources` with a unique project, opaque public id,
-      connector OAuth application, opaque source project id, display name,
-      current snapshot reference, and successful-ingest metadata; verify the
-      migration applies and rolls back cleanly on an empty test database.
+      connector OAuth application, opaque source project id, repository display
+      name, verification state/time, current snapshot reference, and successful-
+      ingest metadata; add hashed single-use pairing challenges with expiry and
+      verify migrations apply and roll back cleanly on an empty test database.
 - [ ] 2.3 Add immutable `project_beads_snapshots` with source, schema/tool
       metadata, Beads branch/revision, collection/ingest timestamps, digest, and
       normalized payload; verify source-plus-digest uniqueness and current
@@ -37,14 +38,19 @@
 
 ## 3. Authorization and API contracts
 
-- [ ] 3.1 Add a Board read policy requiring a kept human or OAuth application
+- [ ] 3.1 Add `manage_beads_source?` requiring a confirmed human, explicit kept
+      project membership, and `manage_integrations?`; add a Board read policy
+      requiring a kept human or OAuth application
       project membership, and verify policy tests cover ordinary members,
       explicitly attached guests, public-channel `view-any` nonmembers, private
-      nonmembers, discarded memberships, and attached connector applications.
+      nonmembers, broad update-any nonmembers, discarded memberships, and
+      attached connector applications.
 - [ ] 3.2 Add feature-flagged source show/create/update/destroy routes and
-      Apigen controllers using `manage_integrations?`, and verify controller
-      tests cover one-source enforcement, safe empty states, replacement,
-      detach cleanup, unauthenticated requests, and forbidden viewers.
+      short-lived pairing start/complete Apigen controllers using
+      `manage_beads_source?`; verify hashed one-time expiry, connector/user/
+      channel binding, policy recheck, one-source enforcement, atomic verified
+      replacement, detach cleanup, unauthenticated requests, and forbidden
+      viewers.
 - [ ] 3.3 Implement snapshot schema v1 validation with an explicit field
       allowlist, bounded strings/collections, unique opaque dotted ids,
       timestamp parsing, protocol version checks, digest verification, and
@@ -81,6 +87,10 @@
       base URL, channel/source id, OAuth token environment variable, Beads
       binary, and repository-directory inputs; verify `--help` documents that it
       is one-shot and read-only and never prints the token or repository path.
+- [ ] 4.1a Add a pairing mode that consumes the challenge without placing it in
+      process argv or logs, submits only opaque `bd context`/`bd vc status`
+      identity and compatibility metadata, and verify it never submits the local
+      path, Git remote URL, database configuration, or credentials.
 - [ ] 4.2 Invoke only `bd --readonly -C <repo> context --json`, `vc status
       --json`, `export`, `ready --json`, and `blocked --json`, and verify command
       tests fail closed when the binary, workspace, command output, or expected
@@ -112,18 +122,20 @@
       hook tests cover scoped keys, feature-flag disablement, invalidation, and
       API error handling.
 - [ ] 5.2 Add `/[org]/projects/[projectId]/board.tsx` using the existing project
-      page provider/loading/404/title patterns, and verify route tests cover
-      member, guest-member, public nonmember, private nonmember, archived, and
-      feature-disabled states.
-- [ ] 5.3 Extend `ProjectView` with Board after Calls, shortcut 4 on post
-      channels and 3 on chat channels while preserving all current shortcuts;
-      update the exact NavigationBar and split-view route predicates, and verify
-      component tests cover normal/chat routes without changing unrelated Calls
-      behavior.
-- [ ] 5.4 Add an unattached Board state and source setup/replace/detach dialog
-      for integration managers, including the allowlisted-data and channel
-      audience warning, and verify viewers and guests never receive management
-      controls.
+      page provider/loading/404/title patterns and gate it on verified source;
+      verify route tests cover verified/pending/unattached, member, guest-member,
+      public nonmember, private nonmember, archived, detached, and feature-
+      disabled states, including return to Posts/Chat after detach.
+- [ ] 5.3 Extend `ProjectView` with Board after Calls only for a verified source,
+      shortcut 4 on post channels and 3 on chat channels while preserving all
+      current shortcuts; update the exact NavigationBar and split-view route
+      predicates, and verify normal/chat/pending/unattached/detached behavior
+      without changing unrelated Calls behavior.
+- [ ] 5.4 Add `ProjectSidebarBeadsSource` to Channel details with Connect Beads
+      repository for `viewer_can_manage_beads_source`, short-lived pairing,
+      audience/allowlisted-data preview, pending/expired retry, and verified
+      repository/source/freshness status; show replace/detach only to managers
+      and no disconnected section to ordinary viewers or guests.
 - [ ] 5.5 Build the read-only Ready, In progress, Blocked, and Closed Board with
       accessible cards and no drag dependency or write affordance; verify tests
       cover state precedence, blocker ids, zero tasks, long titles, unknown safe
@@ -131,9 +143,10 @@
 - [ ] 5.6 Add filters for id/title, type, priority, assignee, label, and Closed
       inclusion, and verify filtering changes rendered cards only and never
       sends a task mutation request.
-- [ ] 5.7 Show exact source revision, collection time, ingest time, and distinct
-      unattached/waiting/current/last-good-after-error states, and verify no UI
-      string claims an unsupported sync SLA or up-to-date status.
+- [ ] 5.7 Show repository display name, opaque source id, exact revision,
+      collection time, and ingest time across verified-waiting/current/last-good-
+      after-error states, and verify pending/unverified setup stays manager-only
+      and no UI claims an unsupported sync SLA or up-to-date status.
 - [ ] 5.8 Add the safe channel roster and organization integration
       `agent_capable` control, and verify generic integrations are not labeled as
       agents, publisher roles compose correctly, detached agents disappear, and

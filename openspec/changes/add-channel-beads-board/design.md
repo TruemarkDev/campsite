@@ -18,6 +18,13 @@ is not an appropriate roster response for ordinary channel viewers.
 Channel data export currently covers channel metadata, posts, docs, and calls;
 it has no external-task-content contract.
 
+The visible Channel details surface is `ProjectSidebar`: About, Members,
+Bookmarks, and Notifications, with the project overflow menu and Edit dialog
+nearby. `ProjectOverflowMenu` exposes Edit through `viewer_can_update`, while
+`ProjectPolicy#manage_integrations?` currently delegates to `update?`. The
+Beads connection belongs in Channel details as its own external-source section,
+not inside the general metadata form and not in organization-wide settings.
+
 There is no Beads integration in Rails or the web app. Beads 1.2.2 is installed
 from Homebrew/core at `/opt/homebrew/bin/bd`; Homebrew reports 1.2.2 as the
 latest stable release as of 2026-08-26. Its supported local-first boundary is
@@ -73,8 +80,8 @@ project proves authorization and routing, not that an agent process is online.
 
 Add `/[org]/projects/[projectId]/board.tsx` using the same provider, project
 fetching, 404, title, split-view, and sidebar patterns as the existing routes.
-`ProjectView` appends **Board** after Calls and renders the Board component when
-that route is active.
+After a source connection is verified, `ProjectView` appends **Board** after
+Calls and renders the Board component when that route is active.
 
 Post channels use shortcuts 1 Posts, 2 Docs, 3 Calls, 4 Board. Chat channels
 preserve their current 1 Chat and 2 Calls shortcuts and use 3 Board. Preserving
@@ -83,12 +90,21 @@ slot solely to make Board use 4. On narrow screens the view buttons remain in
 their existing titlebar composition but SHALL scroll or collapse without
 truncating the active view.
 
-The Board route exists even before a source is attached. Explicit project
-members receive a neutral empty state; members with `manage_integrations?` also
-receive the setup affordance. Organization members who can see a public channel
-only through `view-any` permission do not see or read its Board. Hiding the
-route from every unattached channel was rejected because it makes the capability
-hard to discover and creates route/navigation races after detach.
+When no source exists or pairing is still unverified, the view switcher and
+numeric hotkeys do not advertise Board and direct route access redirects to the
+channel root without disclosing source state. Discovery instead lives in a new
+Beads section in Channel details. For an unconnected channel that section is
+visible only to an explicitly attached, confirmed human who passes the source
+management policy. Once verified, explicit Board readers see safe source and
+freshness status there, while only managers see replace/detach controls.
+
+Detaching or replacing the current source immediately disables Board
+navigation. A viewer already on Board is returned to Posts or Chat with a
+neutral notice. This avoids an unattached Board becoming a product promise and
+makes the user's connection action the clear enablement boundary.
+
+Organization members who can see a public channel only through `view-any`
+permission do not see or read its Board or connected-source metadata.
 
 Add Board to the existing NavigationBar and split-view route predicates as a
 new route only. Calls' current omissions or inconsistencies are unrelated and
@@ -97,14 +113,18 @@ SHALL NOT be silently changed in this feature.
 ### A-2 — One project source is bound to one attached OAuth application
 
 Add a `ProjectBeadsSource` with a unique `project_id`, opaque public id,
-Beads-reported `source_project_id`, display name, connector
-`oauth_application_id`, current snapshot reference, and successful-ingest
-metadata. The connector application SHALL belong to the organization and SHALL
-remain attached to the project through the existing `ProjectMembership`
-relationship.
+Beads-reported `source_project_id`, repository display name, connector
+`oauth_application_id`, verification state/time, current snapshot reference,
+and successful-ingest metadata. The connector application SHALL belong to the
+organization and SHALL remain attached to the project through the existing
+`ProjectMembership` relationship. The display name is presentation only; the
+opaque Beads project id from `bd context --json` is the source identity.
 
-Human source create/update/destroy actions use the existing
-`manage_integrations?` policy. Snapshot ingest accepts an OAuth application
+Human source create/update/destroy actions use a dedicated
+`manage_beads_source?` policy requiring a confirmed human, an explicit kept
+project membership, and the existing `manage_integrations?` result. A public
+channel's organization-wide `view-any` or `update-any` ability without explicit
+membership is insufficient. Snapshot ingest accepts an OAuth application
 actor only when it matches the source's connector application and is still
 attached to that project. Board reads use a new policy that requires a kept
 human or OAuth-application project membership; broad `show?` permission for a
@@ -116,6 +136,34 @@ broader organization-wide public-channel audience by accident.
 This reuses existing credential issuance and revocation. A new source-specific
 secret was rejected because it would duplicate OAuth token custody and create a
 second rotation path.
+
+### A-2a — Channel details starts a short-lived repository pairing
+
+The Channel details Beads section offers **Connect Beads repository** only to a
+viewer who passes `manage_beads_source?`. Starting setup creates a single-use,
+short-lived pairing challenge bound to the channel, initiating user, chosen
+attached connector application, expected organization, and feature flag. The
+challenge is stored hashed, expires, and cannot ingest a snapshot or mutate
+channel data by itself.
+
+The repository-side publisher completes pairing from inside its configured
+working directory. It runs `bd --readonly context --json` and `bd --readonly vc
+status --json`, submits the opaque project id and compatibility metadata through
+the chosen connector, and never submits its local path, database configuration,
+Git remote URL, or credentials. Campsite rechecks the initiator's membership and
+policy plus connector attachment at completion, consumes the challenge once,
+and marks the source verified only after all identities match.
+
+If a future provider integration offers an opaque immutable repository id,
+Campsite MAY additionally verify that the initiating user can select it, but a
+GitHub-only repository grant is not required by this change: Beads works with
+local and non-GitHub repositories. Possession of a typed display name alone is
+never treated as proof of repository control.
+
+Pending/expired pairing does not enable Board. Verified pairing enables the
+route immediately and shows waiting for first snapshot until publication
+succeeds. Replacing a source uses a new challenge and leaves the current Board
+active until the replacement verifies; the cutover is atomic.
 
 ### A-3 — The repository publishes a normalized read-only snapshot
 
@@ -225,6 +273,12 @@ write design would need a connector command channel, Beads revision precondition
 per-operation authorization, conflict/error receipts, and exact proof that a
 `bd` command succeeded before updating the snapshot. Treating a local UI move
 as task truth would create split-brain state, so it is outside this change.
+
+That future write boundary is specified in
+`openspec/changes/add-ai-beads-operations`. This read-only change retains the
+source id, connector identity, revision, immutable snapshots, and explicit
+agent classification the follow-up consumes, but SHALL NOT implement its
+operation queue, grants, executor, MCP tools, or AI drafting UI.
 
 ### A-9 — Detach, archive, delete, and export preserve external custody
 
