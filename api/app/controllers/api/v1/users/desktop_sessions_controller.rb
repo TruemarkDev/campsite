@@ -5,6 +5,7 @@ module Api
     module Users
       class DesktopSessionsController < Devise::RegistrationsController
         skip_before_action :verify_authenticity_token, only: [:create]
+        around_action :force_database_writing_role, only: [:create]
 
         extend Apigen::Controller
 
@@ -23,11 +24,11 @@ module Api
           }
         end
         def create
+          sign_out(:user)
           user = warden.authenticate!(:token_authenticatable, auth_options)
-          sign_out(user)
           sign_in(user)
 
-          session[:sso_session_id] = user.login_token_sso_id
+          session[:sso_session_id] = user.consumed_login_token_sso_id
 
           render(json: {}, status: :created)
         end

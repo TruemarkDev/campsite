@@ -4,12 +4,13 @@ module Devise
   module Strategies
     class OtpAttemptAuthenticatable < Devise::Strategies::Base
       def authenticate!
-        resource = mapping.to.find(session[:otp_user_id])
+        resource = TwoFactorChallenge.user(session)
 
-        if validate_otp(resource)
-          session[:otp_user_id] = nil
+        if resource && validate_otp(resource)
+          TwoFactorChallenge.consume!(session)
           success!(resource)
         else
+          TwoFactorChallenge.record_failure!(session)
           fail!(:invalid_otp_code)
         end
       end

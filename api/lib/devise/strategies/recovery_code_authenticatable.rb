@@ -4,12 +4,13 @@ module Devise
   module Strategies
     class RecoveryCodeAuthenticatable < Devise::Strategies::Base
       def authenticate!
-        resource = mapping.to.find(session[:otp_user_id])
+        resource = TwoFactorChallenge.user(session)
 
-        if validate_recovery_code(resource)
-          session[:otp_user_id] = nil
+        if resource && validate_recovery_code(resource)
+          TwoFactorChallenge.consume!(session)
           success!(resource)
         else
+          TwoFactorChallenge.record_failure!(session)
           fail!(:invalid_recovery_code)
         end
       end

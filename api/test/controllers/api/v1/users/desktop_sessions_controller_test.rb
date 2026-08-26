@@ -19,11 +19,16 @@ module Api
           end
 
           test "authenticates a user with valid params" do
-            post internal_desktop_session_path, params: { user: { email: @user.email, token: @user.login_token } }, as: :json
+            login_token = @user.login_token
+            post internal_desktop_session_path, params: { user: { email: @user.email, token: login_token } }, as: :json
 
             assert_response :created
             warden = controller.session["warden.user.user.key"]
             assert_equal(warden.first.first, @user.id)
+            assert_nil @user.reload.login_token
+
+            post internal_desktop_session_path, params: { user: { email: @user.email, token: login_token } }, as: :json
+            assert_response :unauthorized
           end
 
           test "does not authenticates a user with invalid params" do

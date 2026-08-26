@@ -4,6 +4,13 @@ require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
   context "validations" do
+    test "requires at least 15 characters for a password" do
+      user = build(:user, password: "V7!qN2@rT9#xP4")
+
+      assert_not_predicate user, :valid?
+      assert_includes user.errors.full_messages, "Password is too short (minimum is 15 characters)"
+    end
+
     test "is invalid for a weak password" do
       user = build(:user, password: "password11")
 
