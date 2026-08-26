@@ -19,6 +19,11 @@ class GeneratePostTldrJobTest < ActiveJob::TestCase
       test "triggers a pusher event on success" do
         Current.expects(:pusher_socket_id).returns("123.456")
         Pusher.expects(:trigger)
+        Llm.any_instance.stubs(:chat).returns(<<~MARKDOWN.chomp)
+          - You asked for breakfast suggestions.
+          - You decided to have pancakes for breakfast.
+          - You received and agreed with multiple suggestions to eat pancakes.
+        MARKDOWN
 
         VCR.use_cassette("jobs/generated_tldr") do
           assert_difference -> { LlmResponse.count }, 1 do

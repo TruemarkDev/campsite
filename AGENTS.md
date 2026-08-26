@@ -71,7 +71,7 @@ Deployment: **Kamal to the homelab** — Odin `192.168.10.7` (apps, MySQL,
 Redis), Shuri `192.168.20.14` (Elasticsearch), Cloudflare Tunnel ingress; full
 design in `docs/deployment/homelab-production.md`. Worker deploys separately
 from API by design (writer custody). Secrets preflight:
-`mise exec -- script/check-campsite-kamal-secrets`. ⚠️ `api/CLAUDE.md` still
+`mise -E deploy exec -- script/check-campsite-kamal-secrets`. ⚠️ `api/CLAUDE.md` still
 says Hatchbox and Fly leftovers exist (`api/fly.toml`, `script/prod-*`) — all
 `deploy-*.yml` workflows are `.disabled`; deploys are operator-run Kamal.
 

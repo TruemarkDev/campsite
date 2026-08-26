@@ -296,13 +296,13 @@ file, a deploy YAML file, image layer, Git history, or command output. The
 dedicated `secrets_path` keeps homelab configs isolated from the legacy
 Doppler-backed `.kamal/secrets-common` file while preserving that production
 custody unchanged. The bridge references values loaded by
-`mise exec --` from the ignored, age-encrypted `mise.local.toml` or from the
-operator environment.
+`mise -E deploy exec --` from the ignored, age-encrypted
+`mise.deploy.toml` profile or from the operator environment.
 
 Before rendering, building, or deploying any Campsite config, run:
 
 ```bash
-mise exec -- script/check-campsite-kamal-secrets
+mise -E deploy exec -- script/check-campsite-kamal-secrets
 ```
 
 The preflight derives required names from every `deploy.campsite-*.yml`, checks
@@ -318,7 +318,7 @@ A build does not need runtime or accessory credentials. Before an isolated
 build, restrict the preflight to that config's BuildKit secrets:
 
 ```bash
-mise exec -- script/check-campsite-kamal-secrets --scope=build config/deploy.campsite-web.yml
+mise -E deploy exec -- script/check-campsite-kamal-secrets --scope=build config/deploy.campsite-web.yml
 ```
 
 Do not use build scope as deploy evidence; the default deploy scope remains the

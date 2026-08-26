@@ -64,7 +64,7 @@ class Comment < ApplicationRecord
     eager_load(root_includes).preload(timeline_events: TimelineEvent::SERIALIZER_PRELOADS)
   }
   scope :latest_comment_preloads, -> {
-    preload(:attachments, :subject, :integration, :oauth_application, member: OrganizationMembership::SERIALIZER_EAGER_LOAD)
+    eager_load(:attachments, :integration, :oauth_application, member: OrganizationMembership::SERIALIZER_EAGER_LOAD)
   }
   scope :eager_load_user, -> {
     eager_load(member: :user)

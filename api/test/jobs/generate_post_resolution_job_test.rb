@@ -19,6 +19,7 @@ class GeneratePostResolutionJobTest < ActiveJob::TestCase
       test "triggers a pusher event on success" do
         Current.expects(:pusher_socket_id).returns("123.456")
         Pusher.expects(:trigger)
+        Llm.any_instance.stubs(:chat).returns("Harry Potter decided to have pancakes for breakfast.")
 
         VCR.use_cassette("jobs/generated_resolution") do
           assert_difference -> { LlmResponse.count }, 1 do
@@ -32,6 +33,7 @@ class GeneratePostResolutionJobTest < ActiveJob::TestCase
       test "triggers a pusher event on success" do
         Current.expects(:pusher_socket_id).returns("123.456")
         Pusher.expects(:trigger)
+        Llm.any_instance.stubs(:chat).returns("Pancakes were chosen for breakfast.")
 
         VCR.use_cassette("jobs/generated_resolution_comment") do
           assert_difference -> { LlmResponse.count }, 1 do
