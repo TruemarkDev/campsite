@@ -78,6 +78,13 @@ class CursorPagination
 
   attr_reader :results
 
+  def hydrate!(scope)
+    ids = @results.map(&:id)
+    records_by_id = scope.where(id: ids).to_a.index_by(&:id)
+    @results = ids.filter_map { |id| records_by_id[id] }
+    self
+  end
+
   delegate :table_name, to: :@scope
 
   def per_page

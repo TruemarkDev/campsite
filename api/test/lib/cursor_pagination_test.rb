@@ -133,6 +133,27 @@ class CursorPaginationTest < ActiveSupport::TestCase
     end
   end
 
+  context "#hydrate!" do
+    test "hydrates only the selected records in pagination order" do
+      pagination = CursorPagination.new(scope: User.all, order: { created_at: :asc, id: :asc }, limit: 2).run
+      selected_ids = pagination.results.map(&:id)
+
+      hydrated = pagination.hydrate!(User.where(id: selected_ids.reverse))
+
+      assert_same pagination, hydrated
+      assert_equal selected_ids, pagination.results.map(&:id)
+    end
+
+    test "preserves before-page ordering while hydrating" do
+      pagination = CursorPagination.new(scope: User.all, before: @fourth_user.public_id, order: :asc, limit: 2).run
+      selected_ids = pagination.results.map(&:id)
+
+      pagination.hydrate!(User.where(id: selected_ids.reverse))
+
+      assert_equal selected_ids, pagination.results.map(&:id)
+    end
+  end
+
   context "#prev_cursor" do
     test "returns the public_id for the first item in the cursor" do
       pagination = CursorPagination.new(scope: User.all, before: @fourth_user.public_id, limit: 2).run

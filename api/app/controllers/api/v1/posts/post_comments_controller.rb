@@ -20,12 +20,18 @@ module Api
         def index
           authorize(current_post, :list_comments?)
 
-          comments = current_post
+          pagination_scope = current_post
             .kept_comments
             .root
-            .serializer_preloads
+          hydration_scope = pagination_scope.serializer_preloads
 
-          render_page(CommentPageSerializer, comments, order: :desc)
+          render_page(
+            CommentPageSerializer,
+            hydration_scope,
+            pagination_scope: pagination_scope,
+            hydration_scope: hydration_scope,
+            order: :desc,
+          )
         end
 
         response model: CommentCreatedSerializer, code: 201

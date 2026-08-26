@@ -1001,7 +1001,7 @@ class Post < ApplicationRecord
       .group(:subject_id)
 
     scope = Comment.where(id: subquery)
-      .serializer_preloads
+      .latest_comment_preloads
       .load_async
 
     AsyncPreloader.new(scope) do |scope|

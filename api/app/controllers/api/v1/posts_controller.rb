@@ -32,9 +32,13 @@ module Api
             { results: policy_scope(Post.in_order_of(:id, ids).feed_includes) },
           )
         else
+          scope = policy_scope(current_organization.kept_published_posts.leaves)
+
           render_page(
             PostPageSerializer,
-            policy_scope(current_organization.kept_published_posts.leaves.feed_includes),
+            scope.feed_includes,
+            pagination_scope: scope,
+            hydration_scope: scope.feed_includes,
             order: order_params(default: { last_activity_at: :desc, id: :desc }),
           )
         end
