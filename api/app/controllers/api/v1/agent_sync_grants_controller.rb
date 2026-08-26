@@ -63,7 +63,20 @@ module Api
         version = params[:description_schema_version].to_i
 
         note.with_lock do
-          return render_state(note) if params[:initialize] && note.description_state.present?
+          if params[:initialize]
+            if note.description_state.blank?
+              return render(status: :unprocessable_content, json: { code: "stale_schema" }) if version < note.description_schema_version
+
+              note.update_columns(
+                description_html: params[:description_html],
+                description_state: params[:description_state],
+                description_schema_version: version,
+              )
+            end
+
+            return render_state(note)
+          end
+
           return render(status: :unprocessable_content, json: { code: "stale_schema" }) if version < note.description_schema_version
 
           note.event_actor = @grant.organization_membership

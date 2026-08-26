@@ -132,6 +132,8 @@ module Api
 
           test "initializes an absent Yjs state only once" do
             @note.update!(description_state: nil)
+            initial_updated_at = @note.updated_at
+            initial_events_count = @note.events.count
             sign_in(@member.user)
 
             put organization_note_sync_state_path(@org.slug, @note.public_id),
@@ -159,6 +161,8 @@ module Api
             assert_equal "first-lineage", json_response["description_state"]
             assert_equal "first-lineage", @note.reload.description_state
             assert_equal "<p>first</p>", @note.description_html
+            assert_equal initial_updated_at, @note.updated_at
+            assert_equal initial_events_count, @note.events.count
           end
 
           test "cannot update with older schema" do

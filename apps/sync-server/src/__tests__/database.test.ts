@@ -183,7 +183,47 @@ describe('database fetch', () => {
 
     expect(mocks.generateJSON).toHaveBeenCalledWith('<p>Hello</p>', [])
     expect(mocks.toYdoc).toHaveBeenCalledWith({ type: 'doc' }, 'default', [])
+    expect(mocks.putRequest).toHaveBeenCalledWith(
+      'acme',
+      'note-1',
+      expect.objectContaining({
+        description_html: '<p>Hello</p>',
+        description_schema_version: 3,
+        initialize: true
+      }),
+      { headers: { Authorization: 'Bearer secret' } }
+    )
     expect(result).toEqual(Y.encodeStateAsUpdate(ydoc))
+  })
+
+  it('uses the canonical state when another cold loader wins initialization', async () => {
+    const candidate = new Y.Doc()
+    const canonical = new Y.Doc()
+
+    candidate.getText('default').insert(0, 'candidate')
+    canonical.getText('default').insert(0, 'canonical')
+    mocks.getRequest.mockResolvedValueOnce({
+      description_html: '<p>Hello</p>',
+      description_schema_version: 3,
+      description_state: null
+    })
+    mocks.generateJSON.mockReturnValueOnce({ type: 'doc' })
+    mocks.toYdoc.mockReturnValueOnce(candidate)
+    mocks.putRequest.mockResolvedValueOnce({
+      description_html: '<p>Hello</p>',
+      description_schema_version: 3,
+      description_state: Buffer.from(Y.encodeStateAsUpdate(canonical)).toString('base64'),
+      id: 'note-1'
+    })
+
+    const result = await fetch({
+      context,
+      documentName: 'note-1',
+      document: documentWithConnections()
+    } as never)
+
+    expect(result).toEqual(Y.encodeStateAsUpdate(canonical))
+    expect(result).not.toEqual(Y.encodeStateAsUpdate(candidate))
   })
 
   it('reports and rethrows API failures', async () => {

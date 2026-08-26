@@ -31,7 +31,19 @@ module Api
             # HTML-to-Yjs conversion creates a new CRDT lineage. Only the first
             # cold loader may establish it; every concurrent loader must use
             # the already-persisted state returned here.
-            if params[:initialize] && note.description_state.present?
+            if params[:initialize]
+              if note.description_state.blank?
+                if !params[:description_schema_version].nil? && params[:description_schema_version] < note.description_schema_version
+                  render_unprocessable_entity(note) && return
+                end
+
+                note.update_columns(
+                  description_html: params[:description_html],
+                  description_state: params[:description_state],
+                  description_schema_version: params[:description_schema_version],
+                )
+              end
+
               render_json(NoteSyncSerializer, note) && return
             end
 

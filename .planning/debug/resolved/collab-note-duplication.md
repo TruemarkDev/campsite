@@ -1,5 +1,5 @@
 ---
-status: investigating
+status: resolved
 trigger: "Collaborative notes worked well in January; after upgrading Tiptap and adding tables, two-person editing or table-containing notes intermittently duplicate the full document. Find the actual regression and implement a production-grade solution, not a homelab or single-user workaround."
 created: 2026-08-26
 updated: 2026-08-26
@@ -52,7 +52,7 @@ updated: 2026-08-26
 
 ## Resolution
 
-- root_cause:
-- fix:
-- verification:
-- files_changed:
+- root_cause: The Tiptap/Hocuspocus upgrade made provider construction auto-connect inside a React Strict Mode initializer, allowing discarded providers to survive. Clients also preloaded REST Yjs snapshots while the sync server independently regenerated missing state from HTML. Table/TOC initialization then supplied immediate document transactions. When two independently allocated roots met, Yjs correctly retained both complete documents.
+- fix: Providers are now created with `autoConnect: false`, connected only from the authenticated effect, and disconnected even while connecting. Collaborative editors remain non-mutating until the first authoritative server sync and no longer seed provider documents from REST state. Legacy HTML conversion is persisted through an API row lock with initialize-once semantics, and losing cold loaders use the winning canonical binary state.
+- verification: Web provider/Strict Mode tests pass; the real transformer two-loader regression keeps one heading, table, attachment, and paragraph; all 39 sync-server tests pass; 8 focused web table/TOC/provider tests pass; 28 Rails sync controller tests pass with 89 assertions; web TypeScript, sync build, Prettier, RuboCop, and diff checks pass. Sync-server standalone TypeScript remains blocked by the pre-existing `facade.ts:214` YXmlHook type error.
+- files_changed: api sync-state controllers/tests, sync-server database/tests, web provider/editor/tests, and generated API types.
