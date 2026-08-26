@@ -110,6 +110,24 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       assert_equal "insufficient_scope", json_response["error"]
     end
 
+    test "organization-owned token is unauthorized" do
+      token = create(:access_token, resource_owner: @org, application: @oauth_app, scopes: ALL_SCOPES)
+
+      mcp_request(method: "tools/list", token: token.plaintext_token)
+
+      assert_response :unauthorized
+      assert_equal "invalid_token", json_response["error"]
+    end
+
+    test "token for a discarded application is unauthorized" do
+      @oauth_app.discard
+
+      mcp_request(method: "tools/list", token: @token.plaintext_token)
+
+      assert_response :unauthorized
+      assert_equal "invalid_token", json_response["error"]
+    end
+
     test "HEAD is rejected like the unsupported GET transport" do
       head "/mcp", headers: bearer_token_header(@token.plaintext_token)
 

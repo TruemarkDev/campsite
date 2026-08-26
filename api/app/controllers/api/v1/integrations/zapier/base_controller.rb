@@ -8,16 +8,31 @@ module Api
           include RequestRescuable
           include RequestReturnable
 
+          READ_SCOPE = "read_organization"
+          WRITE_SCOPE = "write_organization"
+
           before_action :authenticate
 
           private
 
           def authenticate
-            head(:unauthorized) unless valid_integration? || valid_doorkeeper_token?
+            head(:unauthorized) unless valid_integration? || valid_zapier_oauth_token?
           end
 
           def valid_integration?
-            token.present? && integration&.valid?
+            token.present? && integration&.valid? && integration.owner_type == Organization.polymorphic_name
+          end
+
+          def valid_zapier_oauth_token?
+            doorkeeper_token&.accessible? &&
+              doorkeeper_token.owned_by_organization? &&
+              doorkeeper_token.application&.kept? &&
+              doorkeeper_token.application.zapier? &&
+              doorkeeper_token.scopes.exists?(required_oauth_scope)
+          end
+
+          def required_oauth_scope
+            request.get? || request.head? ? READ_SCOPE : WRITE_SCOPE
           end
 
           def token
@@ -33,10 +48,10 @@ module Api
           end
 
           def current_organization
-            @current_organization ||= if token.present? && integration.owner_type == "Organization"
+            @current_organization ||= if valid_integration?
               integration.owner
-            elsif doorkeeper_token
-              Organization.find_by(id: doorkeeper_token.resource_owner_id)
+            elsif valid_zapier_oauth_token?
+              doorkeeper_token.resource_owner
             end
           end
         end

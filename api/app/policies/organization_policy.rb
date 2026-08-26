@@ -71,7 +71,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def create_oauth_access_grant?
-    confirmed_user? && org_member?
+    confirmed_user? && org_member? && organization_membership.role_has_permission?(resource: Role::OAUTH_APPLICATION_RESOURCE, permission: Role::CREATE_ACTION)
   end
 
   def list_posts?
@@ -197,7 +197,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def org_member?
-    @record.members.include?(@user)
+    organization_membership.present?
   end
 
   def org_token?
@@ -205,6 +205,8 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def organization_membership
-    @record.kept_memberships.find_by!(user_id: @user.id)
+    return @organization_membership if defined?(@organization_membership)
+
+    @organization_membership = @record.kept_memberships.find_by(user_id: @user&.id)
   end
 end

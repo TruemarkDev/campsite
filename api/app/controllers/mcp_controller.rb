@@ -49,7 +49,7 @@ class McpController < ActionController::API
   private
 
   def authenticate_mcp!
-    return if doorkeeper_token&.accessible?
+    return if valid_mcp_token?
 
     # RFC 9728: point unauthenticated clients at the protected-resource metadata so
     # they can discover how to authorize.
@@ -58,6 +58,13 @@ class McpController < ActionController::API
       json: { error: "invalid_token", error_description: "A valid bearer access token is required." },
       status: :unauthorized,
     )
+  end
+
+  def valid_mcp_token?
+    doorkeeper_token&.accessible? &&
+      doorkeeper_token.owned_by_user? &&
+      doorkeeper_token.application&.kept? &&
+      doorkeeper_token.resource_owner.present?
   end
 
   def require_mcp_scope!
@@ -86,12 +93,12 @@ class McpController < ActionController::API
   end
 
   def current_mcp_user
-    return unless doorkeeper_token
+    return unless valid_mcp_token?
 
     if defined?(@current_mcp_user)
       @current_mcp_user
     else
-      @current_mcp_user = User.find_by(id: doorkeeper_token.resource_owner_id)
+      @current_mcp_user = doorkeeper_token.resource_owner
     end
   end
 

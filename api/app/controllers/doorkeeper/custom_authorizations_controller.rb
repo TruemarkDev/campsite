@@ -15,23 +15,27 @@ module Doorkeeper
 
     around_action :force_database_writing_role, only: [:new]
 
-    before_action :ensure_current_user_is_authorized_for_resource_owner, only: [:create]
     before_action :ensure_application_is_not_discarded
+    before_action :ensure_current_user_is_authorized_for_resource_owner, only: [:create]
     before_action :ensure_cimd_request_is_valid
 
     private
 
     def ensure_current_user_is_authorized_for_resource_owner
-      resource_owner_id = params[:resource_owner_id] || current_resource_owner.id
-      resource_owner_class = if params.key?(:resource_owner_type)
-        RESOURCE_OWNER_CLASSES[params[:resource_owner_type]]
-      else
-        current_resource_owner.class
+      expected_owner_class = @oauth_application.tokens_owned_by_organizations? ? Organization : User
+      requested_owner_class = RESOURCE_OWNER_CLASSES[params[:resource_owner_type]] if params.key?(:resource_owner_type)
+
+      if params.key?(:resource_owner_type) && !requested_owner_class
+        return render_oauth_error("invalid_request", "Unsupported resource owner type.")
       end
 
-      return render_oauth_error("invalid_request", "Unsupported resource owner type.") unless resource_owner_class
+      if requested_owner_class && requested_owner_class != expected_owner_class
+        return render_oauth_error("invalid_request", "Resource owner type is not allowed for this client.")
+      end
 
-      authorize(resource_owner_class.find(resource_owner_id), :create_oauth_access_grant?)
+      resource_owner_id = params[:resource_owner_id] || current_resource_owner.id
+
+      authorize(expected_owner_class.find(resource_owner_id), :create_oauth_access_grant?)
     end
 
     def ensure_application_is_not_discarded
