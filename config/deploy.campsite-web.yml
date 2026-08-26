@@ -36,7 +36,7 @@ builder:
 env:
   clear:
     NODE_ENV: production
-    PORT: "3000"
+    PORT: '3000'
   secret:
     - REVALIDATE_STATIC_CACHE_TOKEN
 
