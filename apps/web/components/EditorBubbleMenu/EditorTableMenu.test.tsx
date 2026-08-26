@@ -24,7 +24,9 @@ describe('EditorTableMenu', () => {
   }
 
   function tableRows(instance: Editor) {
-    return instance.getJSON().content?.find((node) => node.type === 'table')?.content || []
+    const table = instance.state.doc.content.content.find((node) => node.type.name === 'table')
+
+    return table?.content.content || []
   }
 
   function tableCellPositions(instance: Editor) {
@@ -94,13 +96,13 @@ describe('EditorTableMenu', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Merge selected cells' }))
 
-    expect(tableRows(instance)[0].content).toHaveLength(1)
-    expect(tableRows(instance)[0].content?.[0].attrs?.colspan).toBe(2)
+    expect(tableRows(instance)[0].childCount).toBe(1)
+    expect(tableRows(instance)[0].child(0).attrs.colspan).toBe(2)
 
     fireEvent.click(screen.getByRole('button', { name: 'Split cell' }))
 
-    expect(tableRows(instance)[0].content).toHaveLength(2)
-    expect(tableRows(instance)[0].content?.[0].attrs?.colspan).toBe(1)
+    expect(tableRows(instance)[0].childCount).toBe(2)
+    expect(tableRows(instance)[0].child(0).attrs.colspan).toBe(1)
   })
 
   it('toggles header rows and columns', () => {
@@ -110,11 +112,11 @@ describe('EditorTableMenu', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Toggle header row' }))
 
-    expect(tableRows(instance)[0].content?.map((cell) => cell.type)).toEqual(['tableHeader', 'tableHeader'])
+    expect(tableRows(instance)[0].content.content.map((cell) => cell.type.name)).toEqual(['tableHeader', 'tableHeader'])
 
     fireEvent.click(screen.getByRole('button', { name: 'Toggle header column' }))
 
-    expect(tableRows(instance).map((row) => row.content?.map((cell) => cell.type))).toEqual([
+    expect(tableRows(instance).map((row) => row.content.content.map((cell) => cell.type.name))).toEqual([
       ['tableHeader', 'tableHeader'],
       ['tableHeader', 'tableCell']
     ])
@@ -128,7 +130,7 @@ describe('EditorTableMenu', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Align right' }))
     fireEvent.click(screen.getByRole('button', { name: 'Set cell background' }))
 
-    expect(tableRows(instance)[0].content?.[0].attrs).toMatchObject({
+    expect(tableRows(instance)[0].child(0).attrs).toMatchObject({
       align: 'right',
       backgroundColor: 'var(--bg-quaternary)'
     })
@@ -140,7 +142,7 @@ describe('EditorTableMenu', () => {
     expect(clearBackground.disabled).toBe(false)
     fireEvent.click(clearBackground)
 
-    expect(tableRows(instance)[0].content?.[0].attrs?.backgroundColor).toBeNull()
+    expect(tableRows(instance)[0].child(0).attrs.backgroundColor).toBeNull()
     expect(instance.getHTML()).not.toContain('background-color: var(--bg-quaternary)')
   })
 })
