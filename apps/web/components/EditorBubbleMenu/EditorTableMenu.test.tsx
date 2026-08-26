@@ -13,6 +13,30 @@ vi.mock('@tiptap/react/menus', () => ({
 describe('EditorTableMenu', () => {
   let editor: Editor | undefined
 
+  function insertTable(options: { rows?: number; cols?: number; withHeaderRow?: boolean } = {}) {
+    const instance = editor!
+
+    act(() => {
+      instance.commands.insertTable({ rows: 2, cols: 2, withHeaderRow: false, ...options })
+    })
+
+    return instance
+  }
+
+  function tableRows(instance: Editor) {
+    return instance.getJSON().content?.find((node) => node.type === 'table')?.content || []
+  }
+
+  function tableCellPositions(instance: Editor) {
+    const positions: number[] = []
+
+    instance.state.doc.descendants((node, position) => {
+      if (node.type.name === 'tableCell' || node.type.name === 'tableHeader') positions.push(position)
+    })
+
+    return positions
+  }
+
   beforeEach(() => {
     editor = new Editor({
       extensions: [Document, Paragraph, Text, Table, TableRow, TableHeader, TableCell],
@@ -37,9 +61,7 @@ describe('EditorTableMenu', () => {
     expect(deleteRow.disabled).toBe(true)
     expect(deleteColumn.disabled).toBe(true)
 
-    act(() => {
-      instance.commands.insertTable({ rows: 2, cols: 2, withHeaderRow: false })
-    })
+    insertTable()
 
     expect(addRow.disabled).toBe(false)
     expect(addColumn.disabled).toBe(false)
@@ -57,5 +79,68 @@ describe('EditorTableMenu', () => {
 
     fireEvent.click(deleteColumn)
     expect(instance.state.doc.firstChild?.firstChild?.childCount).toBe(2)
+  })
+
+  it('merges and splits a selected cell range', () => {
+    const instance = insertTable()
+
+    render(<EditorTableMenu editor={instance} />)
+
+    const [firstCell, secondCell] = tableCellPositions(instance)
+
+    act(() => {
+      instance.commands.setCellSelection({ anchorCell: firstCell, headCell: secondCell })
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Merge selected cells' }))
+
+    expect(tableRows(instance)[0].content).toHaveLength(1)
+    expect(tableRows(instance)[0].content?.[0].attrs?.colspan).toBe(2)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Split cell' }))
+
+    expect(tableRows(instance)[0].content).toHaveLength(2)
+    expect(tableRows(instance)[0].content?.[0].attrs?.colspan).toBe(1)
+  })
+
+  it('toggles header rows and columns', () => {
+    const instance = insertTable()
+
+    render(<EditorTableMenu editor={instance} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle header row' }))
+
+    expect(tableRows(instance)[0].content?.map((cell) => cell.type)).toEqual(['tableHeader', 'tableHeader'])
+
+    fireEvent.click(screen.getByRole('button', { name: 'Toggle header column' }))
+
+    expect(tableRows(instance).map((row) => row.content?.map((cell) => cell.type))).toEqual([
+      ['tableHeader', 'tableHeader'],
+      ['tableHeader', 'tableCell']
+    ])
+  })
+
+  it('persists cell alignment and background attributes', () => {
+    const instance = insertTable()
+
+    render(<EditorTableMenu editor={instance} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Align right' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Set cell background' }))
+
+    expect(tableRows(instance)[0].content?.[0].attrs).toMatchObject({
+      align: 'right',
+      backgroundColor: 'var(--bg-quaternary)'
+    })
+    expect(instance.getHTML()).toContain('text-align: right')
+    expect(instance.getHTML()).toContain('background-color: var(--bg-quaternary)')
+
+    const clearBackground = screen.getByRole('button', { name: 'Clear cell background' }) as HTMLButtonElement
+
+    expect(clearBackground.disabled).toBe(false)
+    fireEvent.click(clearBackground)
+
+    expect(tableRows(instance)[0].content?.[0].attrs?.backgroundColor).toBeNull()
+    expect(instance.getHTML()).not.toContain('background-color: var(--bg-quaternary)')
   })
 })

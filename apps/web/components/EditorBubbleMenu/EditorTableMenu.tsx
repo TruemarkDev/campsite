@@ -36,7 +36,8 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
       toggleHeaderRow: editor.can().toggleHeaderRow(),
       toggleHeaderColumn: editor.can().toggleHeaderColumn(),
       setCellAttribute: editor.can().setCellAttribute('align', 'left'),
-      setBackgroundColor: editor.can().setCellAttribute('backgroundColor', 'var(--bg-quaternary)')
+      setBackgroundColor: editor.can().setCellAttribute('backgroundColor', 'var(--bg-quaternary)'),
+      clearBackgroundColor: editor.can().setCellAttribute('backgroundColor', null)
     })
   })
 
@@ -148,7 +149,7 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
           tooltip='Clear cell background'
           aria-label='Clear cell background'
           onClick={() => runCellAttribute('backgroundColor', null)}
-          disabled={!commandAvailability.setBackgroundColor}
+          disabled={!commandAvailability.clearBackgroundColor}
         />
         <BubbleMenuSeparator />
         <BubbleMenuButton
