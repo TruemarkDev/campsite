@@ -1,11 +1,13 @@
-service: campsite-api-tokdio
+service: campsite-api-staging
 image: truemarkdev/campsite-api
 secrets_path: .kamal/campsite-secrets
 deploy_timeout: 90
 
 servers:
   web:
-    - 192.168.10.7
+    hosts:
+      - 192.168.10.7
+    cmd: "sh -c 'bin/rails db:migrate && exec bundle exec puma'"
 
 proxy:
   ssl: false
@@ -65,9 +67,9 @@ env:
     SMTP_OPEN_TIMEOUT: "15"
     SMTP_READ_TIMEOUT: "25"
     ALLOWED_HOSTS: api.camp.home,auth.camp.home,admin.camp.home,cdn.camp.home,camp-api.tokdio.com,camp-auth.tokdio.com,camp-admin.tokdio.com,camp-cdn.tokdio.com
-    REDIS_URL: redis://campsite-api-tokdio-redis:6379/0
-    REDIS_SIDEKIQ_URL: redis://campsite-api-tokdio-redis:6379/1
-    RACK_ATTACK_REDIS_URL: redis://campsite-api-tokdio-redis:6379/2
+    REDIS_URL: redis://campsite-api-staging-redis:6379/0
+    REDIS_SIDEKIQ_URL: redis://campsite-api-staging-redis:6379/1
+    RACK_ATTACK_REDIS_URL: redis://campsite-api-staging-redis:6379/2
     SIDEKIQ_SCHEDULER_ENABLED: "false"
     S3_REGION: us-east-1
     S3_ENDPOINT: http://s3.camp.home
@@ -84,7 +86,7 @@ env:
 
 accessories:
   mysql:
-    service: campsite-api-tokdio-mysql
+    service: campsite-api-staging-mysql
     image: mysql:8.4@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
     host: 192.168.10.7
     env:
@@ -95,6 +97,8 @@ accessories:
         - MYSQL_ROOT_PASSWORD
         - MYSQL_PASSWORD
     volumes:
+      # Keep the established volume name so this naming migration cannot
+      # create an empty database.
       - campsite-api-tokdio_mysql-data:/var/lib/mysql
     options:
       restart: unless-stopped
@@ -106,11 +110,13 @@ accessories:
       health-start-period: 30s
 
   redis:
-    service: campsite-api-tokdio-redis
+    service: campsite-api-staging-redis
     image: redis:8.2-alpine@sha256:30abb90e62f14b737010746def3ba99cc79fe19dcdb3d37b41f21fc62e7da19d
     host: 192.168.10.7
     cmd: redis-server --appendonly yes --appendfsync everysec --maxmemory 256mb --maxmemory-policy noeviction
     volumes:
+      # Keep the established volume name so queues and AOF state survive the
+      # service-identity cutover.
       - campsite-api-tokdio_redis-data:/data
     options:
       restart: unless-stopped
@@ -121,7 +127,7 @@ accessories:
       health-retries: 12
 
   objects:
-    service: campsite-api-tokdio-objects
+    service: campsite-api-staging-objects
     image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z@sha256:064117214caceaa8d8a90ef7caa58f2b2aeb316b5156afe9ee8da5b4d83e12c8
     host: 192.168.10.7
     cmd: server /data --console-address :9001
@@ -130,6 +136,7 @@ accessories:
         - MINIO_ROOT_USER
         - MINIO_ROOT_PASSWORD
     volumes:
+      # This legacy MinIO data remains mounted by its established volume name.
       - campsite-api-tokdio_objects-data:/data
     options:
       restart: unless-stopped
@@ -140,14 +147,14 @@ accessories:
       health-retries: 12
 
   elasticsearch:
-    service: campsite-api-tokdio-elasticsearch
+    service: campsite-api-staging-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:9.5.0@sha256:8818ab9af72d7482e38a9d6f0454d5ee667564a25bbdc42360c0f9b8f8f72fc5
     host: shuri@192.168.20.14
     port: "9201:9200"
     env:
       clear:
-        cluster.name: campsite-tokdio
-        node.name: campsite-tokdio-es01
+        cluster.name: campsite-staging
+        node.name: campsite-staging-es01
         discovery.type: single-node
         xpack.security.enabled: "true"
         node.store.allow_mmap: "false"
@@ -155,8 +162,10 @@ accessories:
       secret:
         - ELASTIC_PASSWORD
     files:
-      - config/elasticsearch/shadow-heap.options:/usr/share/elasticsearch/config/jvm.options.d/heap.options:ro
+      - config/elasticsearch/staging-heap.options:/usr/share/elasticsearch/config/jvm.options.d/heap.options:ro
     volumes:
+      # Elasticsearch data remains under its established volume name. The
+      # separately documented 8.8-to-9.5 reindex is not part of this rename.
       - campsite-api-tokdio_elasticsearch-data:/usr/share/elasticsearch/data
     options:
       restart: unless-stopped

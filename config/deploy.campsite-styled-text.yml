@@ -1,4 +1,4 @@
-service: campsite-styled-text-tokdio
+service: campsite-styled-text-staging
 image: truemarkdev/campsite-styled-text
 secrets_path: .kamal/campsite-secrets
 

@@ -1,4 +1,4 @@
-service: campsite-web-tokdio
+service: campsite-web-public-staging
 image: truemarkdev/campsite-web
 secrets_path: .kamal/campsite-secrets
 

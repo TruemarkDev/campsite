@@ -1,4 +1,4 @@
-service: campsite-html-to-image-tokdio
+service: campsite-html-to-image-staging
 image: truemarkdev/campsite-html-to-image
 secrets_path: .kamal/campsite-secrets
 

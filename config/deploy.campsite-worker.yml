@@ -1,7 +1,7 @@
-# Sidekiq is intentionally isolated from the Rails web deployment. Do not
-# deploy this service until writer custody has moved away from the legacy
-# production worker and queue consumption has been explicitly authorized.
-service: campsite-worker-tokdio
+# Sidekiq is intentionally isolated from the Rails web deployment. Writer
+# custody belongs to this staging worker; keep the scheduler disabled unless
+# its separate promotion step is explicitly authorized.
+service: campsite-worker-staging
 image: truemarkdev/campsite-worker
 secrets_path: .kamal/campsite-secrets
 
@@ -51,9 +51,9 @@ env:
     SMTP_STARTTLS: "false"
     SMTP_OPEN_TIMEOUT: "15"
     SMTP_READ_TIMEOUT: "25"
-    REDIS_URL: redis://campsite-api-tokdio-redis:6379/0
-    REDIS_SIDEKIQ_URL: redis://campsite-api-tokdio-redis:6379/1
-    RACK_ATTACK_REDIS_URL: redis://campsite-api-tokdio-redis:6379/2
+    REDIS_URL: redis://campsite-api-staging-redis:6379/0
+    REDIS_SIDEKIQ_URL: redis://campsite-api-staging-redis:6379/1
+    RACK_ATTACK_REDIS_URL: redis://campsite-api-staging-redis:6379/2
     SIDEKIQ_SCHEDULER_ENABLED: "false"
     S3_REGION: us-east-1
     S3_ENDPOINT: http://s3.camp.home
