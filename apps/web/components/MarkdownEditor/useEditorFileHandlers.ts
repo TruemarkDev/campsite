@@ -23,7 +23,7 @@ export function useEditorFileHandlers({ editor, enabled = true, upload }: FileDr
 
   const handleDrop = useCallback(
     (editor: TTEditor, props: DropProps) => {
-      if (!editor) return false
+      if (!editor || editor.isDestroyed) return false
 
       if (props.dataTransfer && props.dataTransfer.files && props.dataTransfer.files[0]) {
         props.preventDefault()
@@ -50,7 +50,7 @@ export function useEditorFileHandlers({ editor, enabled = true, upload }: FileDr
   const imperativeHandlers = useMemo(
     () => ({
       handleDrop: (event: DragEvent<HTMLDivElement>) => {
-        if (!editor) return
+        if (!editor || editor.isDestroyed || !enabled) return
         handleDrop(editor, event)
         setTailDropcursorVisible(false)
       },
@@ -59,19 +59,22 @@ export function useEditorFileHandlers({ editor, enabled = true, upload }: FileDr
         setTailDropcursorVisible(
           // disable if the event is over the element
           isOver &&
+            enabled &&
+            !!editor &&
             // do not show if there are no files
             !!event.dataTransfer?.types.includes('Files') &&
             // if the editor contains the point, let the dropcursor plugin show the cursor
-            !editor?.view.dom.contains(event.target as Node)
+            !editor.isDestroyed &&
+            !editor.view.dom.contains(event.target as Node)
         )
       }
     }),
-    [editor, handleDrop]
+    [editor, enabled, handleDrop]
   )
 
   const onDrop = useCallback(
     (event: DragEvent<HTMLDivElement>) => {
-      if (!editor) return
+      if (!editor || editor.isDestroyed) return
       if (!enabled) return
 
       // if dragging and holding the "copy" modifier, bail
@@ -86,7 +89,7 @@ export function useEditorFileHandlers({ editor, enabled = true, upload }: FileDr
 
   const onPaste = useCallback(
     (event: ClipboardEvent<HTMLDivElement>) => {
-      if (!editor) return
+      if (!editor || editor.isDestroyed) return
       if (!enabled) return
 
       if (event.clipboardData && event.clipboardData.files && event.clipboardData.files[0]) {
@@ -101,7 +104,7 @@ export function useEditorFileHandlers({ editor, enabled = true, upload }: FileDr
 
   const uploadAndAppendAttachments = useCallback(
     async (files: File[]) => {
-      if (!editor || !enabled) return
+      if (!editor || editor.isDestroyed || !enabled) return
 
       // inserting at the end because the UX for inserting a new line above an attachment at the start of a doc
       // is still a little clunky. eventually we probably just want to insert the attachment wherever your cursor is.

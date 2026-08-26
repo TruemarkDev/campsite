@@ -8,7 +8,8 @@ import {
   focusAtStartWithNewline,
   getMarkdownExtensions,
   MediaGallery,
-  MediaGalleryItem
+  MediaGalleryItem,
+  Placeholder
 } from '@campsite/editor'
 import { Attachment } from '@campsite/types/generated'
 import { useHasMounted } from '@campsite/ui/src/hooks'
@@ -135,6 +136,9 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
   const hasMounted = useHasMounted()
   const linkOptions = useControlClickLink()
   const hasRelativeTime = useCurrentUserOrOrganizationHasFeature('relative_time')
+  const placeholderRef = useRef(placeholder)
+
+  placeholderRef.current = placeholder
 
   const inlineAttachmentsRef = useRef<Set<string> | null>(null)
 
@@ -151,7 +155,15 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
     return [
       ...getMarkdownExtensions({
         link: linkOptions,
-        placeholder,
+        placeholder: (props) => {
+          const currentPlaceholder = placeholderRef.current
+
+          if (currentPlaceholder !== undefined) return currentPlaceholder
+
+          const defaultPlaceholder = Placeholder.options.placeholder
+
+          return typeof defaultPlaceholder === 'function' ? defaultPlaceholder(props) : defaultPlaceholder
+        },
 
         postNoteAttachment: {
           onCreateLinkAttachment: enableInlineAttachments ? createLinkAttachment : undefined,
@@ -209,7 +221,6 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
     ]
   }, [
     linkOptions,
-    placeholder,
     enableInlineAttachments,
     createLinkAttachment,
     enableInlineLinks,
@@ -337,12 +348,8 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
   // hacky solution to make the placeholder reactive
   // https://github.com/ueberdosis/tiptap/issues/1935#issuecomment-1344072244
   useEffect(() => {
-    if (placeholder !== '') {
-      editor.extensionManager.extensions.filter((extension) => extension.name === 'placeholder')[0].options[
-        'placeholder'
-      ] = placeholder
-      editor.view.dispatch(editor.state.tr)
-    }
+    if (editor.isDestroyed) return
+    editor.view.dispatch(editor.state.tr)
   }, [editor, placeholder])
 
   useEffect(() => {
@@ -359,7 +366,7 @@ const MarkdownEditor = forwardRef<MarkdownEditorRef, Props>((props, ref) => {
     if (hasMounted && autoFocus) {
       try {
         editor.commands?.focus(autoFocus)
-      } catch (e) {
+      } catch {
         // Do nothing, this can crash if the editor is not mounted and we try to focus it (e.g. when the editor HMR)
       }
     }

@@ -30,7 +30,7 @@ import { useUploadNoteAttachments } from './Attachments/useUploadAttachments'
 
 export const ADD_ATTACHMENT_SHORTCUT = 'mod+shift+u'
 
-interface CommandItemProps {
+export interface CommandItemProps {
   title: string
   searchTerms?: string[]
   icon: ReactNode
@@ -43,7 +43,7 @@ interface CommandProps {
   range: Range
 }
 
-const COMMANDS: CommandItemProps[] = [
+export const COMMANDS: CommandItemProps[] = [
   {
     title: 'Add a file',
     searchTerms: [
@@ -164,6 +164,8 @@ const COMMANDS: CommandItemProps[] = [
 
       // open the toggle section after creating it
       setTimeout(() => {
+        if (editor.isDestroyed) return
+
         // range.from will point to the summary element. get its parent, then find the button, then click it.
         const summaryEl = editor.view.nodeDOM(range.from) as HTMLElement | null
         const parentEl = summaryEl?.closest('[data-type="details"]')

@@ -11,7 +11,7 @@ import { SoftbreakMarkdownParser } from './extensions/SoftbreakMarkdownParser'
 export interface GetMarkdownExtensionsOptions {
   link?: Partial<E.LinkOptions>
 
-  placeholder?: string
+  placeholder?: E.PlaceholderOptions['placeholder']
 
   mention?: Partial<E.MentionOptions>
 

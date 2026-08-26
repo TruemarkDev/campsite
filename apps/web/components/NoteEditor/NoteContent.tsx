@@ -70,7 +70,7 @@ export const NoteContent = memo(
     const [aiEditRange, setAiEditRange] = useState<Range | null>(null)
     const hasAiNoteEditing = useCurrentUserOrOrganizationHasFeature('ai_note_editing')
 
-    const canUploadAttachments = editable === 'all'
+    const canUploadAttachments = editable === 'all' && !isSyncError
     const upload = useUploadNoteAttachments({ noteId, enabled: canUploadAttachments })
 
     const editor = useNoteEditor({
@@ -152,13 +152,13 @@ export const NoteContent = memo(
         <LayeredHotkeys
           keys={ADD_ATTACHMENT_SHORTCUT}
           callback={() => {
-            if (!editor.isFocused) return
+            if (!canUploadAttachments || editor.isDestroyed || !editor.isFocused) return
 
             const input = document.createElement('input')
 
             input.type = 'file'
             input.onchange = async () => {
-              if (input.files?.length) {
+              if (!editor.isDestroyed && input.files?.length) {
                 upload({
                   files: Array.from(input.files),
                   editor

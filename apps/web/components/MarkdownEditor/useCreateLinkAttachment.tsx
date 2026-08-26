@@ -92,7 +92,9 @@ export function useCreateLinkAttachment() {
         }
       })
 
-      editor.commands.updateAttachment(tempAttachment.id, attachment)
+      if (!editor.isDestroyed) {
+        editor.commands.updateAttachment(tempAttachment.id, attachment)
+      }
     },
     [queryClient, scope, createAttachment, refetchFigmaIntegration, createFigmaFileAttachment]
   )

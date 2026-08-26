@@ -23,7 +23,7 @@ export function AiEditDialog({ editor, noteId, range, onClose }: Props) {
 
   const submit = async (event: FormEvent) => {
     event.preventDefault()
-    if (!range || !instruction.trim()) return
+    if (!range || !instruction.trim() || editor.isDestroyed) return
 
     const documentEnd = editor.state.doc.content.size
     const response = await mutation
@@ -38,7 +38,7 @@ export function AiEditDialog({ editor, noteId, range, onClose }: Props) {
       })
       .catch(() => null)
 
-    if (!response) return
+    if (!response || editor.isDestroyed) return
 
     const attributes = {
       actorId: response.actor_id,
