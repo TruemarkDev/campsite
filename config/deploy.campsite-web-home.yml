@@ -1,6 +1,7 @@
 service: campsite-web-home-staging
 image: truemarkdev/campsite-web-home
 secrets_path: .kamal/campsite-secrets
+deploy_timeout: 60
 
 servers:
   web:

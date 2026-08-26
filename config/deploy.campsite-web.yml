@@ -1,6 +1,7 @@
 service: campsite-web-public-staging
 image: truemarkdev/campsite-web
 secrets_path: .kamal/campsite-secrets
+deploy_timeout: 60
 
 servers:
   web:
