@@ -10,7 +10,8 @@ module Api
         THREAD_CHANNEL_NAME_REGEX = /^private-thread-(?<thread_id>.*)$/
         NOTE_CHANNEL_NAME_REGEX = /^presence-note-(?<note_id>.*)$/
 
-        before_action :authorize
+        before_action :authorize_channel
+        before_action :skip_authorization, only: :create
         skip_before_action :require_authenticated_user, only: :create
         skip_before_action :require_authenticated_organization_membership, only: :create
 
@@ -23,7 +24,7 @@ module Api
 
         private
 
-        def authorize
+        def authorize_channel
           case params[:channel_name]
           when /^private-user-/
             return if current_user && current_user.channel_name == params[:channel_name]
@@ -35,7 +36,7 @@ module Api
             return if thread && Pundit.policy!(current_user, thread).show?
           when /^presence-note-/
             note_id = params[:channel_name].match(NOTE_CHANNEL_NAME_REGEX)[:note_id]
-            return Note.viewable_by(current_user).exists?(public_id: note_id)
+            return if Note.viewable_by(current_user).exists?(public_id: note_id)
           when ORGANIZATION_CHANNEL_NAME_REGEX
             slug = params[:channel_name].match(ORGANIZATION_CHANNEL_NAME_REGEX)[:organization_slug]
             organization = Organization.find_by(slug: slug)

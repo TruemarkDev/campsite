@@ -25,6 +25,7 @@ module Api
       before_action :ensure_cal_dot_com_token_access_restricted
       before_action :authorize_rack_mini_profiler
       before_action :set_user_preferred_timezone, if: proc { user_signed_in? && current_user.preferred_timezone.blank? }
+      after_action :verify_authorized
 
       def render_unauthorized_error(_error = nil)
         render_error(status: :unauthorized, code: "unauthorized", message: "Sign in or sign up before continuing")
@@ -218,6 +219,14 @@ module Api
       end
 
       private
+
+      def authorize_current_user
+        authorize(current_user, :manage_self?)
+      end
+
+      def authorize_current_organization_membership
+        authorize(current_organization_membership, :manage_self?)
+      end
 
       def authorize_rack_mini_profiler
         return unless current_user&.staff?

@@ -9,6 +9,7 @@ module Api
           skip_before_action :require_authenticated_organization_membership
 
           before_action :validate_request
+          before_action :skip_authorization, only: :create
 
           rescue_from ::LinearEvent::UnsupportedTypeError, with: :render_ok
           rescue_from ::LinearEvent::InvalidOrganizationError, with: :render_ok

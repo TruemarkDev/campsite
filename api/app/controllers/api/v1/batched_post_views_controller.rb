@@ -7,6 +7,7 @@ module Api
 
       skip_before_action :require_authenticated_user, only: :create
       skip_before_action :require_authenticated_organization_membership, only: :create
+      before_action :skip_authorization, only: :create
 
       VIEW_REQUEST_PARAMS = {
         type: :object,

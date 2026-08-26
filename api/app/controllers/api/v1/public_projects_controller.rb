@@ -4,6 +4,7 @@ module Api
   module V1
     class PublicProjectsController < BaseController
       skip_before_action :require_authenticated_organization_membership, only: :show
+      before_action :skip_authorization, only: :show
 
       extend Apigen::Controller
 

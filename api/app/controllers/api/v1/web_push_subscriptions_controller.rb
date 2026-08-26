@@ -7,6 +7,8 @@ module Api
 
       skip_before_action :require_authenticated_organization_membership, only: [:create]
 
+      before_action :authorize_current_user, only: :create
+
       response code: 204
       request_params do
         {

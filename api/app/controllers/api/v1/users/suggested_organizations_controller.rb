@@ -6,6 +6,8 @@ module Api
       class SuggestedOrganizationsController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: :index
 
+        before_action :authorize_current_user, only: :index
+
         extend Apigen::Controller
 
         response model: SuggestedOrganizationSerializer, code: 200, is_array: true

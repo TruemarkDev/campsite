@@ -6,6 +6,8 @@ module Api
       class OrganizationInvitationsController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: :index
 
+        before_action :authorize_current_user, only: :index
+
         extend Apigen::Controller
 
         response model: OrganizationInvitationSerializer, is_array: true, code: 200

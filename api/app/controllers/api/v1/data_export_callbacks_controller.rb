@@ -7,6 +7,7 @@ module Api
       skip_before_action :require_org_two_factor_authentication, only: :update
       skip_before_action :require_authenticated_organization_membership, only: :update
       before_action :require_valid_callback_token, only: :update
+      before_action :skip_authorization, only: :update
 
       def update
         if current_data_export.complete(params[:zip_path])

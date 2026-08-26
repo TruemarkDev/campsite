@@ -5,6 +5,7 @@ module Api
     class ImageUrlsController < BaseController
       skip_before_action :require_authenticated_user, only: :create
       skip_before_action :require_authenticated_organization_membership, only: :create
+      before_action :skip_authorization, only: :create
       rescue_from ArgumentError, with: :render_unprocessable_entity
 
       extend Apigen::Controller

@@ -252,7 +252,7 @@ module Api
             @user.update!(avatar_path: "/path/to/image.png")
 
             sign_in @user
-            put current_user_path, params: { current_password: "invalid", password: "new_password", password_confirmation: "new_password" }
+            put current_user_path, params: { current_password: "invalid", password: "new_password_long", password_confirmation: "new_password_long" }
 
             assert_response :unprocessable_entity
             assert_equal "Current password is invalid", json_response["message"]

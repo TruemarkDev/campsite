@@ -7,6 +7,8 @@ module Api
         class RecoveryCodesController < V1::BaseController
           skip_before_action :require_authenticated_organization_membership, only: :create
 
+          before_action :authorize_current_user, only: :create
+
           def create
             unless current_user.otp_enabled?
               return render_error(status: :not_found, code: "not_found", message: "Two factor authentication has not been enabled.")

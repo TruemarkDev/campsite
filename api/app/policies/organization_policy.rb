@@ -15,7 +15,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def list_members?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def list_invitations?
@@ -27,7 +27,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def list_projects?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def list_membership_requests?
@@ -75,7 +75,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def list_posts?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def list_notes?
@@ -155,7 +155,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def create_thread?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def create_attachments?
@@ -197,6 +197,8 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def org_member?
+    return @record.members.include?(@user) if @record.association(:members).loaded?
+
     organization_membership.present?
   end
 

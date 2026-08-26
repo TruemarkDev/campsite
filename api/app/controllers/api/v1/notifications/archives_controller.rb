@@ -6,6 +6,8 @@ module Api
       class ArchivesController < BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership
+
         response code: 201
         def destroy
           notification.unarchive!

@@ -117,7 +117,7 @@ module Api
 
             sign_in @user
 
-            assert_query_count 9 do
+            assert_query_count 8 do
               post organization_custom_reactions_packs_path(@organization.slug),
                 params: { name: "blobs" },
                 as: :json
@@ -175,7 +175,7 @@ module Api
           test "query count" do
             sign_in @user
 
-            assert_query_count 8 do
+            assert_query_count 7 do
               delete organization_custom_reactions_pack_path(@organization.slug, "meows")
             end
           end
