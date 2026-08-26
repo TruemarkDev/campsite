@@ -10,7 +10,7 @@ function Template({ children }: React.PropsWithChildren) {
   return <div className='flex w-53 flex-col flex-nowrap'>{children}</div>
 }
 
-const noop = () => {}
+const noop = () => undefined
 
 const meta = {
   title: 'Components/Sidebar/SidebarLink',

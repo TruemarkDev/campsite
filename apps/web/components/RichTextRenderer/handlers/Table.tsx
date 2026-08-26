@@ -27,6 +27,19 @@ export const Table: NodeHandler = ({ children, node }) => {
 
 export const TableRow: NodeHandler = ({ children }) => <tr>{children}</tr>
 
-export const TableHeader: NodeHandler = ({ children }) => <th scope='col'>{children}</th>
+function cellStyle(node: Parameters<NodeHandler>[0]['node']): React.CSSProperties | undefined {
+  const style: React.CSSProperties = {}
 
-export const TableCell: NodeHandler = ({ children }) => <td>{children}</td>
+  if (node.attrs?.align) style.textAlign = node.attrs.align
+  if (node.attrs?.backgroundColor) style.backgroundColor = node.attrs.backgroundColor
+
+  return Object.keys(style).length ? style : undefined
+}
+
+export const TableHeader: NodeHandler = ({ children, node }) => (
+  <th scope='col' style={cellStyle(node)}>
+    {children}
+  </th>
+)
+
+export const TableCell: NodeHandler = ({ children, node }) => <td style={cellStyle(node)}>{children}</td>

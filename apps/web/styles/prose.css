@@ -6,6 +6,28 @@
   styles when embedded with .not-prose. The ":where" and "class~" selectors are used to avoid specificity conflicts.
   */
   .prose {
+    /*
+      Tailwind Typography supplies a fixed light colour palette by default.
+      Keep its element-level styles aligned with the application theme so
+      editors and notes retain readable foreground colours in dark mode.
+    */
+    --tw-prose-body: var(--text-primary);
+    --tw-prose-headings: var(--text-primary);
+    --tw-prose-lead: var(--text-secondary);
+    --tw-prose-links: var(--text-primary);
+    --tw-prose-bold: var(--text-primary);
+    --tw-prose-counters: var(--text-tertiary);
+    --tw-prose-bullets: var(--text-tertiary);
+    --tw-prose-hr: var(--border-primary);
+    --tw-prose-quotes: var(--text-primary);
+    --tw-prose-quote-borders: var(--border-primary);
+    --tw-prose-captions: var(--text-secondary);
+    --tw-prose-code: var(--text-primary);
+    --tw-prose-pre-code: var(--text-primary);
+    --tw-prose-pre-bg: var(--bg-tertiary);
+    --tw-prose-th-borders: var(--border-primary);
+    --tw-prose-td-borders: var(--border-primary);
+
     @apply text-primary max-w-full break-words leading-normal;
     word-break: break-word;
     word-wrap: break-word;

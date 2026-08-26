@@ -1,6 +1,8 @@
 import { Extension } from '@tiptap/core'
 import { toggleMark } from '@tiptap/pm/commands'
+import type { Node as ProseMirrorNode } from '@tiptap/pm/model'
 import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+import { findTable, TableMap } from '@tiptap/pm/tables'
 
 import cleanMarkdown from '../utils/cleanMarkdown'
 import { ALIAS_TO_LANGUAGE } from '../utils/codeHighlightedLanguages'
@@ -15,6 +17,7 @@ import { isUrl } from '../utils/isUrl'
 import { parseCampsiteUrl } from '../utils/parseCampsiteUrl'
 import { parseSingleIframeSrc } from '../utils/parseSingleIframeSrc'
 import { singleNodeContent } from '../utils/singleNodeContent'
+import { parseTablePaste } from '../utils/tablePaste'
 import { supportedResourceMention } from './ResourceMention'
 
 export interface PasteHandlerOptions {
@@ -77,6 +80,53 @@ export const PasteHandler = Extension.create<PasteHandlerOptions>({
             const textValue = event.clipboardData.getData('text/plain') || event.clipboardData.getData('text/uri-list')
 
             const { state, dispatch } = view
+            const pastedTable = parseTablePaste(event.clipboardData.getData('text/plain'))
+
+            if (pastedTable) {
+              const table = findTable(state.selection.$from)
+
+              if (table) {
+                const map = TableMap.get(table.node)
+                const cellDepth = Array.from(
+                  { length: state.selection.$from.depth + 1 },
+                  (_, index) => state.selection.$from.depth - index
+                ).find((depth) => ['tableCell', 'tableHeader'].includes(state.selection.$from.node(depth).type.name))
+
+                if (cellDepth === undefined) return false
+
+                const cell = map.findCell(state.selection.$from.before(cellDepth) - table.start)
+                const tr = state.tr
+                const replacements: Array<{ pos: number; node: ProseMirrorNode }> = []
+
+                for (let row = 0; row < pastedTable.rows.length; row += 1) {
+                  for (let column = 0; column < pastedTable.rows[row].length; column += 1) {
+                    const targetRow = cell.top + row
+                    const targetColumn = cell.left + column
+
+                    if (targetRow >= map.height || targetColumn >= map.width) continue
+
+                    const position = table.start + map.positionAt(targetRow, targetColumn, table.node)
+                    const targetCell = state.doc.nodeAt(position)
+
+                    if (!targetCell) continue
+
+                    const value = pastedTable.rows[row][column]
+                    const paragraph = state.schema.nodes.paragraph.create(null, value ? state.schema.text(value) : null)
+                    replacements.push({ pos: position, node: targetCell.type.create(targetCell.attrs, paragraph) })
+                  }
+                }
+
+                if (replacements.length) {
+                  event.preventDefault()
+                  replacements
+                    .sort((a, b) => b.pos - a.pos)
+                    .forEach(({ pos, node }) => tr.replaceWith(pos, pos + node.nodeSize, node))
+                  dispatch(tr.setMeta('paste', true).setMeta('uiEvent', 'paste').scrollIntoView())
+                  return true
+                }
+              }
+            }
+
             const inCode = isInCode(state)
             const iframeSrc = parseSingleIframeSrc(event.clipboardData.getData('text/plain'))
             const text = iframeSrc && !inCode ? iframeSrc : textValue

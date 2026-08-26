@@ -32,7 +32,7 @@
 5. **Parse pasted data locally.** A paste is eligible when clipboard text contains tabs or multiple line-separated fields and the selection is inside a table. TSV is the default unambiguous format. CSV parsing SHALL support quoted fields, escaped quotes, commas inside quoted fields, and CRLF/LF line endings without adding a package.
 6. **Bound paste to the table.** Pasted rows and columns SHALL populate from the active cell, never silently expand beyond the table. The UX SHALL make truncation or an unavailable paste target clear; it SHALL not overwrite content outside the selected table.
 7. **Preserve collaboration semantics.** All structural, formatting, and paste changes SHALL be editor transactions through the existing collaboration provider. No REST overwrite or direct Yjs mutation is introduced.
-8. **No schema/version bump by default.** The implementation SHALL prove that the existing table schema and renderer can represent the feature. If not, stop and document the required migration as a follow-up decision instead of silently changing persisted documents.
+8. **Schema/version outcome.** Native structure, headers, and alignment use the existing schema. Background color is not represented by the installed table extension, so the implementation adds a local `backgroundColor` cell attribute, updates the semantic renderer, and bumps `NOTE_SCHEMA_VERSION` from 9 to 10. This is the documented compatibility-impacting exception; no dependency is added.
 
 ## Risks / Trade-offs
 

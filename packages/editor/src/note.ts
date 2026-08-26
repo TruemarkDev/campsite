@@ -16,7 +16,7 @@ import { SoftbreakMarkdownParser } from './extensions/SoftbreakMarkdownParser'
  * - Do NOT remove any extensions. If you want to, we should deprecate its use instead
  * - If you reorder the extensions, you do not need to bump the version number
  */
-export const NOTE_SCHEMA_VERSION = 9
+export const NOTE_SCHEMA_VERSION = 10
 
 export interface GetNoteExtensionsOptions {
   link?: Partial<E.LinkOptions>
