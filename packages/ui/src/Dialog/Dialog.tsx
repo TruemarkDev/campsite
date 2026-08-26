@@ -52,7 +52,7 @@ export function Root({
       maxWidth = 'max-w-[calc(100vw-32px)] sm:max-w-xs'
       break
     case 'sm':
-      maxWidth = 'max-w-[calc(100vw-32px)] sm:max-w-sm'
+      maxWidth = 'max-w-[calc(100vw-32px)] sm:max-w-96'
       break
     default:
     case 'base':

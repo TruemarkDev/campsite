@@ -50,7 +50,7 @@ export function InviteParticipantsPopover() {
           align='start'
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className='flex max-h-[--radix-popper-available-height] flex-col gap-4 p-3'>
+          <div className='flex max-h-[var(--radix-popper-available-height)] flex-col gap-4 p-3'>
             <InviteMembersForm onSuccess={() => setOpen(false)} />
             <div>
               <CopyLinkButton />

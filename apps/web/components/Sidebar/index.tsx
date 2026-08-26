@@ -84,7 +84,7 @@ export function SidebarContainer() {
       <div
         key={`${scope}`}
         className={cn(
-          'fixed top-0 bottom-0 isolate z-30 h-screen w-[--sidebar-width] transition-[opacity,transform] duration-200',
+          'fixed top-0 bottom-0 isolate z-30 h-screen w-[var(--sidebar-width)] transition-[opacity,transform] duration-200',
           {
             'left-0': !showOrgSwitcherSidebar,
             'left-12': showOrgSwitcherSidebar && !collapsed,
@@ -133,7 +133,7 @@ function SidebarContent() {
       >
         {isDesktopApp && (
           <div
-            className={cn('flex h-[--titlebar-height] items-center gap-0.5', {
+            className={cn('flex h-[var(--titlebar-height)] items-center gap-0.5', {
               'flex justify-end': isMacOs,
               'justify-between': !isMacOs,
               '-mt-[39px]': isMacOs && !collapsed,

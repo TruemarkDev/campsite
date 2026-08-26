@@ -20,9 +20,19 @@ export function CustomReactionsPacks() {
     )
   }
 
+  const availablePacks = packs?.filter((pack) => pack.items.length > 0) ?? []
+
+  if (availablePacks.length === 0) {
+    return (
+      <div className='p-4'>
+        <UIText tertiary>Emoji packs are not available in this environment.</UIText>
+      </div>
+    )
+  }
+
   return (
     <div className='divide-secondary flex flex-col divide-y'>
-      {packs?.map((pack) => (
+      {availablePacks.map((pack) => (
         <Pack key={pack.name} pack={pack} />
       ))}
     </div>

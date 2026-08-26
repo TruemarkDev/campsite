@@ -1,6 +1,7 @@
 service: campsite-web-home-staging
 image: truemarkdev/campsite-web-home
 secrets_path: .kamal/campsite-secrets
+deploy_timeout: 60
 
 servers:
   web:
@@ -32,12 +33,14 @@ builder:
     NEXT_PUBLIC_CDN_URL: http://cdn.camp.home
     NEXT_PUBLIC_IMGIX_URL: http://cdn.camp.home
     NEXT_PUBLIC_OBJECT_STORAGE_URL: http://s3.camp.home
+    NEXT_PUBLIC_PUSHER_KEY: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_KEY") %>
+    NEXT_PUBLIC_PUSHER_CLUSTER: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_CLUSTER") %>
     NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: <%= `git rev-parse HEAD`.strip %>
 
 env:
   clear:
     NODE_ENV: production
-    PORT: "3000"
+    PORT: '3000'
   secret:
     - REVALIDATE_STATIC_CACHE_TOKEN
 
