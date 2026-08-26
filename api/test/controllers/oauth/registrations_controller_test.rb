@@ -50,6 +50,31 @@ module Oauth
 
         assert_response :created
         assert_includes json_response["scope"].split, "mcp"
+        assert_not_includes json_response["scope"].split, "write_post"
+        assert_not_includes json_response["scope"].split, "write_message"
+      end
+
+      test "rejects unsupported scopes instead of silently replacing them" do
+        post(
+          "/oauth/register",
+          params: { redirect_uris: ["https://example.com/callback"], scope: "mcp unknown_scope" },
+          as: :json,
+        )
+
+        assert_response :bad_request
+        assert_equal "invalid_client_metadata", json_response["error"]
+        assert_includes json_response["error_description"], "unknown_scope"
+      end
+
+      test "rejects unsupported token endpoint authentication methods" do
+        post(
+          "/oauth/register",
+          params: { redirect_uris: ["https://example.com/callback"], token_endpoint_auth_method: "client_secret_jwt" },
+          as: :json,
+        )
+
+        assert_response :bad_request
+        assert_equal "invalid_client_metadata", json_response["error"]
       end
 
       test "rejects a forbidden redirect URI scheme" do

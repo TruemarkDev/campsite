@@ -12,7 +12,8 @@ module Api
 
           token = oauth_application.access_tokens.create!(
             resource_owner: current_organization,
-            expires_in: nil,
+            expires_in: Doorkeeper.configuration.access_token_expires_in.to_i,
+            scopes: oauth_application.scopes.presence || "read_organization",
           )
 
           render_json(AccessTokenSerializer, token, status: :created)

@@ -143,7 +143,7 @@ Doorkeeper.configure do
   # Enforce token request content type to application/x-www-form-urlencoded.
   # It is not enabled by default to not break prior versions of the gem.
   #
-  # enforce_content_type
+  enforce_content_type
 
   # Authorization Code expiration time (default: 10 minutes).
   #
@@ -152,7 +152,7 @@ Doorkeeper.configure do
   # Access token expiration time (default: 2 hours).
   # If you want to disable expiration, set this to `nil`.
   #
-  access_token_expires_in 1.year
+  access_token_expires_in 1.hour
 
   # Assign custom TTL for access tokens. Will be used instead of access_token_expires_in
   # option if defined. In case the block returns `nil` value Doorkeeper fallbacks to
@@ -221,6 +221,11 @@ Doorkeeper.configure do
   # multiple machines and/or processes).
   #
   # revoke_previous_client_credentials_token
+
+  # Public clients cannot protect a client secret. Require authorization-code
+  # binding with the non-downgradable S256 challenge method (RFC 9700).
+  force_pkce
+  pkce_code_challenge_methods ["S256"]
 
   # Hash access and refresh tokens before persisting them.
   # This will disable the possibility to use +reuse_access_token+

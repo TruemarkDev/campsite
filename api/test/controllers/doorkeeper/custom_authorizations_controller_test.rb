@@ -76,6 +76,29 @@ module Doorkeeper
         assert_equal "invalid_redirect_uri", json_response["error"]
       end
 
+      test "requires S256 PKCE for public clients" do
+        oauth_application = create(:oauth_application, confidential: false)
+        sign_in @user
+
+        get oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          response_type: "code",
+          redirect_uri: oauth_application.redirect_uri,
+        }
+
+        assert_response :bad_request
+
+        get oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          response_type: "code",
+          redirect_uri: oauth_application.redirect_uri,
+          code_challenge: "plain-challenge",
+          code_challenge_method: "plain",
+        }
+
+        assert_response :bad_request
+      end
+
       test "does not redirect when CIMD metadata cannot be fetched" do
         Flipper.enable(Oauth::Cimd::FEATURE_NAME)
         Oauth::Cimd::Resolver.any_instance.stubs(:resolve!).raises(Oauth::Cimd::FetchError)

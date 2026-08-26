@@ -12,9 +12,10 @@ module Oauth
     # Schemes we never allow as redirect URIs, independent of Doorkeeper's own
     # HTTPS enforcement. Blocks the obvious script/exfiltration vectors.
     FORBIDDEN_REDIRECT_SCHEMES = ["javascript", "data", "file", "vbscript", "blob"].freeze
+    SUPPORTED_TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic", "none"].freeze
 
     # Scopes granted by default when a client registers without requesting any.
-    DEFAULT_SCOPES = "mcp read_organization read_user read_post read_project write_post write_message"
+    DEFAULT_SCOPES = "mcp read_organization read_user read_post read_project"
 
     def create
       redirect_uris = Array(params[:redirect_uris]).map(&:to_s).compact_blank
@@ -25,6 +26,14 @@ module Oauth
 
       if (bad_uri = redirect_uris.find { |uri| !allowed_redirect_uri?(uri) })
         return render_registration_error("invalid_redirect_uri", "Redirect URI is not allowed: #{bad_uri}")
+      end
+
+      unless SUPPORTED_TOKEN_ENDPOINT_AUTH_METHODS.include?(token_endpoint_auth_method)
+        return render_registration_error("invalid_client_metadata", "Unsupported token_endpoint_auth_method.")
+      end
+
+      if invalid_requested_scopes.any?
+        return render_registration_error("invalid_client_metadata", "Unsupported scopes: #{invalid_requested_scopes.join(' ')}")
       end
 
       requested_scopes = requested_scope_string
@@ -51,15 +60,25 @@ module Oauth
     # Public clients (native/SPA apps using PKCE) declare `none`; everyone else gets
     # a confidential client with a secret.
     def confidential_client?
-      params[:token_endpoint_auth_method].to_s != "none"
+      token_endpoint_auth_method != "none"
+    end
+
+    def token_endpoint_auth_method
+      params[:token_endpoint_auth_method].presence || "client_secret_basic"
     end
 
     # Only keep scopes Campsite actually configures (Doorkeeper enforces this too),
     # falling back to a sensible default set so the connector works out of the box.
     def requested_scope_string
-      requested = params[:scope].to_s.split
-      allowed = requested & Doorkeeper.config.scopes.all
-      allowed.any? ? allowed.join(" ") : DEFAULT_SCOPES
+      requested_scopes.any? ? requested_scopes.join(" ") : DEFAULT_SCOPES
+    end
+
+    def requested_scopes
+      @requested_scopes ||= params[:scope].to_s.split.uniq
+    end
+
+    def invalid_requested_scopes
+      requested_scopes - Doorkeeper.config.scopes.all
     end
 
     def allowed_redirect_uri?(uri)
