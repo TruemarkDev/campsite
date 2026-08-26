@@ -1,8 +1,8 @@
-# Campsite homelab production platform
+# Campsite homelab staging platform
 
-Status: partially deployed. The Rails API/auth and Sidekiq services are live on
-Odin; sections below retain explicit gap markers for unverified or unbuilt
-parts of the wider platform.
+Status: partially deployed. The staging application services are live on Odin;
+sections below retain explicit gap markers for unverified or unbuilt parts of
+the wider platform.
 
 This is the target platform for the `camp.tokdio.com` migration. Kamal is the
 deployment control plane for every Campsite application runtime and stateful
@@ -43,7 +43,7 @@ unavailable until Fly/provider authentication is restored.
 
 ## Kamal layout
 
-The production declaration will be split into these destination-specific files
+The staging declaration is split into these destination-specific files
 while sharing host, registry, secret, and network conventions:
 
 | File                                | Responsibility                                                  |
@@ -54,13 +54,40 @@ while sharing host, registry, secret, and network conventions:
 | `deploy.campsite-sync.yml`          | Sync server                                                     |
 | `deploy.campsite-styled-text.yml`   | Styled-text server                                              |
 | `deploy.campsite-html-to-image.yml` | HTML-to-image                                                   |
-| `deploy.campsite-shadow.yml`        | Isolated HTML-to-image plus loopback-only shadow Elasticsearch  |
 
 The Rails web and Sidekiq services deliberately do not share a Kamal config.
 Deploying `deploy.campsite-api.yml` therefore cannot start a queue consumer.
-`deploy.campsite-worker.yml` reuses the exact Rails image and remains disabled
-until the writer-custody gate explicitly authorizes queue consumption. Its
-scheduler is also disabled by default and requires a separate promotion step.
+`deploy.campsite-worker.yml` reuses the Rails image. Writer custody has moved to
+the homelab worker, while its scheduler remains disabled by default and requires
+a separate promotion step.
+
+### Canonical staging identities
+
+Every Kamal application and accessory declaration uses `staging` as its
+environment identity. The two web builds remain intentionally distinct because
+their public URLs are compiled into the image:
+
+| Runtime             | Kamal service                    |
+| ------------------- | -------------------------------- |
+| Rails API/auth      | `campsite-api-staging`           |
+| Sidekiq             | `campsite-worker-staging`        |
+| Public Next.js web  | `campsite-web-public-staging`    |
+| Private Next.js web | `campsite-web-home-staging`      |
+| Sync                | `campsite-sync-staging`          |
+| Styled text         | `campsite-styled-text-staging`   |
+| HTML-to-image       | `campsite-html-to-image-staging` |
+
+Public `camp*.tokdio.com` and private `*.camp.home` hostnames are stable
+interfaces, not environment labels, and remain unchanged. The existing
+`campsite-api-tokdio_*` named volumes are also retained intentionally so a
+service rename cannot create empty MySQL, Redis, object, or Elasticsearch
+stores.
+
+🟡 The checked-in service identities are renamed, but the running containers
+still use their previous names until the coordinated Kamal cutover. The active
+`campsite-shadow-html-to-image` and `campsite-shadow-elasticsearch` containers
+are legacy duplicate services; they are not represented by a deploy declaration
+and require separate operator approval before removal.
 
 ### Voice-note runtime gate
 
@@ -83,7 +110,7 @@ deployed to the amd64 Debian host are built remotely on Odin. Campsite does not
 use Forge as a builder. The current topology deploys every custom Campsite image
 to Odin; Shuri only pulls Elasticsearch's upstream multi-platform image, so no
 custom arm64 build is currently required. Images use a private registry; the
-current Odin-local registry is acceptable for shadow work but is not a durable
+current Odin-local registry is acceptable for staging work but is not a durable
 production registry until its storage and backup are declared.
 
 Runtime base images and Elasticsearch are also pinned to immutable manifest
@@ -132,6 +159,13 @@ transport, not an independent deployment procedure. Direct host commands are
 reserved for provisioning prerequisites and break-glass recovery and require a
 separate mutation approval.
 
+The API role starts with `bin/rails db:migrate` and starts Puma only after the
+migrations succeed. Kamal therefore checks and advances the schema from the
+exact image version being released before its health check can pass or proxy
+routing can change. A failed migration leaves the prior healthy API routed.
+Schema rollback remains an explicit operator decision because it can destroy
+data written by a newer release.
+
 ## Networking and ingress
 
 Application containers and Odin accessories attach to the Docker `kamal`
@@ -141,9 +175,9 @@ name.
 
 Elasticsearch listens on Shuri's LAN address only, requires an application
 credential, and is restricted to Odin at the host firewall. Its HTTP port is
-never routed through Cloudflare. The current loopback-only shadow binding must
-remain until that authenticated LAN path and firewall rule are provisioned
-together.
+never routed through Cloudflare. The loopback-only
+`campsite-shadow-elasticsearch` legacy binding must remain isolated until that
+orphan receives separate retirement approval.
 
 Heimdall's named Cloudflare Tunnel is the only public ingress. It forwards the
 tokdio host family to Kamal proxy on Odin over private HTTP:
@@ -208,7 +242,7 @@ carry these variables; the worker sends the asynchronous mail and must stay in
 step with the API. No SMTP secret is required, so `.kamal/campsite-secrets`
 is unchanged.
 
-As built, the live API runs `2cb0ce8455c90241c60328afc8a8ad0e847e1a01` and the
+As built, the live API runs `65aa744c68ddaf8209b410af0cb22c55b1dba0fd` and the
 worker `b955395ae56b4b52032b60fa7959ce846f175a84`; both carry the same mail
 settings, and both revisions include the deferred-delivery change. Verified in
 the running API container: `smtp_settings` resolves to `smtp.home:25` with
@@ -329,18 +363,17 @@ health endpoint does not prove those user paths.
 | Internet loss             | local stack stays up; external integrations fail/retry                         | reconcile provider jobs after connectivity returns                              |
 | Power loss                | Odin VM auto-starts; Shuri behavior must be verified separately                | ordered datastore health checks before workers                                  |
 | Bad application release   | previous immutable image remains selectable                                    | `kamal rollback` per runtime                                                    |
-| Bad data migration        | new stack remains isolated                                                     | stop new writers, restore destination, return DNS/provider custody to old stack |
+| Bad data migration        | staging stack remains isolated                                                 | stop new writers, restore destination, return DNS/provider custody to old stack |
 
 There is no evidence of UPS protection, so the declared availability is
-single-site and power-loss exposed. Scheduled workers stay disabled on the
-shadow stack until the explicit writer-custody step, preventing duplicate
-outbound effects.
+single-site and power-loss exposed. The staging scheduler stays disabled until
+its separate promotion gate, preventing duplicate scheduled outbound effects.
 
 ## Promotion gates
 
 Provisioning may begin only after provider data sizes are measured or bounded,
 backup paths and credentials are created, Elasticsearch's authenticated private
 path is ready, and the destination-matched builder can publish immutable images.
-Cutover additionally requires restored backups, a full shadow-stack acceptance
+Cutover additionally requires restored backups, a full staging-stack acceptance
 run, one rehearsed rollback, and an immutable provider/DNS change set. Each host,
 Cloudflare, DNS, and provider mutation remains a separately approved action.

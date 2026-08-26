@@ -222,9 +222,13 @@
     }
 
     .collaboration-cursor__label {
-      @apply pointer-events-none absolute -left-px top-0 -translate-y-full select-none whitespace-nowrap rounded-md rounded-bl-none p-1 text-xs font-medium leading-none;
+      @apply pointer-events-none absolute top-0 -left-px flex -translate-y-full items-center gap-1 rounded-md rounded-bl-none p-1 text-xs leading-none font-medium whitespace-nowrap select-none;
       /* Peek cursor briefly when it moves */
       animation: autohide-cursor 100ms ease-out 1500ms forwards;
+    }
+
+    .collaboration-cursor__avatar {
+      @apply size-4 rounded-full object-cover;
     }
 
     .collaboration-cursor__caret:hover .collaboration-cursor__label {

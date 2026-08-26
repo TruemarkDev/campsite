@@ -1,4 +1,4 @@
-import { Editor } from '@tiptap/react'
+import { Editor, useEditorState } from '@tiptap/react'
 import { BubbleMenu } from '@tiptap/react/menus'
 
 import { MinusIcon, PlusIcon, TrashIcon } from '@campsite/ui'
@@ -12,6 +12,16 @@ interface Props {
 }
 
 export function EditorTableMenu({ editor, appendTo }: Props) {
+  const commandAvailability = useEditorState({
+    editor,
+    selector: ({ editor }) => ({
+      addRowAfter: editor.can().addRowAfter(),
+      addColumnAfter: editor.can().addColumnAfter(),
+      deleteRow: editor.can().deleteRow(),
+      deleteColumn: editor.can().deleteColumn()
+    })
+  })
+
   return (
     <BubbleMenu
       pluginKey='bubbleMenuTable'
@@ -27,7 +37,7 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
           tooltip='Add row below'
           aria-label='Add row below'
           onClick={() => editor.chain().focus().addRowAfter().run()}
-          disabled={!editor.can().addRowAfter()}
+          disabled={!commandAvailability.addRowAfter}
         />
         <BubbleMenuButton
           icon={<PlusIcon />}
@@ -35,7 +45,7 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
           tooltip='Add column to the right'
           aria-label='Add column to the right'
           onClick={() => editor.chain().focus().addColumnAfter().run()}
-          disabled={!editor.can().addColumnAfter()}
+          disabled={!commandAvailability.addColumnAfter}
         />
         <BubbleMenuSeparator />
         <BubbleMenuButton
@@ -44,7 +54,7 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
           tooltip='Delete current row'
           aria-label='Delete current row'
           onClick={() => editor.chain().focus().deleteRow().run()}
-          disabled={!editor.can().deleteRow()}
+          disabled={!commandAvailability.deleteRow}
         />
         <BubbleMenuButton
           icon={<MinusIcon />}
@@ -52,7 +62,7 @@ export function EditorTableMenu({ editor, appendTo }: Props) {
           tooltip='Delete current column'
           aria-label='Delete current column'
           onClick={() => editor.chain().focus().deleteColumn().run()}
-          disabled={!editor.can().deleteColumn()}
+          disabled={!commandAvailability.deleteColumn}
         />
         <BubbleMenuSeparator />
         <BubbleMenuButton

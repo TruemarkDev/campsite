@@ -18,18 +18,8 @@ import { notEmpty } from '@/utils/notEmpty'
 import { LinkUnfurlRenderer } from '../LinkUnfurlRenderer'
 import { NoteAttachmentRenderer } from './Attachments/NoteAttachmentRenderer'
 import { useUploadNoteAttachments } from './Attachments/useUploadAttachments'
+import { currentUserToCollaborationUser, renderCollaborationCaret } from './collaborationUser'
 import { DragAndDrop } from './DragAndDrop'
-
-const cursorColors = [
-  ['bg-blue-500 border-blue-500 text-white', 'bg-blue-500/40'],
-  ['bg-green-400 border-green-400 text-black', 'bg-green-400/40'],
-  ['bg-yellow-300 border-yellow-300 text-black', 'bg-yellow-300/40'],
-  ['bg-red-500 border-red-500 text-white', 'bg-red-500/40'],
-  ['bg-purple-300 border-purple-300 text-black', 'bg-purple-300/40'],
-  ['bg-pink-500 border-pink-500 text-white', 'bg-pink-500/40'],
-  ['bg-indigo-500 border-indigo-500 text-white', 'bg-indigo-500/40'],
-  ['bg-teal-300 border-teal-300 text-black', 'bg-teal-300/40']
-]
 
 interface NoteEditorOptions {
   content: string
@@ -136,18 +126,7 @@ export function useNoteEditor({
             }),
             CollaborationCaret.configure({
               provider: provider,
-              render(user) {
-                const element = document.createElement('div')
-                const customColors = user.customColor?.split(' ') ?? []
-
-                element.classList.add('collaboration-cursor__caret', ...customColors)
-                const label = document.createElement('div')
-
-                label.classList.add('collaboration-cursor__label', ...customColors)
-                label.textContent = user.name
-                element.appendChild(label)
-                return element
-              },
+              render: renderCollaborationCaret,
               selectionRender(user) {
                 return {
                   class: cn(user.customSelection)
@@ -189,17 +168,10 @@ export function useNoteEditor({
   }, [editor, allEditable])
 
   useEffect(() => {
-    if (!editor.commands.updateUser || !currentUser) return
+    if (!provider?.awareness || !currentUser) return
 
-    const index = currentUser.display_name.charCodeAt(0) % cursorColors.length
-    const [customColor, customSelection] = cursorColors[index]
-
-    editor.commands.updateUser({
-      name: currentUser.display_name,
-      customColor,
-      customSelection
-    })
-  }, [editor, currentUser])
+    provider.awareness.setLocalStateField('user', currentUserToCollaborationUser(currentUser))
+  }, [currentUser, provider])
 
   return editor
 }
