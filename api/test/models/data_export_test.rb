@@ -3,6 +3,14 @@
 require "test_helper"
 
 class DataExportTest < ActiveSupport::TestCase
+  test "passes a valid callback token to the export task" do
+    data_export = create(:data_export)
+    environment = data_export.send(:ecs_trigger_task_parameters).dig(:overrides, :container_overrides, 0, :environment)
+    callback_token = environment.find { |variable| variable[:name] == "CALLBACK_TOKEN" }.fetch(:value)
+
+    assert data_export.valid_callback_token?(callback_token)
+  end
+
   test "creates resources for accessible projects and posts" do
     org = create(:organization)
     data_export = create(:data_export, subject: org)
