@@ -97,6 +97,7 @@ catalog:
   '@figma/plugin-typings': 1.134.0
   '@hocuspocus/extension-database': ^4.6.0
   '@hocuspocus/extension-logger': ^4.6.0
+  '@hocuspocus/extension-redis': 4.6.0
   '@hocuspocus/provider': ^4.6.0
   '@hocuspocus/server': ^4.6.0
   '@hocuspocus/transformer': ^4.6.0
@@ -342,7 +343,6 @@ catalog:
   yjs: ^13.6.32
   zod: ^4.4.3
   zustand: ^5.0.15
-
 # Require every resolved package version to have been public for at least seven
 # days. Explicit configuration enables strict verification for the committed
 # lockfile instead of pnpm's non-strict built-in one-day default.

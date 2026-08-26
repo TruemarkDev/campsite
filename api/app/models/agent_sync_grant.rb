@@ -7,6 +7,7 @@ class AgentSyncGrant < ApplicationRecord
 
   MAX_LIFETIME = 1.hour
   WRITE_SCOPE = "write"
+  MENTION_LABELS_SCOPE = "mention_labels"
 
   belongs_to :note
   belongs_to :organization_membership
@@ -57,6 +58,10 @@ class AgentSyncGrant < ApplicationRecord
 
   def active?
     revoked_at.nil? && expires_at.future?
+  end
+
+  def mention_labels_scope?
+    scopes.include?(MENTION_LABELS_SCOPE)
   end
 
   def self.digest(secret)

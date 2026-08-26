@@ -2,6 +2,7 @@ import { Readable } from 'node:stream'
 import { Hocuspocus } from '@hocuspocus/server'
 import { TiptapTransformer } from '@hocuspocus/transformer'
 import type { JSONContent } from '@tiptap/core'
+import { generateHTML, generateJSON } from '@tiptap/html'
 
 import { getNoteExtensions } from '@campsite/editor'
 
@@ -125,6 +126,35 @@ describe('agent edit facade transformations', () => {
     expect(TiptapTransformer.fromYdoc(document, 'default')).toEqual(inserted)
   })
 
+  it('updates only matching mention attributes while preserving one complex document root', () => {
+    const extensions = getNoteExtensions()
+    const json = generateJSON(
+      '<h2>Plan</h2><table><tbody><tr><td><p>One</p></td><td><p>Two</p></td></tr></tbody></table><post-attachment id="attachment-1" file_type="image/png" width="100" height="100"></post-attachment><p>Hello <span data-type="mention" data-id="member-1" data-label="Old Name" data-role="member" data-username="old_username">@Old Name</span> and <span data-type="mention" data-id="member-2" data-label="Keep Me" data-role="member" data-username="keep_me">@Keep Me</span></p>',
+      extensions
+    )
+    const document = TiptapTransformer.toYdoc(json, 'default', extensions)
+
+    const updated = facadeInternals.updateMentionAttributes(document, {
+      type: 'update_mentions',
+      membership_id: 'member-1',
+      display_name: 'New Name',
+      username: 'new_username'
+    })
+    const result = TiptapTransformer.fromYdoc(document, 'default') as JSONContent
+    const mentions = result.content?.at(-1)?.content?.filter((node) => node.type === 'mention')
+
+    expect(updated).toBe(1)
+    expect(document.getXmlFragment('default')).toHaveLength(4)
+    expect(result.content?.map((node) => node.type)).toEqual(['heading', 'table', 'postNoteAttachment', 'paragraph'])
+    expect(mentions?.map((node) => node.attrs)).toEqual([
+      { id: 'member-1', label: 'New Name', role: 'member', username: 'new_username' },
+      { id: 'member-2', label: 'Keep Me', role: 'member', username: 'keep_me' }
+    ])
+    expect(generateHTML(result, extensions)).toContain(
+      'data-label="New Name" data-role="member" data-username="new_username"'
+    )
+  })
+
   it('returns 422 for invalid content without opening a document', async () => {
     const { response, result } = httpResponse()
     const instance = { documents: new Map(), openDirectConnection: vi.fn() }
@@ -182,6 +212,41 @@ describe('agent edit facade transformations', () => {
     expect(instance.openDirectConnection).not.toHaveBeenCalled()
   })
 
+  it.each([
+    {
+      scopes: ['write'],
+      operation: {
+        type: 'update_mentions',
+        membership_id: 'member-1',
+        display_name: 'New Name',
+        username: 'new_username'
+      }
+    },
+    { scopes: ['write', 'mention_labels'], operation: { type: 'set_content', content: '<p>Not allowed</p>' } }
+  ])('keeps mention maintenance grants and operations mutually scoped', async ({ operation, scopes }) => {
+    const { response, result } = httpResponse()
+    const instance = { documents: new Map(), openDirectConnection: vi.fn() }
+
+    mocks.verifyGrant.mockResolvedValueOnce({
+      actor_id: 'actor-1',
+      actor_name: 'Actor',
+      grant_id: `grant-${scopes.length}`,
+      invoked_by: 'member-1',
+      organization: 'acme',
+      scopes
+    })
+
+    await handleAgentEditRequest(
+      httpRequest({ note_id: 'note-1', mode: 'direct', operation }) as never,
+      response as never,
+      instance as never
+    )
+
+    expect(result.status).toBe(403)
+    expect(JSON.parse(result.body).code).toBe('invalid_grant_scope')
+    expect(instance.openDirectConnection).not.toHaveBeenCalled()
+  })
+
   it('applies stream chunks as live transactions sharing one suggestion batch', async () => {
     const snapshots: JSONContent[] = []
     const instance = new Hocuspocus<Context>({
@@ -219,5 +284,53 @@ describe('agent edit facade transformations', () => {
       { batch_id: result.batch_id, instruction: 'Stream summary' },
       { headers: { Authorization: 'Bearer grant-token' } }
     )
+  })
+
+  it('applies scoped mention maintenance while editors are active without agent attribution', async () => {
+    const extensions = getNoteExtensions()
+    const initial = generateJSON(
+      '<p>Hello <span data-type="mention" data-id="member-1" data-label="Old Name" data-role="member" data-username="old_username">@Old Name</span></p>',
+      extensions
+    )
+    const instance = new Hocuspocus<Context>({
+      debounce: 0,
+      flushDelay: false,
+      async onLoadDocument({ document }) {
+        facadeInternals.replaceYDocument(document, initial)
+      }
+    })
+    const active = await instance.openDirectConnection('note-mention', context)
+
+    mocks.verifyGrant.mockResolvedValueOnce({
+      actor_id: 'system:mention-labels',
+      actor_name: 'Campsite',
+      grant_id: 'grant-mention',
+      invoked_by: 'member-1',
+      organization: 'acme',
+      scopes: ['write', 'mention_labels']
+    })
+
+    const result = await facadeInternals.applyEdit(instance, 'grant-token', {
+      note_id: 'note-mention',
+      mode: 'direct',
+      operation: {
+        type: 'update_mentions',
+        membership_id: 'member-1',
+        display_name: 'New Name',
+        username: 'new_username'
+      }
+    })
+    const reconnected = await instance.openDirectConnection('note-mention', context)
+    const json = TiptapTransformer.fromYdoc(reconnected.document!, 'default')
+
+    expect(result.updated_mentions).toBe(1)
+    expect(result.attribution_recorded).toBe(false)
+    expect(reconnected.document!.getXmlFragment('default')).toHaveLength(1)
+    expect(JSON.stringify(json)).toContain('New Name')
+    expect(JSON.stringify(json)).toContain('new_username')
+    expect(mocks.recordAttribution).not.toHaveBeenCalled()
+
+    await reconnected.disconnect()
+    await active.disconnect()
   })
 })

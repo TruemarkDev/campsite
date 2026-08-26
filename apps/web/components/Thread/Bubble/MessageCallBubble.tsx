@@ -108,7 +108,7 @@ function CompletedMessageCall({
           <div className='absolute inset-0 z-0' />
         </Tooltip>
 
-        <div className='grid grid-cols-[40px,1fr] items-center gap-3'>
+        <div className='grid grid-cols-[40px_1fr] items-center gap-3'>
           <div className='bg-quaternary rounded-full p-2'>
             <VideoCameraFilledIcon size={24} />
           </div>
@@ -128,7 +128,7 @@ function CompletedMessageCall({
         </div>
 
         {!!call.recordings.length && (
-          <div className='mt-2 grid grid-cols-[40px,1fr] gap-3'>
+          <div className='mt-2 grid grid-cols-[40px_1fr] gap-3'>
             <div className='col-start-2 flex flex-col gap-1'>
               {call.summary_html && (
                 <HTMLRenderer

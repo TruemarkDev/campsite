@@ -44,7 +44,7 @@ function Pack({ pack }: { pack: CustomReactionsPack }) {
 
   return (
     <div className='flex flex-col'>
-      <div key={pack.name} className='grid grid-cols-[32px,1fr] items-center gap-3 p-3'>
+      <div key={pack.name} className='grid grid-cols-[32px_1fr] items-center gap-3 p-3'>
         <Button
           variant='plain'
           accessibilityLabel={expanded ? 'Collapse' : 'Expand'}
@@ -67,7 +67,7 @@ function Pack({ pack }: { pack: CustomReactionsPack }) {
         </div>
       </div>
       {expanded && (
-        <div className='grid grid-cols-[32px,1fr] gap-3'>
+        <div className='grid grid-cols-[32px_1fr] gap-3'>
           <div />
           <div className='flex flex-wrap gap-2 p-3 pt-0'>
             {pack.items.map((item) => (

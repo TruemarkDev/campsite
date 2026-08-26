@@ -1,4 +1,5 @@
 import { TiptapTransformer } from '@hocuspocus/transformer'
+import type { JSONContent } from '@tiptap/core'
 import * as Y from 'yjs'
 
 import { database } from '../database'
@@ -67,13 +68,14 @@ describe('collaboration lineage', () => {
     expect(mocks.putRequests).toHaveLength(2)
     expect(mocks.putRequests[0].description_state).not.toBe(mocks.putRequests[1].description_state)
     expect(first).toEqual(second)
+    if (!first || !second) throw new Error('Concurrent loaders must return canonical Yjs state')
 
     const merged = new Y.Doc()
 
     Y.applyUpdate(merged, first)
     Y.applyUpdate(merged, second)
 
-    const json = TiptapTransformer.fromYdoc(merged, 'default')
+    const json = TiptapTransformer.fromYdoc(merged, 'default') as JSONContent
 
     expect(json.content?.map((node) => node.type)).toEqual(['heading', 'table', 'postNoteAttachment', 'paragraph'])
   })

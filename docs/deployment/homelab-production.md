@@ -173,6 +173,15 @@ network. MySQL, Redis, and the object-store administration endpoint publish no
 public ports. Application containers address them by stable accessory service
 name.
 
+🟡 Declared locally; not yet deployed. The sync runtime uses the existing Redis
+accessory for Hocuspocus cross-replica document and awareness coordination. It
+owns logical database 3 and the `campsite-sync` key/channel prefix; databases
+0, 1, and 2 remain assigned to
+Rails cache, Sidekiq, and Rack Attack respectively. Sync startup SHALL fail when
+Redis coordination is unavailable, and `/up` SHALL return unavailable after a
+Redis disconnect. Verification method: Test with two independently running sync
+processes and Inspection of the rendered Kamal environment.
+
 Elasticsearch listens on Shuri's LAN address only, requires an application
 credential, and is restricted to Odin at the host firewall. Its HTTP port is
 never routed through Cloudflare. The loopback-only

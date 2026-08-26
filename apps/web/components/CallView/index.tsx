@@ -270,7 +270,7 @@ function CallTranscript({
 
           return (
             <div
-              className={cn('grid grid-cols-[24px,1fr] gap-4 py-2 text-left')}
+              className={cn('grid grid-cols-[24px_1fr] gap-4 py-2 text-left')}
               // this is a static list, so we can be comfortable using the index as a key
               // eslint-disable-next-line react/no-array-index-key
               key={index}

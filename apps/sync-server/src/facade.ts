@@ -23,6 +23,7 @@ type EditOperation =
   | { type: 'append_section'; content: string; format?: ContentFormat }
   | { type: 'replace_section'; heading: string; content: string; format?: ContentFormat }
   | { type: 'stream'; chunks: string[]; format?: ContentFormat }
+  | { type: 'update_mentions'; membership_id: string; display_name: string; username: string }
 
 type AgentEditRequest = {
   note_id: string
@@ -30,6 +31,15 @@ type AgentEditRequest = {
   operation: EditOperation
   instruction?: string
   schema_version?: number
+}
+
+type VerifiedAgent = {
+  actor_id: string
+  actor_name: string
+  grant_id: string
+  invoked_by: string
+  organization: string
+  scopes?: string[]
 }
 
 class FacadeError extends Error {
@@ -174,6 +184,10 @@ function nextDocument(
   const content = current.content ?? []
   const insertedContent = inserted.content ?? []
 
+  if (operation.type === 'update_mentions') {
+    throw new FacadeError(422, 'invalid_operation', 'Mention maintenance does not replace document content')
+  }
+
   if (request.mode === 'direct') {
     if (operation.type === 'set_content') return inserted
     if (operation.type === 'append_section' || operation.type === 'stream') {
@@ -208,10 +222,38 @@ function replaceYDocument(document: Y.Doc, json: JSONContent) {
   const source = TiptapTransformer.toYdoc(json, 'default', extensions)
   const sourceFragment = source.getXmlFragment('default')
   const target = document.getXmlFragment('default')
-  const nodes = sourceFragment.toArray().map((node) => node.clone())
+  const nodes = sourceFragment
+    .toArray()
+    .filter((node): node is Y.XmlElement | Y.XmlText => node instanceof Y.XmlElement || node instanceof Y.XmlText)
+    .map((node) => node.clone())
 
   target.delete(0, target.length)
   target.insert(0, nodes)
+}
+
+function updateMentionAttributes(document: Y.Doc, operation: Extract<EditOperation, { type: 'update_mentions' }>) {
+  const bounded = [operation.membership_id, operation.display_name, operation.username]
+  if (bounded.some((value) => typeof value !== 'string' || value.length === 0 || value.length > 255)) {
+    throw new FacadeError(422, 'invalid_mention', 'Mention attributes must be non-empty bounded strings')
+  }
+
+  let updated = 0
+  const visit = (nodes: Array<Y.XmlElement | Y.XmlText | Y.XmlHook>) => {
+    nodes.forEach((node) => {
+      if (!(node instanceof Y.XmlElement)) return
+
+      if (node.nodeName === 'mention' && node.getAttribute('id') === operation.membership_id) {
+        node.setAttribute('label', operation.display_name)
+        node.setAttribute('username', operation.username)
+        updated += 1
+      }
+
+      visit(node.toArray())
+    })
+  }
+
+  document.transact(() => visit(document.getXmlFragment('default').toArray()))
+  return updated
 }
 
 function withAgentAwareness(document: Document, context: Context, callback: () => void) {
@@ -265,14 +307,22 @@ async function applyEdit(instance: Hocuspocus<Context>, token: string, request: 
     throw new FacadeError(422, 'invalid_request', 'note_id, mode, and operation are required')
   }
 
-  const agent = await api.agentSyncGrants
+  const agent = (await api.agentSyncGrants
     .postAgentSyncGrantsVerify()
-    .request({ note_id: request.note_id }, { headers: { Authorization: `Bearer ${token}` } })
+    .request({ note_id: request.note_id }, { headers: { Authorization: `Bearer ${token}` } })) as VerifiedAgent
   enforceRateLimit(agent.grant_id)
 
   return queueForNote(request.note_id, async () => {
     const loaded = instance.documents.get(request.note_id)
-    if (request.mode === 'direct' && loaded && loaded.getConnectionsCount() > 0) {
+    const operation = request.operation
+    const mentionGrant = (agent.scopes ?? ['write']).includes('mention_labels')
+    const mentionOperation = operation.type === 'update_mentions'
+
+    if (mentionGrant !== mentionOperation || (mentionOperation && request.mode !== 'direct')) {
+      throw new FacadeError(403, 'invalid_grant_scope', 'The grant scope does not allow this operation')
+    }
+
+    if (request.mode === 'direct' && !mentionOperation && loaded && loaded.getConnectionsCount() > 0) {
       throw new FacadeError(409, 'active_editors', 'Direct edits are refused while editors are active')
     }
 
@@ -287,25 +337,50 @@ async function applyEdit(instance: Hocuspocus<Context>, token: string, request: 
       actorName: agent.actor_name,
       invokedBy: agent.invoked_by
     }
-    const operation = request.operation
-    const incoming = operation.type === 'stream' ? operation.chunks : [operation.content]
-    if (incoming.length === 0) throw new FacadeError(422, 'invalid_content', 'A stream requires at least one chunk')
+    const incoming =
+      operation.type === 'stream' ? operation.chunks : operation.type === 'update_mentions' ? [] : [operation.content]
+    if (operation.type === 'stream' && incoming.length === 0) {
+      throw new FacadeError(422, 'invalid_content', 'A stream requires at least one chunk')
+    }
 
-    const insertedDocuments = await Promise.all(incoming.map((content) => parseContent(content, operation.format)))
+    const insertedDocuments = await Promise.all(
+      incoming.map((content) =>
+        parseContent(content, operation.type === 'update_mentions' ? undefined : operation.format)
+      )
+    )
     const connection = await instance.openDirectConnection(request.note_id, context)
     const batchId = crypto.randomUUID()
+    let updatedMentions = 0
 
     try {
-      for (const inserted of insertedDocuments) {
+      if (operation.type === 'update_mentions') {
         await connection.transact((document) => {
-          const current = TiptapTransformer.fromYdoc(document, 'default') as JSONContent
-          const next = nextDocument(current, inserted, request, context, batchId)
-
-          withAgentAwareness(connection.document!, context, () => replaceYDocument(document, next))
+          updatedMentions = updateMentionAttributes(document, operation)
         })
+      } else {
+        for (const inserted of insertedDocuments) {
+          await connection.transact((document) => {
+            const current = TiptapTransformer.fromYdoc(document, 'default') as JSONContent
+            const next = nextDocument(current, inserted, request, context, batchId)
+
+            withAgentAwareness(connection.document!, context, () => replaceYDocument(document, next))
+          })
+        }
       }
     } finally {
       await connection.disconnect()
+    }
+
+    if (mentionOperation) {
+      return {
+        batch_id: batchId,
+        mode: request.mode,
+        note_id: request.note_id,
+        actor_id: agent.actor_id,
+        invoked_by: agent.invoked_by,
+        attribution_recorded: false,
+        updated_mentions: updatedMentions
+      }
     }
 
     let attributionRecorded = true
@@ -365,4 +440,11 @@ export async function handleAgentEditRequest(
   return true
 }
 
-export const facadeInternals = { applyEdit, markText, nextDocument, replaceYDocument, sectionRange }
+export const facadeInternals = {
+  applyEdit,
+  markText,
+  nextDocument,
+  replaceYDocument,
+  sectionRange,
+  updateMentionAttributes
+}

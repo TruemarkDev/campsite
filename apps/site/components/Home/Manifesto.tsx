@@ -607,7 +607,7 @@ function ConnectTheDots() {
     <div className='3xl:my-10 relative my-6 lg:-mx-4 xl:-mx-6 xl:my-8 2xl:-mx-8'>
       <div className='flex items-center select-none'>
         <div className='bg-elevated w-full rounded-lg border-[0.5px] shadow lg:-rotate-2'>
-          <div className='grid grid-cols-[24px,1fr] gap-x-3 gap-y-0.5 border-b-[0.5px] p-3'>
+          <div className='grid grid-cols-[24px_1fr] gap-x-3 gap-y-0.5 border-b-[0.5px] p-3'>
             <Avatar src='/img/team/dan.jpg' size='xs' />
             <div className='flex items-center gap-1.5'>
               <UIText weight='font-medium'>Dan</UIText>
@@ -633,7 +633,7 @@ function ConnectTheDots() {
               />
             </div>
           </div>
-          <div className='relative grid grid-cols-[24px,1fr] gap-x-3 border-b-[0.5px] p-3'>
+          <div className='relative grid grid-cols-[24px_1fr] gap-x-3 border-b-[0.5px] p-3'>
             <span className='text-quaternary absolute -top-8 -left-29 hidden lg:flex'>
               <AutomaticBacklinks />
             </span>
@@ -650,7 +650,7 @@ function ConnectTheDots() {
               </UIText>
             </div>
           </div>
-          <div className='bg-secondary grid grid-cols-[24px,1fr] gap-x-3 rounded-b-[7px] p-3 dark:bg-white/[0.03]'>
+          <div className='bg-secondary grid grid-cols-[24px_1fr] gap-x-3 rounded-b-[7px] p-3 dark:bg-white/[0.03]'>
             <Avatar src='/img/team/brian.jpeg' size='xs' />
             <UIText size='text-[15px]' quaternary>
               Reply

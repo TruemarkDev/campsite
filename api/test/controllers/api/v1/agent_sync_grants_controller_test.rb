@@ -25,6 +25,46 @@ module Api
         assert_equal @note.public_id, json_response["note_id"]
         assert_equal "summary-agent", json_response["actor_id"]
         assert_equal @note.member.public_id, json_response["invoked_by"]
+        assert_equal [AgentSyncGrant::WRITE_SCOPE], json_response["scopes"]
+      end
+
+      test "persists mention maintenance without note edit callbacks or attribution" do
+        maintenance_grant, maintenance_token = AgentSyncGrant.issue!(
+          note: @note,
+          organization_membership: @note.member,
+          actor_id: UpdateMentionUsernamesJob::MENTION_LABEL_ACTOR_ID,
+          actor_name: UpdateMentionUsernamesJob::MENTION_LABEL_ACTOR_NAME,
+          scopes: [AgentSyncGrant::WRITE_SCOPE, AgentSyncGrant::MENTION_LABELS_SCOPE],
+        )
+        headers = { "Authorization" => "Bearer #{maintenance_token}" }
+        original_updated_at = @note.updated_at
+
+        assert_no_difference -> { @note.timeline_events.count } do
+          put(
+            agent_sync_grant_state_path(@note.public_id),
+            params: {
+              description_html: "<p>After maintenance</p>",
+              description_state: "maintained-state",
+              description_schema_version: 9,
+            },
+            headers: headers,
+            as: :json,
+          )
+        end
+
+        assert_response :ok
+        assert_equal "maintained-state", @note.reload.description_state
+        assert_equal original_updated_at, @note.updated_at
+
+        post(
+          "/v1/agent-sync-grants/notes/#{@note.public_id}/attributions",
+          params: { batch_id: "batch-1" },
+          headers: headers,
+          as: :json,
+        )
+        assert_response :forbidden
+      ensure
+        maintenance_grant&.revoke!
       end
 
       test "requires an exact bearer token for the requested note" do

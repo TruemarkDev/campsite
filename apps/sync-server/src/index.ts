@@ -6,6 +6,7 @@ import * as dotenv from 'dotenv'
 import { api } from './api'
 import { database, getResource, sendVersionToConnections } from './database'
 import { handleAgentEditRequest } from './facade'
+import { createRedisExtension, disconnectRedisExtension, redisConnectionsReady, verifyRedisExtension } from './redis'
 import { AuthenticationError, Context } from './types'
 
 if (process.env.NODE_ENV === 'production') {
@@ -17,6 +18,8 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 dotenv.config()
+
+const redis = createRedisExtension()
 
 const server = new Server<Context>({
   port: parseInt(process.env.PORT || '9000', 10),
@@ -116,10 +119,27 @@ const server = new Server<Context>({
   },
 
   async onRequest(data) {
+    const path = new URL(data.request.url ?? '/', 'http://localhost').pathname
+    if (path === '/up' && !redisConnectionsReady(redis)) {
+      data.response.writeHead(503, { 'Content-Type': 'application/json' })
+      data.response.end(JSON.stringify({ status: 'unavailable', dependency: 'redis' }))
+      throw null
+    }
+
     if (await handleAgentEditRequest(data.request, data.response, data.instance)) throw null
   },
 
-  extensions: [database, new Logger()]
+  extensions: [redis, database, new Logger()]
 })
 
-server.listen()
+export async function startServer() {
+  await verifyRedisExtension(redis)
+  server.listen()
+}
+
+void startServer().catch((error) => {
+  Sentry.captureException(error)
+  console.error('Redis coordination startup failed', error)
+  disconnectRedisExtension(redis)
+  process.exitCode = 1
+})

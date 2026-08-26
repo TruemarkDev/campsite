@@ -9,13 +9,15 @@
     "sentry:sourcemaps": "sentry-cli --url https://glitchtip.allbrainy.com sourcemaps inject --org camp-site --project campsite-sync-server ./dist && sentry-cli --url https://glitchtip.allbrainy.com sourcemaps upload --org camp-site --project campsite-sync-server --log-level=debug ./dist",
     "start": "node dist/index.mjs",
     "test": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:redis": "TEST_REDIS_URL=redis://127.0.0.1:6379/15 vitest run src/__tests__/redis-integration.test.ts src/__tests__/redis-process-integration.test.ts"
   },
   "dependencies": {
     "@campsite/editor": "workspace:*",
     "@campsite/types": "workspace:*",
     "@hocuspocus/extension-database": "catalog:",
     "@hocuspocus/extension-logger": "catalog:",
+    "@hocuspocus/extension-redis": "catalog:",
     "@hocuspocus/server": "catalog:",
     "@hocuspocus/transformer": "catalog:",
     "@sentry/node": "catalog:",

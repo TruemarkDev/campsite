@@ -31,5 +31,6 @@ env:
     PORT: "9000"
     API_BASE_URL: http://api.camp.home
     STYLED_TEXT_API_URL: http://styled-text.camp.home
+    SYNC_REDIS_URL: redis://campsite-api-staging-redis:6379/3
 ssh:
   user: debian

@@ -1,6 +1,7 @@
-const mocks = vi.hoisted(() => ({
+const mocks: Record<string, any> = vi.hoisted(() => ({
   captureException: vi.fn(),
   database: { name: 'database' },
+  disconnectRedisExtension: vi.fn(),
   dotenvConfig: vi.fn(),
   getResource: vi.fn(),
   handleAgentEditRequest: vi.fn(),
@@ -8,9 +9,12 @@ const mocks = vi.hoisted(() => ({
   init: vi.fn(),
   listen: vi.fn(),
   logger: { name: 'logger' },
+  redis: { name: 'redis', pub: { status: 'ready' }, sub: { status: 'ready' } },
+  redisConnectionsReady: vi.fn(() => true),
   sendVersionToConnections: vi.fn(),
   serverConfiguration: undefined as Record<string, any> | undefined,
-  setContext: vi.fn()
+  setContext: vi.fn(),
+  verifyRedisExtension: vi.fn()
 }))
 
 vi.mock('@hocuspocus/extension-logger', () => ({
@@ -48,9 +52,16 @@ vi.mock('../api', () => ({
   }
 }))
 vi.mock('../facade', () => ({ handleAgentEditRequest: mocks.handleAgentEditRequest }))
+vi.mock('../redis', () => ({
+  createRedisExtension: () => mocks.redis,
+  disconnectRedisExtension: mocks.disconnectRedisExtension,
+  redisConnectionsReady: mocks.redisConnectionsReady,
+  verifyRedisExtension: mocks.verifyRedisExtension
+}))
 
 async function loadServer() {
   await import('../index')
+  await vi.waitFor(() => expect(mocks.listen).toHaveBeenCalledOnce())
 
   return mocks.serverConfiguration!
 }
@@ -71,19 +82,34 @@ describe('sync server', () => {
     vi.resetModules()
     vi.clearAllMocks()
     mocks.serverConfiguration = undefined
+    mocks.redisConnectionsReady.mockReturnValue(true)
+    mocks.verifyRedisExtension.mockResolvedValue(undefined)
     process.env.NODE_ENV = 'test'
     delete process.env.PORT
     delete process.env.SENTRY_DSN
   })
 
-  it('starts on the default port with database and logger extensions', async () => {
+  it('starts on the default port after Redis is ready', async () => {
     const configuration = await loadServer()
 
     expect(mocks.dotenvConfig).toHaveBeenCalledOnce()
     expect(configuration.port).toBe(9000)
-    expect(configuration.extensions).toEqual([mocks.database, mocks.logger])
+    expect(configuration.extensions).toEqual([mocks.redis, mocks.database, mocks.logger])
+    expect(mocks.verifyRedisExtension).toHaveBeenCalledWith(mocks.redis)
     expect(mocks.listen).toHaveBeenCalledOnce()
     expect(mocks.init).not.toHaveBeenCalled()
+  })
+
+  it('returns unavailable from the health endpoint when Redis disconnects', async () => {
+    const { onRequest } = await loadServer()
+    const response = { end: vi.fn(), writeHead: vi.fn() }
+
+    mocks.redisConnectionsReady.mockReturnValue(false)
+
+    await expect(onRequest({ request: { url: '/up' }, response, instance: {} })).rejects.toBeNull()
+    expect(response.writeHead).toHaveBeenCalledWith(503, { 'Content-Type': 'application/json' })
+    expect(response.end).toHaveBeenCalledWith(JSON.stringify({ status: 'unavailable', dependency: 'redis' }))
+    expect(mocks.handleAgentEditRequest).not.toHaveBeenCalled()
   })
 
   it('uses configured production settings', async () => {

@@ -15,6 +15,7 @@ module Api
           actor_id: { type: :string },
           actor_name: { type: :string },
           invoked_by: { type: :string },
+          scopes: { type: :string, is_array: true },
           expires_at: { type: :string },
         }
       end
@@ -79,13 +80,21 @@ module Api
 
           return render(status: :unprocessable_content, json: { code: "stale_schema" }) if version < note.description_schema_version
 
-          note.event_actor = @grant.organization_membership
-          unless note.update(
-            description_html: params[:description_html],
-            description_state: params[:description_state],
-            description_schema_version: version,
-          )
-            return render(status: :unprocessable_content, json: { code: "invalid_sync_state", errors: note.errors.full_messages })
+          if @grant.mention_labels_scope?
+            note.update_columns(
+              description_html: params[:description_html],
+              description_state: params[:description_state],
+              description_schema_version: version,
+            )
+          else
+            note.event_actor = @grant.organization_membership
+            unless note.update(
+              description_html: params[:description_html],
+              description_state: params[:description_state],
+              description_schema_version: version,
+            )
+              return render(status: :unprocessable_content, json: { code: "invalid_sync_state", errors: note.errors.full_messages })
+            end
           end
         end
 
@@ -100,6 +109,7 @@ module Api
         }
       end
       def create_attribution
+        return render(status: :forbidden, json: { code: "maintenance_grant" }) if @grant.mention_labels_scope?
         return render(status: :unprocessable_content, json: { code: "invalid_attribution" }) if params[:batch_id].blank?
 
         @grant.note.timeline_events.create!(
@@ -151,6 +161,7 @@ module Api
           actor_id: @grant.actor_id,
           actor_name: @grant.actor_name,
           invoked_by: @grant.organization_membership.public_id,
+          scopes: @grant.scopes,
           expires_at: @grant.expires_at.iso8601,
         }
       end

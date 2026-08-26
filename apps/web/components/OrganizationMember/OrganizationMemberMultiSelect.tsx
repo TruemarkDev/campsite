@@ -103,7 +103,7 @@ const Menu = (props: MenuProps<OrganizationMemberMultiSelectOptionType, true>) =
 const CustomOption = (props: OptionProps<OrganizationMemberMultiSelectOptionType>) => {
   return (
     <components.Option {...props}>
-      <div className='grid grid-cols-[20px,1fr] items-center gap-1.5'>
+      <div className='grid grid-cols-[20px_1fr] items-center gap-1.5'>
         <MemberAvatar member={props.data.member} size='xs' />
         <div className='flex items-center gap-2 truncate'>
           {props.data.member.user.display_name}
