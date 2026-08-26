@@ -48,6 +48,15 @@ describe('EditorTableMenu', () => {
 
   afterEach(() => editor?.destroy())
 
+  it('does not render for editors without table support', () => {
+    editor?.destroy()
+    editor = new Editor({ extensions: [Document, Paragraph, Text] })
+
+    const { container } = render(<EditorTableMenu editor={editor} />)
+
+    expect(container.innerHTML).toBe('')
+  })
+
   it('reacts to table selection changes and executes every row and column command', () => {
     const instance = editor!
 

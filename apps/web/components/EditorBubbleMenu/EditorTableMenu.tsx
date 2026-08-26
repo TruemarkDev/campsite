@@ -22,6 +22,12 @@ interface Props {
 }
 
 export function EditorTableMenu({ editor, appendTo }: Props) {
+  if (!editor.schema.nodes.table) return null
+
+  return <EditorTableMenuContent editor={editor} appendTo={appendTo} />
+}
+
+function EditorTableMenuContent({ editor, appendTo }: Props) {
   const commandAvailability = useEditorState({
     editor,
     selector: ({ editor }) => ({
