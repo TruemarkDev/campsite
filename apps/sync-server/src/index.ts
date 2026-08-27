@@ -3,6 +3,7 @@ import { Server } from '@hocuspocus/server'
 import * as Sentry from '@sentry/node'
 import * as dotenv from 'dotenv'
 
+import { createRedisAgentEditCoordination } from './agentEditCoordination'
 import { api } from './api'
 import { database, getResource, sendVersionToConnections } from './database'
 import { handleAgentEditRequest } from './facade'
@@ -20,6 +21,7 @@ if (process.env.NODE_ENV === 'production') {
 dotenv.config()
 
 const redis = createRedisExtension()
+const agentEditCoordination = createRedisAgentEditCoordination(redis)
 
 const server = new Server<Context>({
   port: parseInt(process.env.PORT || '9000', 10),
@@ -118,6 +120,18 @@ const server = new Server<Context>({
     }
   },
 
+  async connected(data) {
+    if (data.context.actorType === 'human') {
+      await agentEditCoordination.humanConnected(data.documentName, data.socketId)
+    }
+  },
+
+  async onDisconnect(data) {
+    if (data.context.actorType === 'human') {
+      await agentEditCoordination.humanDisconnected(data.documentName, data.socketId)
+    }
+  },
+
   async onRequest(data) {
     const path = new URL(data.request.url ?? '/', 'http://localhost').pathname
     if (path === '/up' && !redisConnectionsReady(redis)) {
@@ -126,7 +140,11 @@ const server = new Server<Context>({
       throw null
     }
 
-    if (await handleAgentEditRequest(data.request, data.response, data.instance)) throw null
+    if (await handleAgentEditRequest(data.request, data.response, data.instance, agentEditCoordination)) throw null
+  },
+
+  async onDestroy() {
+    await agentEditCoordination.destroy()
   },
 
   extensions: [redis, database, new Logger()]

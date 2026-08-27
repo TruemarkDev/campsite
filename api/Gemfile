@@ -108,7 +108,7 @@ gem "mysql2", "~> 0.5.7"
 
 gem "csv", "~> 3.3"
 
-gem "ruby_llm", "~> 1.9"
+gem "ruby_llm", github: "crmne/ruby_llm", branch: "main"
 
 # OpenTelemetry for SigNoz observability
 gem "opentelemetry-sdk"

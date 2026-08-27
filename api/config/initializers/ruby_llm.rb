@@ -4,17 +4,10 @@
 # https://rubyllm.com/configuration/
 
 RubyLLM.configure do |config|
-  # Opt into the new acts_as API (the legacy one is deprecated and removed in RubyLLM 2.0).
-  # We don't use the ActiveRecord integration (acts_as_chat/message/...), so this only
-  # silences the deprecation warning with no behavioral change.
-  config.use_new_acts_as = true
-
   config.gemini_api_key = ENV.fetch("GEMINI_API_KEY", Rails.application.credentials.dig(:gemini, :api_key))
-  config.openai_api_key = ENV.fetch("OPENAI_API_KEY", Rails.application.credentials.dig(:openai, :api_key))
-  config.anthropic_api_key = ENV.fetch("ANTHROPIC_API_KEY", Rails.application.credentials.dig(:anthropic, :api_key))
 
   config.default_model = "gemini-2.5-flash"
-  config.default_embedding_model = "text-embedding-004"
+  config.default_embedding_model = "gemini-embedding-001"
   config.request_timeout = 120
   config.max_retries = 3
 
@@ -32,7 +25,5 @@ RubyLLM.configure do |config|
     # reaches the network (calls are stubbed or recorded by VCR), so a
     # placeholder key is enough to let construction succeed.
     config.gemini_api_key ||= "test-gemini-api-key"
-    config.openai_api_key ||= "test-openai-api-key"
-    config.anthropic_api_key ||= "test-anthropic-api-key"
   end
 end

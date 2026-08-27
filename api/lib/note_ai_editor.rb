@@ -37,7 +37,9 @@ class NoteAiEditor
       subject_type: "Note",
       subject_id: @note.id,
     )
-    content = response.content
+    # RubyLLM 2.0 hands structured output back as a JSON string in #content;
+    # LlmResponseWrapper#parsed decodes it (and passes Hashes through).
+    content = response.respond_to?(:parsed) ? response.parsed : response.content
     text = content.is_a?(Hash) ? (content["text"] || content[:text]) : nil
 
     raise ArgumentError, "AI edit response did not contain text" unless text.is_a?(String)

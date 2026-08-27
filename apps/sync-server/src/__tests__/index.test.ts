@@ -1,4 +1,12 @@
 const mocks: Record<string, any> = vi.hoisted(() => ({
+  agentEditCoordination: {
+    destroy: vi.fn(),
+    hasActiveHuman: vi.fn(),
+    humanConnected: vi.fn(),
+    humanDisconnected: vi.fn(),
+    takeRateLimit: vi.fn(),
+    withNoteLock: vi.fn()
+  },
   captureException: vi.fn(),
   database: { name: 'database' },
   disconnectRedisExtension: vi.fn(),
@@ -50,6 +58,9 @@ vi.mock('../api', () => ({
       postAgentSyncGrantsVerify: () => ({ request: mocks.verifyGrant })
     }
   }
+}))
+vi.mock('../agentEditCoordination', () => ({
+  createRedisAgentEditCoordination: () => mocks.agentEditCoordination
 }))
 vi.mock('../facade', () => ({ handleAgentEditRequest: mocks.handleAgentEditRequest }))
 vi.mock('../redis', () => ({
@@ -110,6 +121,23 @@ describe('sync server', () => {
     expect(response.writeHead).toHaveBeenCalledWith(503, { 'Content-Type': 'application/json' })
     expect(response.end).toHaveBeenCalledWith(JSON.stringify({ status: 'unavailable', dependency: 'redis' }))
     expect(mocks.handleAgentEditRequest).not.toHaveBeenCalled()
+  })
+
+  it('registers only authenticated human connections in shared coordination', async () => {
+    const { connected, onDisconnect, onDestroy } = await loadServer()
+    const human = { context: { actorType: 'human' }, documentName: 'note-1', socketId: 'socket-1' }
+
+    await connected(human)
+    await onDisconnect(human)
+    await connected({ ...human, context: { actorType: 'agent' } })
+    await onDisconnect({ ...human, context: { actorType: 'agent' } })
+    await onDestroy()
+
+    expect(mocks.agentEditCoordination.humanConnected).toHaveBeenCalledWith('note-1', 'socket-1')
+    expect(mocks.agentEditCoordination.humanDisconnected).toHaveBeenCalledWith('note-1', 'socket-1')
+    expect(mocks.agentEditCoordination.humanConnected).toHaveBeenCalledOnce()
+    expect(mocks.agentEditCoordination.humanDisconnected).toHaveBeenCalledOnce()
+    expect(mocks.agentEditCoordination.destroy).toHaveBeenCalledOnce()
   })
 
   it('uses configured production settings', async () => {

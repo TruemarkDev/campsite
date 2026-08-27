@@ -6,18 +6,14 @@ require_relative "llm_response_wrapper"
 class Llm
   prepend LlmInstrumentation
 
+  # Gemini is the only supported provider.
   DEFAULT_MODELS = {
-    openai: "gpt-4o-mini",
     gemini: "gemini-2.5-flash",
-    anthropic: "claude-3-5-haiku-20241022",
   }.freeze
 
   # Provider aliases for convenience
   PROVIDER_ALIASES = {
     google: :gemini,
-    claude: :anthropic,
-    openai: :openai,
-    gpt: :openai,
   }.freeze
 
   attr_reader :provider, :model, :client
@@ -32,10 +28,12 @@ class Llm
     chat_client = RubyLLM.chat(model: @model, provider: @provider)
     chat_client.with_schema(schema) if schema
 
+    prompt = apply_messages(chat_client, messages)
+
     if block_given?
-      chat_client.ask(messages, &block)
+      chat_client.ask(prompt, &block)
     else
-      response = chat_client.ask(messages)
+      response = chat_client.ask(prompt)
       LlmResponseWrapper.new(response)
     end
   rescue StandardError => e
@@ -48,12 +46,8 @@ class Llm
     normalized = PROVIDER_ALIASES[provider_sym] || provider_sym
 
     case normalized
-    when :openai
-      RubyLLM.config.openai_api_key.present?
     when :gemini
       RubyLLM.config.gemini_api_key.present?
-    when :anthropic
-      RubyLLM.config.anthropic_api_key.present?
     else
       false
     end
@@ -62,10 +56,39 @@ class Llm
   end
 
   def self.available_providers
-    [:openai, :gemini, :anthropic].select { |p| provider_configured?(p) }
+    [:gemini].select { |p| provider_configured?(p) }
   end
 
   private
+
+  # RubyLLM requires a message's content to be a String, so a
+  # [{ role:, content: }, ...] array cannot be handed to #ask directly.
+  # System turns become chat instructions; the remaining turns are joined
+  # into the single user prompt that #ask expects.
+  def apply_messages(chat_client, messages)
+    return messages unless messages.is_a?(Array)
+
+    instructions = []
+    user_turns = []
+
+    messages.each do |message|
+      next unless message.is_a?(Hash)
+
+      role = (message[:role] || message["role"]).to_s
+      content = (message[:content] || message["content"]).to_s
+      next if content.blank?
+
+      if role == "system"
+        instructions << content
+      else
+        user_turns << content
+      end
+    end
+
+    chat_client.with_instructions(instructions.join("\n\n")) if instructions.any?
+
+    user_turns.join("\n\n")
+  end
 
   def normalize_provider(provider)
     provider_sym = provider.to_s.downcase.to_sym

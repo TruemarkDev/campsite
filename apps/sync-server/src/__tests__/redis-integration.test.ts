@@ -7,12 +7,24 @@ import * as Y from 'yjs'
 
 import { getNoteExtensions } from '@campsite/editor'
 
+import { createRedisAgentEditCoordination } from '../agentEditCoordination'
 import { facadeInternals } from '../facade'
 import { redisSettings, verifyRedisExtension } from '../redis'
 import type { Context } from '../types'
 
 const runWithRedis = process.env.TEST_REDIS_URL ? describe : describe.skip
 const extensions = getNoteExtensions()
+const mocks = vi.hoisted(() => ({ recordAttribution: vi.fn(), verifyGrant: vi.fn() }))
+
+vi.mock('../api', () => ({
+  api: {
+    agentSyncGrants: {
+      postAgentSyncGrantsNotesAttributions: () => ({ request: mocks.recordAttribution }),
+      postAgentSyncGrantsVerify: () => ({ request: mocks.verifyGrant })
+    }
+  }
+}))
+
 const context: Context = {
   actorId: 'system:mention-labels',
   actorName: 'Campsite',
@@ -26,6 +38,147 @@ const context: Context = {
 }
 
 runWithRedis('Redis multi-instance coordination', () => {
+  it('coordinates human leases, note locks, and grant rate limits across instances', async () => {
+    const prefix = `campsite-sync-agent-test-${crypto.randomUUID()}`
+    const redisExtensions = [
+      new Redis({
+        ...redisSettings({ NODE_ENV: 'test', SYNC_REDIS_PREFIX: prefix, SYNC_REDIS_URL: process.env.TEST_REDIS_URL })
+      }),
+      new Redis({
+        ...redisSettings({ NODE_ENV: 'test', SYNC_REDIS_PREFIX: prefix, SYNC_REDIS_URL: process.env.TEST_REDIS_URL })
+      })
+    ]
+    const coordinators = redisExtensions.map((redis) => createRedisAgentEditCoordination(redis))
+
+    try {
+      await Promise.all(redisExtensions.map(verifyRedisExtension))
+
+      await coordinators[0].humanConnected('note-human', 'socket-1')
+      await expect(coordinators[1].hasActiveHuman('note-human')).resolves.toBe(true)
+
+      const guardedInstance = new Hocuspocus<Context>({
+        async onLoadDocument({ document }) {
+          document.getText('content').insert(0, 'unchanged')
+        }
+      })
+      mocks.verifyGrant.mockResolvedValueOnce({
+        actor_id: 'summary-agent',
+        actor_name: 'Summary agent',
+        grant_id: 'grant-human-guard',
+        invoked_by: 'member-1',
+        organization: 'acme'
+      })
+      await expect(
+        facadeInternals.applyEdit(
+          guardedInstance,
+          'grant-token',
+          {
+            note_id: 'note-human',
+            mode: 'direct',
+            operation: { type: 'set_content', content: '<p>Unsafe replacement</p>' }
+          },
+          coordinators[1]
+        )
+      ).rejects.toMatchObject({ code: 'active_editors', status: 409 })
+      expect(guardedInstance.documents.size).toBe(0)
+
+      await coordinators[0].humanDisconnected('note-human', 'socket-1')
+      await expect(coordinators[1].hasActiveHuman('note-human')).resolves.toBe(false)
+
+      let releaseFirst = () => {}
+      let secondEntered = false
+      const firstEntered = new Promise<void>((resolve) => {
+        void coordinators[0].withNoteLock('note-lock', async () => {
+          resolve()
+          await new Promise<void>((release) => {
+            releaseFirst = release
+          })
+        })
+      })
+
+      await firstEntered
+      const second = coordinators[1].withNoteLock('note-lock', async () => {
+        secondEntered = true
+      })
+      await coordinators[1].withNoteLock('another-note', async () => {})
+      expect(secondEntered).toBe(false)
+
+      releaseFirst()
+      await second
+      expect(secondEntered).toBe(true)
+
+      let releaseEdit = () => {}
+      let humanRegistered = false
+      const editEntered = new Promise<void>((resolve) => {
+        void coordinators[0].withNoteLock('note-connect-race', async () => {
+          resolve()
+          await new Promise<void>((release) => {
+            releaseEdit = release
+          })
+        })
+      })
+      await editEntered
+      const registration = coordinators[1].humanConnected('note-connect-race', 'socket-race').then(() => {
+        humanRegistered = true
+      })
+      await new Promise((resolve) => setTimeout(resolve, 25))
+      expect(humanRegistered).toBe(false)
+
+      releaseEdit()
+      await registration
+      await expect(coordinators[0].hasActiveHuman('note-connect-race')).resolves.toBe(true)
+      await coordinators[1].humanDisconnected('note-connect-race', 'socket-race')
+
+      for (let request = 0; request < 30; request += 1) {
+        await expect(coordinators[request % 2].takeRateLimit('grant-shared')).resolves.toBe(true)
+      }
+      await expect(coordinators[1].takeRateLimit('grant-shared')).resolves.toBe(false)
+
+      const rateKeys = await redisExtensions[0].pub.keys(`${prefix}:agent-edits:rate:*`)
+      expect(rateKeys).toHaveLength(2)
+      const rateTtls = await Promise.all(rateKeys.map((key) => redisExtensions[0].pub.pttl(key)))
+      expect(rateTtls.every((ttl) => ttl > 0)).toBe(true)
+      expect(await redisExtensions[0].pub.keys(`${prefix}:agent-edits:lock:*`)).toEqual([])
+    } finally {
+      for (const coordinator of coordinators.reverse()) await coordinator.destroy()
+      const keys = await redisExtensions[0].pub.keys(`${prefix}:agent-edits:*`)
+      if (keys.length > 0) await redisExtensions[0].pub.del(...keys)
+      for (const redis of redisExtensions.reverse()) await redis.onDestroy()
+    }
+  })
+
+  it('expires a crashed replica human lease', async () => {
+    const prefix = `campsite-sync-agent-lease-test-${crypto.randomUUID()}`
+    const redisExtensions = [
+      new Redis({
+        ...redisSettings({ NODE_ENV: 'test', SYNC_REDIS_PREFIX: prefix, SYNC_REDIS_URL: process.env.TEST_REDIS_URL })
+      }),
+      new Redis({
+        ...redisSettings({ NODE_ENV: 'test', SYNC_REDIS_PREFIX: prefix, SYNC_REDIS_URL: process.env.TEST_REDIS_URL })
+      })
+    ]
+    const crashed = createRedisAgentEditCoordination(redisExtensions[0], {
+      humanLeaseMs: 100,
+      humanRefreshMs: 60_000
+    })
+    const observer = createRedisAgentEditCoordination(redisExtensions[1])
+
+    try {
+      await Promise.all(redisExtensions.map(verifyRedisExtension))
+      await crashed.humanConnected('note-crashed', 'socket-crashed')
+      await expect(observer.hasActiveHuman('note-crashed')).resolves.toBe(true)
+
+      await new Promise((resolve) => setTimeout(resolve, 150))
+      await expect(observer.hasActiveHuman('note-crashed')).resolves.toBe(false)
+    } finally {
+      await crashed.destroy()
+      await observer.destroy()
+      const keys = await redisExtensions[0].pub.keys(`${prefix}:agent-edits:*`)
+      if (keys.length > 0) await redisExtensions[0].pub.del(...keys)
+      for (const redis of redisExtensions.reverse()) await redis.onDestroy()
+    }
+  })
+
   it('shares live mention and awareness updates, persists them, and preserves unsaved state during replacement', async () => {
     const prefix = `campsite-sync-test-${crypto.randomUUID()}`
     const redisExtensions: Redis[] = []

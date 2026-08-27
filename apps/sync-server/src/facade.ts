@@ -7,13 +7,11 @@ import * as Y from 'yjs'
 
 import { getNoteExtensions, NOTE_SCHEMA_VERSION } from '@campsite/editor'
 
+import type { AgentEditCoordination } from './agentEditCoordination'
 import { api } from './api'
 import { Context } from './types'
 
 const MAX_BODY_BYTES = 256 * 1024
-const MAX_REQUESTS_PER_MINUTE = 30
-const requestCounts = new Map<string, { count: number; resetAt: number }>()
-const noteQueues = new Map<string, Promise<void>>()
 const extensions = getNoteExtensions()
 
 type EditMode = 'suggest' | 'direct'
@@ -84,21 +82,6 @@ function bearerToken(request: IncomingMessage) {
   }
 
   return authorization.slice(7)
-}
-
-function enforceRateLimit(grantId: string) {
-  const now = Date.now()
-  const current = requestCounts.get(grantId)
-
-  if (!current || current.resetAt <= now) {
-    requestCounts.set(grantId, { count: 1, resetAt: now + 60_000 })
-    return
-  }
-
-  current.count += 1
-  if (current.count > MAX_REQUESTS_PER_MINUTE) {
-    throw new FacadeError(429, 'agent_edit_rate_limited', 'Too many agent edits')
-  }
 }
 
 async function markdownToHtml(markdown: string) {
@@ -283,134 +266,139 @@ function withAgentAwareness(document: Document, context: Context, callback: () =
   }
 }
 
-async function queueForNote<T>(noteId: string, callback: () => Promise<T>) {
-  const prior = noteQueues.get(noteId) ?? Promise.resolve()
-  let release = () => {}
-  const next = new Promise<void>((resolve) => {
-    release = resolve
-  })
-
-  const queued = prior.then(() => next)
-
-  noteQueues.set(noteId, queued)
-  await prior
+async function coordinated<T>(callback: () => Promise<T>) {
   try {
     return await callback()
-  } finally {
-    release()
-    if (noteQueues.get(noteId) === queued) noteQueues.delete(noteId)
+  } catch (error) {
+    if (error instanceof FacadeError) throw error
+    throw new FacadeError(503, 'agent_edit_coordination_unavailable', 'Agent edit coordination is unavailable')
   }
 }
 
-async function applyEdit(instance: Hocuspocus<Context>, token: string, request: AgentEditRequest) {
-  if (!request?.note_id || !request?.operation || !['suggest', 'direct'].includes(request.mode)) {
+async function applyEdit(
+  instance: Hocuspocus<Context>,
+  token: string,
+  request: AgentEditRequest,
+  coordination: AgentEditCoordination
+) {
+  if (
+    typeof request?.note_id !== 'string' ||
+    request.note_id.length === 0 ||
+    request.note_id.length > 255 ||
+    !request.operation ||
+    !['suggest', 'direct'].includes(request.mode)
+  ) {
     throw new FacadeError(422, 'invalid_request', 'note_id, mode, and operation are required')
   }
 
   const agent = (await api.agentSyncGrants
     .postAgentSyncGrantsVerify()
     .request({ note_id: request.note_id }, { headers: { Authorization: `Bearer ${token}` } })) as VerifiedAgent
-  enforceRateLimit(agent.grant_id)
+  if (!(await coordinated(() => coordination.takeRateLimit(agent.grant_id)))) {
+    throw new FacadeError(429, 'agent_edit_rate_limited', 'Too many agent edits')
+  }
 
-  return queueForNote(request.note_id, async () => {
-    const loaded = instance.documents.get(request.note_id)
-    const operation = request.operation
-    const mentionGrant = (agent.scopes ?? ['write']).includes('mention_labels')
-    const mentionOperation = operation.type === 'update_mentions'
+  return coordinated(() =>
+    coordination.withNoteLock(request.note_id, async () => {
+      const operation = request.operation
+      const mentionGrant = (agent.scopes ?? ['write']).includes('mention_labels')
+      const mentionOperation = operation.type === 'update_mentions'
 
-    if (mentionGrant !== mentionOperation || (mentionOperation && request.mode !== 'direct')) {
-      throw new FacadeError(403, 'invalid_grant_scope', 'The grant scope does not allow this operation')
-    }
+      if (mentionGrant !== mentionOperation || (mentionOperation && request.mode !== 'direct')) {
+        throw new FacadeError(403, 'invalid_grant_scope', 'The grant scope does not allow this operation')
+      }
 
-    if (request.mode === 'direct' && !mentionOperation && loaded && loaded.getConnectionsCount() > 0) {
-      throw new FacadeError(409, 'active_editors', 'Direct edits are refused while editors are active')
-    }
+      if (request.mode === 'direct' && !mentionOperation && (await coordination.hasActiveHuman(request.note_id))) {
+        throw new FacadeError(409, 'active_editors', 'Direct edits are refused while editors are active')
+      }
 
-    const context: Context = {
-      token,
-      schemaVersion: request.schema_version ?? NOTE_SCHEMA_VERSION,
-      organization: agent.organization,
-      type: 'Note',
-      actorType: 'agent',
-      grantId: agent.grant_id,
-      actorId: agent.actor_id,
-      actorName: agent.actor_name,
-      invokedBy: agent.invoked_by
-    }
-    const incoming =
-      operation.type === 'stream' ? operation.chunks : operation.type === 'update_mentions' ? [] : [operation.content]
-    if (operation.type === 'stream' && incoming.length === 0) {
-      throw new FacadeError(422, 'invalid_content', 'A stream requires at least one chunk')
-    }
+      const context: Context = {
+        token,
+        schemaVersion: request.schema_version ?? NOTE_SCHEMA_VERSION,
+        organization: agent.organization,
+        type: 'Note',
+        actorType: 'agent',
+        grantId: agent.grant_id,
+        actorId: agent.actor_id,
+        actorName: agent.actor_name,
+        invokedBy: agent.invoked_by
+      }
+      const incoming =
+        operation.type === 'stream' ? operation.chunks : operation.type === 'update_mentions' ? [] : [operation.content]
+      if (operation.type === 'stream' && incoming.length === 0) {
+        throw new FacadeError(422, 'invalid_content', 'A stream requires at least one chunk')
+      }
 
-    const insertedDocuments = await Promise.all(
-      incoming.map((content) =>
-        parseContent(content, operation.type === 'update_mentions' ? undefined : operation.format)
+      const insertedDocuments = await Promise.all(
+        incoming.map((content) =>
+          parseContent(content, operation.type === 'update_mentions' ? undefined : operation.format)
+        )
       )
-    )
-    const connection = await instance.openDirectConnection(request.note_id, context)
-    const batchId = crypto.randomUUID()
-    let updatedMentions = 0
+      const connection = await instance.openDirectConnection(request.note_id, context)
+      const batchId = crypto.randomUUID()
+      let updatedMentions = 0
 
-    try {
-      if (operation.type === 'update_mentions') {
-        await connection.transact((document) => {
-          updatedMentions = updateMentionAttributes(document, operation)
-        })
-      } else {
-        for (const inserted of insertedDocuments) {
+      try {
+        if (operation.type === 'update_mentions') {
           await connection.transact((document) => {
-            const current = TiptapTransformer.fromYdoc(document, 'default') as JSONContent
-            const next = nextDocument(current, inserted, request, context, batchId)
-
-            withAgentAwareness(connection.document!, context, () => replaceYDocument(document, next))
+            updatedMentions = updateMentionAttributes(document, operation)
           })
+        } else {
+          for (const inserted of insertedDocuments) {
+            await connection.transact((document) => {
+              const current = TiptapTransformer.fromYdoc(document, 'default') as JSONContent
+              const next = nextDocument(current, inserted, request, context, batchId)
+
+              withAgentAwareness(connection.document!, context, () => replaceYDocument(document, next))
+            })
+          }
+        }
+      } finally {
+        await connection.disconnect()
+      }
+
+      if (mentionOperation) {
+        return {
+          batch_id: batchId,
+          mode: request.mode,
+          note_id: request.note_id,
+          actor_id: agent.actor_id,
+          invoked_by: agent.invoked_by,
+          attribution_recorded: false,
+          updated_mentions: updatedMentions
         }
       }
-    } finally {
-      await connection.disconnect()
-    }
 
-    if (mentionOperation) {
+      let attributionRecorded = true
+      try {
+        await api.agentSyncGrants
+          .postAgentSyncGrantsNotesAttributions()
+          .request(
+            request.note_id,
+            { batch_id: batchId, instruction: request.instruction },
+            { headers: { Authorization: `Bearer ${token}` } }
+          )
+      } catch {
+        attributionRecorded = false
+      }
+
       return {
         batch_id: batchId,
         mode: request.mode,
         note_id: request.note_id,
         actor_id: agent.actor_id,
         invoked_by: agent.invoked_by,
-        attribution_recorded: false,
-        updated_mentions: updatedMentions
+        attribution_recorded: attributionRecorded
       }
-    }
-
-    let attributionRecorded = true
-    try {
-      await api.agentSyncGrants
-        .postAgentSyncGrantsNotesAttributions()
-        .request(
-          request.note_id,
-          { batch_id: batchId, instruction: request.instruction },
-          { headers: { Authorization: `Bearer ${token}` } }
-        )
-    } catch {
-      attributionRecorded = false
-    }
-
-    return {
-      batch_id: batchId,
-      mode: request.mode,
-      note_id: request.note_id,
-      actor_id: agent.actor_id,
-      invoked_by: agent.invoked_by,
-      attribution_recorded: attributionRecorded
-    }
-  })
+    })
+  )
 }
 
 export async function handleAgentEditRequest(
   request: IncomingMessage,
   response: ServerResponse,
-  instance: Hocuspocus<Context>
+  instance: Hocuspocus<Context>,
+  coordination: AgentEditCoordination
 ) {
   const path = new URL(request.url ?? '/', 'http://localhost').pathname
   if (!['/agent-edits', '/agent-edits/stream'].includes(path)) return false
@@ -428,7 +416,7 @@ export async function handleAgentEditRequest(
       throw new FacadeError(422, 'invalid_operation', 'The stream endpoint requires a stream operation')
     }
 
-    sendJson(response, 200, await applyEdit(instance, token, body))
+    sendJson(response, 200, await applyEdit(instance, token, body, coordination))
   } catch (error) {
     if (error instanceof FacadeError) {
       sendJson(response, error.status, { code: error.code, message: error.message })

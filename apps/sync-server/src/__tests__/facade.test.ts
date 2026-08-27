@@ -6,6 +6,7 @@ import { generateHTML, generateJSON } from '@tiptap/html'
 
 import { getNoteExtensions } from '@campsite/editor'
 
+import { createInMemoryAgentEditCoordination, type AgentEditCoordination } from '../agentEditCoordination'
 import { facadeInternals, handleAgentEditRequest } from '../facade'
 import type { Context } from '../types'
 
@@ -77,7 +78,12 @@ const inserted: JSONContent = {
 }
 
 describe('agent edit facade transformations', () => {
-  beforeEach(() => vi.clearAllMocks())
+  let coordination: AgentEditCoordination
+
+  beforeEach(() => {
+    vi.clearAllMocks()
+    coordination = createInMemoryAgentEditCoordination()
+  })
 
   it('creates resolvable insert and delete marks for a suggested section replacement', () => {
     const result = facadeInternals.nextDocument(
@@ -174,7 +180,8 @@ describe('agent edit facade transformations', () => {
         operation: { type: 'append_section', content: '' }
       }) as never,
       response as never,
-      instance as never
+      instance as never,
+      coordination
     )
 
     expect(result.status).toBe(422)
@@ -184,10 +191,8 @@ describe('agent edit facade transformations', () => {
 
   it('refuses direct edits while a human editor is active', async () => {
     const { response, result } = httpResponse()
-    const instance = {
-      documents: new Map([['note-1', { getConnectionsCount: () => 1 }]]),
-      openDirectConnection: vi.fn()
-    }
+    const instance = { documents: new Map(), openDirectConnection: vi.fn() }
+    await coordination.humanConnected('note-1', 'human-socket')
 
     mocks.verifyGrant.mockResolvedValueOnce({
       actor_id: 'summary-agent',
@@ -204,11 +209,42 @@ describe('agent edit facade transformations', () => {
         operation: { type: 'set_content', content: '<p>Unsafe replacement</p>' }
       }) as never,
       response as never,
-      instance as never
+      instance as never,
+      coordination
     )
 
     expect(result.status).toBe(409)
     expect(JSON.parse(result.body).code).toBe('active_editors')
+    expect(instance.openDirectConnection).not.toHaveBeenCalled()
+  })
+
+  it('returns 503 when replica coordination is unavailable', async () => {
+    const { response, result } = httpResponse()
+    const instance = { documents: new Map(), openDirectConnection: vi.fn() }
+    const unavailable = createInMemoryAgentEditCoordination()
+    unavailable.takeRateLimit = vi.fn().mockRejectedValue(new Error('Redis unavailable'))
+
+    mocks.verifyGrant.mockResolvedValueOnce({
+      actor_id: 'summary-agent',
+      actor_name: 'Summary agent',
+      grant_id: 'grant-unavailable',
+      invoked_by: 'member-1',
+      organization: 'acme'
+    })
+
+    await handleAgentEditRequest(
+      httpRequest({
+        note_id: 'note-1',
+        mode: 'direct',
+        operation: { type: 'set_content', content: '<p>Unsafe replacement</p>' }
+      }) as never,
+      response as never,
+      instance as never,
+      unavailable
+    )
+
+    expect(result.status).toBe(503)
+    expect(JSON.parse(result.body).code).toBe('agent_edit_coordination_unavailable')
     expect(instance.openDirectConnection).not.toHaveBeenCalled()
   })
 
@@ -239,7 +275,8 @@ describe('agent edit facade transformations', () => {
     await handleAgentEditRequest(
       httpRequest({ note_id: 'note-1', mode: 'direct', operation }) as never,
       response as never,
-      instance as never
+      instance as never,
+      coordination
     )
 
     expect(result.status).toBe(403)
@@ -269,12 +306,17 @@ describe('agent edit facade transformations', () => {
     })
     mocks.recordAttribution.mockResolvedValueOnce({})
 
-    const result = await facadeInternals.applyEdit(instance, 'grant-token', {
-      note_id: 'note-stream',
-      mode: 'suggest',
-      instruction: 'Stream summary',
-      operation: { type: 'stream', chunks: ['<p>One</p>', '<p>Two</p>'] }
-    })
+    const result = await facadeInternals.applyEdit(
+      instance,
+      'grant-token',
+      {
+        note_id: 'note-stream',
+        mode: 'suggest',
+        instruction: 'Stream summary',
+        operation: { type: 'stream', chunks: ['<p>One</p>', '<p>Two</p>'] }
+      },
+      coordination
+    )
 
     expect(snapshots).toHaveLength(2)
     expect(JSON.stringify(snapshots.at(-1))).toContain('One')
@@ -310,16 +352,22 @@ describe('agent edit facade transformations', () => {
       scopes: ['write', 'mention_labels']
     })
 
-    const result = await facadeInternals.applyEdit(instance, 'grant-token', {
-      note_id: 'note-mention',
-      mode: 'direct',
-      operation: {
-        type: 'update_mentions',
-        membership_id: 'member-1',
-        display_name: 'New Name',
-        username: 'new_username'
-      }
-    })
+    await coordination.humanConnected('note-mention', 'human-socket')
+    const result = await facadeInternals.applyEdit(
+      instance,
+      'grant-token',
+      {
+        note_id: 'note-mention',
+        mode: 'direct',
+        operation: {
+          type: 'update_mentions',
+          membership_id: 'member-1',
+          display_name: 'New Name',
+          username: 'new_username'
+        }
+      },
+      coordination
+    )
     const reconnected = await instance.openDirectConnection('note-mention', context)
     const json = TiptapTransformer.fromYdoc(reconnected.document!, 'default')
 

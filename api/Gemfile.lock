@@ -1,3 +1,19 @@
+GIT
+  remote: https://github.com/crmne/ruby_llm.git
+  revision: b5519bf28bf149122208277eacc77da4ee711d2e
+  branch: main
+  specs:
+    ruby_llm (1.16.0)
+      base64
+      event_stream_parser (~> 1)
+      faraday (>= 1.10.0)
+      faraday-multipart (>= 1)
+      faraday-net_http (>= 1)
+      faraday-retry (>= 1)
+      marcel (~> 1)
+      schematist (~> 1.1)
+      zeitwerk (~> 2)
+
 GEM
   remote: https://rubygems.org/
   specs:
@@ -688,19 +704,9 @@ GEM
       rubocop (~> 1.72, >= 1.72.1)
     ruby-progressbar (1.13.0)
     ruby2_keywords (0.0.5)
-    ruby_llm (1.16.0)
-      base64
-      event_stream_parser (~> 1)
-      faraday (>= 1.10.0)
-      faraday-multipart (>= 1)
-      faraday-net_http (>= 1)
-      faraday-retry (>= 1)
-      marcel (~> 1)
-      ruby_llm-schema (~> 0)
-      zeitwerk (~> 2)
-    ruby_llm-schema (0.4.0)
     rufus-scheduler (3.9.2)
       fugit (~> 1.1, >= 1.11.1)
+    schematist (1.1.0)
     searchkick (6.1.2)
       activemodel (>= 7.2)
     securerandom (0.4.1)
@@ -872,7 +878,7 @@ DEPENDENCIES
   rubocop-performance
   rubocop-rails
   rubocop-shopify
-  ruby_llm (~> 1.9)
+  ruby_llm!
   searchkick
   sentry-rails (~> 6.6)
   sentry-ruby (~> 6.6)
