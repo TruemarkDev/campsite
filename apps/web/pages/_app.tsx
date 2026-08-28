@@ -48,7 +48,7 @@ export default function App<T>({ Component, pageProps }: AppPropsWithLayout<T>):
       {getProviders(<Component {...pageProps} />, {
         ...pageProps
       })}
-      {IS_PRODUCTION && <SpeedInsights />}
+      {IS_PRODUCTION && process.env.NEXT_PUBLIC_VERCEL_ENV === 'production' && <SpeedInsights />}
     </>
   )
 }

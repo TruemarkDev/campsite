@@ -63,22 +63,22 @@ describe('production URL configuration', () => {
     assert.equal(config.LINEAR_CALLBACK_URL, 'https://camp-api.tokdio.com/v1/integrations/linear/callback')
   })
 
-  it('supports the private HTTP camp.home origin set', () => {
+  it('supports the private HTTPS camp.home origin set', () => {
     const config = loadConfig({
-      NEXT_PUBLIC_WEB_URL: 'http://camp.home',
-      NEXT_PUBLIC_SITE_URL: 'http://camp.home',
-      NEXT_PUBLIC_SYNC_URL: 'ws://sync.camp.home',
-      NEXT_PUBLIC_API_URL: 'http://api.camp.home',
-      NEXT_PUBLIC_AUTH_URL: 'http://auth.camp.home',
-      NEXT_PUBLIC_ADMIN_URL: 'http://admin.camp.home',
-      NEXT_PUBLIC_IMGIX_URL: 'http://cdn.camp.home'
+      NEXT_PUBLIC_WEB_URL: 'https://camp.home',
+      NEXT_PUBLIC_SITE_URL: 'https://camp.home',
+      NEXT_PUBLIC_SYNC_URL: 'wss://sync.camp.home',
+      NEXT_PUBLIC_API_URL: 'https://api.camp.home',
+      NEXT_PUBLIC_AUTH_URL: 'https://auth.camp.home',
+      NEXT_PUBLIC_ADMIN_URL: 'https://admin.camp.home',
+      NEXT_PUBLIC_IMGIX_URL: 'https://cdn.camp.home'
     })
 
-    assert.equal(config.WEB_URL, 'http://camp.home')
-    assert.equal(config.SYNC_URL, 'ws://sync.camp.home')
-    assert.equal(config.RAILS_API_URL, 'http://api.camp.home')
-    assert.equal(config.RAILS_AUTH_URL, 'http://auth.camp.home')
-    assert.equal(config.RAILS_ADMIN_URL, 'http://admin.camp.home')
-    assert.equal(config.LINEAR_CALLBACK_URL, 'http://api.camp.home/v1/integrations/linear/callback')
+    assert.equal(config.WEB_URL, 'https://camp.home')
+    assert.equal(config.SYNC_URL, 'wss://sync.camp.home')
+    assert.equal(config.RAILS_API_URL, 'https://api.camp.home')
+    assert.equal(config.RAILS_AUTH_URL, 'https://auth.camp.home')
+    assert.equal(config.RAILS_ADMIN_URL, 'https://admin.camp.home')
+    assert.equal(config.LINEAR_CALLBACK_URL, 'https://api.camp.home/v1/integrations/linear/callback')
   })
 })
