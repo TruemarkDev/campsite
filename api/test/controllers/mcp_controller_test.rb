@@ -238,11 +238,31 @@ class McpControllerTest < ActionDispatch::IntegrationTest
       end
     end
 
-    test "advertises no destructive (delete) tool" do
+    test "advertises complete machine-readable contracts and no hard-delete or bulk tools" do
       mcp_request(method: "tools/list")
 
-      names = json_response.dig("result", "tools").pluck("name")
-      assert_empty names.grep(/delete|destroy|remove/i)
+      tools = json_response.dig("result", "tools")
+      names = tools.pluck("name")
+      tools.each do |tool|
+        assert tool["outputSchema"].present?, "#{tool["name"]} missing outputSchema"
+        assert tool["annotations"].present?, "#{tool["name"]} missing annotations"
+        assert tool.dig("_meta", "campsite/requiredScopes").present?, "#{tool["name"]} missing scopes"
+        assert tool.dig("_meta", "campsite/category").present?, "#{tool["name"]} missing category"
+      end
+      assert_equal true, tools.find { |tool| tool["name"] == "remove_comment" }.dig("annotations", "destructiveHint")
+      assert_equal true, tools.find { |tool| tool["name"] == "list_posts" }.dig("annotations", "readOnlyHint")
+      assert_empty names.grep(/hard_delete|bulk|oauth_application|data_export/i)
+
+      annotated_writes = tools.reject { |tool| tool.dig("annotations", "readOnlyHint") }.pluck("name")
+      assert_empty annotated_writes - Rack::Attack::MCP_WRITE_TOOL_NAMES.to_a
+    end
+
+    test "keeps the human tool catalog synchronized with the runtime registry" do
+      documentation = Rails.root.join("docs/mcp_server.md").read
+
+      McpToolRegistry.tools.each do |tool|
+        assert_includes documentation, "`#{tool.name_value}`", "docs missing #{tool.name_value}"
+      end
     end
 
     test "modern lifecycle is handshake-less and adds required result metadata" do
@@ -1134,6 +1154,15 @@ class McpControllerTest < ActionDispatch::IntegrationTest
   end
 
   describe "resources/read" do
+    test "reads the runtime agent guide without organization lookup" do
+      result = read_resource("campsite://docs/agent-guide")
+
+      content = result.fetch("contents").first
+      assert_includes content["text"], "# Campsite MCP Agent Guide"
+      assert_includes content["text"], "`edit_note`"
+      assert_includes content["text"], "No tool provides bulk mutation"
+    end
+
     test "reads a post resource" do
       post = create(:post, project: @project, organization: @org)
 
@@ -1209,6 +1238,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
       assert_response :ok
       uris = json_response.dig("result", "resources").pluck("uri")
+      assert_includes uris, "campsite://docs/agent-guide"
       assert_includes uris, "campsite://#{@org.slug}/posts/#{post.public_id}"
       assert_includes uris, "campsite://#{@org.slug}/notes/#{note.public_id}"
       assert_cache_metadata(json_response["result"], ttl_ms: 1.minute.in_milliseconds)
@@ -1419,6 +1449,226 @@ class McpControllerTest < ActionDispatch::IntegrationTest
 
       assert tool_error?(result)
       assert_match(/write_note/, tool_text(result))
+    end
+  end
+
+  describe "expanded CRUD tools" do
+    test "reads, updates, and removes an owned comment" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      comment = create(:comment, subject: post, member: @member)
+
+      read = call_tool("read_comment", { org_slug: @org.slug, comment_id: comment.public_id })
+      assert_equal comment.public_id, structured_content(read)["id"]
+
+      updated = call_tool("update_comment", { org_slug: @org.slug, comment_id: comment.public_id, body_html: "<p>Updated</p>" })
+      assert_not tool_error?(updated)
+      assert_equal "<p>Updated</p>", comment.reload.body_html
+
+      removed = call_tool("remove_comment", { org_slug: @org.slug, comment_id: comment.public_id })
+      assert_not tool_error?(removed)
+      assert comment.reload.discarded?
+    end
+
+    test "lists, reschedules, and cancels a personal follow-up" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      follow_up = create(:follow_up, subject: post, organization_membership: @member, show_at: 1.day.from_now)
+
+      listed = call_tool("list_follow_ups", { org_slug: @org.slug })
+      assert_includes structured_content(listed)["data"].pluck("id"), follow_up.public_id
+
+      show_at = 2.days.from_now.change(usec: 0)
+      updated = call_tool("update_follow_up", { org_slug: @org.slug, follow_up_id: follow_up.public_id, show_at: show_at.iso8601 })
+      assert_not tool_error?(updated)
+      assert_equal show_at, follow_up.reload.show_at
+
+      removed = call_tool("cancel_follow_up", { org_slug: @org.slug, follow_up_id: follow_up.public_id })
+      assert_not tool_error?(removed)
+      assert_not FollowUp.exists?(follow_up.id)
+    end
+
+    test "updates and removes an owned message" do
+      thread = create(:message_thread, owner: @member, organization_memberships: [@member])
+      message = create(:message, sender: @member, message_thread: thread)
+
+      updated = call_tool("update_message", {
+        org_slug: @org.slug, thread_id: thread.public_id, message_id: message.public_id, content: "Updated",
+      })
+      assert_not tool_error?(updated)
+      assert_equal "Updated", message.reload.content
+
+      removed = call_tool("remove_message", { org_slug: @org.slug, thread_id: thread.public_id, message_id: message.public_id })
+      assert_not tool_error?(removed)
+      assert message.reload.discarded?
+    end
+
+    test "updates, archives, and restores a project with permission" do
+      @member.update!(role_name: "admin")
+
+      updated = call_tool("update_project", { org_slug: @org.slug, project_id: @project.public_id, name: "Agent work" })
+      assert_not tool_error?(updated)
+      assert_equal "Agent work", @project.reload.name
+
+      archived = call_tool("archive_project", { org_slug: @org.slug, project_id: @project.public_id })
+      assert_not tool_error?(archived)
+      assert @project.reload.archived?
+
+      restored = call_tool("unarchive_project", { org_slug: @org.slug, project_id: @project.public_id })
+      assert_not tool_error?(restored)
+      assert_not @project.reload.archived?
+    end
+
+    test "edits a collaborative note through a short-lived sync grant and revokes it" do
+      note = create(:note, member: @member)
+      Flipper.enable(:ai_note_editing, @user)
+      AgentNoteEditor.any_instance.expects(:edit).with(
+        note_id: note.public_id,
+        mode: :suggest,
+        operation: { type: :append_section, content: "<p>Summary</p>" },
+        instruction: "Add summary",
+      ).returns(batch_id: "batch-1")
+
+      result = call_tool("edit_note", {
+        org_slug: @org.slug,
+        note_id: note.public_id,
+        mode: "suggest",
+        operation_type: "append_section",
+        content: "<p>Summary</p>",
+        instruction: "Add summary",
+      })
+
+      assert_not tool_error?(result)
+      assert_equal "batch-1", structured_content(result)["batch_id"]
+      assert_empty note.agent_sync_grants.active
+    end
+
+    test "revokes the note grant when the sync facade rejects an active human editor" do
+      note = create(:note, member: @member)
+      Flipper.enable(:ai_note_editing, @user)
+      AgentNoteEditor.any_instance.expects(:edit).raises(AgentNoteEditor::ActiveEditorsError, "active")
+
+      result = call_tool("edit_note", {
+        org_slug: @org.slug,
+        note_id: note.public_id,
+        mode: "direct",
+        operation_type: "set_content",
+        content: "<p>Replacement</p>",
+      })
+
+      assert tool_error?(result)
+      assert_equal "active_editors", structured_content(result).dig("error", "code")
+      assert_empty note.agent_sync_grants.active
+    end
+
+    test "updates and removes an attachment through its subject policy" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      attachment = create(:attachment, subject: post)
+
+      updated = call_tool("update_attachment", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        attachment_id: attachment.public_id,
+        width: 640,
+        height: 480,
+      })
+      assert_not tool_error?(updated)
+      assert_equal [640, 480], attachment.reload.values_at(:width, :height)
+
+      removed = call_tool("remove_attachment", {
+        org_slug: @org.slug,
+        subject_type: "post",
+        subject_id: post.public_id,
+        attachment_id: attachment.public_id,
+      })
+      assert_not tool_error?(removed)
+      assert_not Attachment.exists?(attachment.id)
+    end
+
+    test "removes the connected member's reaction" do
+      post = create(:post, project: @project, organization: @org)
+      reaction = create(:reaction, subject: post, member: @member)
+
+      result = call_tool("remove_reaction", { org_slug: @org.slug, reaction_id: reaction.public_id })
+
+      assert_not tool_error?(result)
+      assert reaction.reload.discarded?
+    end
+
+    test "discards owned posts and notes" do
+      post = create(:post, project: @project, organization: @org, member: @member)
+      note = create(:note, member: @member)
+
+      post_result = call_tool("remove_post", { org_slug: @org.slug, post_id: post.public_id })
+      note_result = call_tool("remove_note", { org_slug: @org.slug, note_id: note.public_id })
+
+      assert_not tool_error?(post_result)
+      assert_not tool_error?(note_result)
+      assert post.reload.discarded?
+      assert note.reload.discarded?
+    end
+
+    test "manages self-scoped favorites and read state" do
+      post = create(:post, project: @project, organization: @org)
+      thread = create(:message_thread, owner: @member, organization_memberships: [@member])
+
+      favorited = call_tool("set_favorite", {
+        org_slug: @org.slug, subject_type: "post", subject_id: post.public_id, favorite: true,
+      })
+      assert_not tool_error?(favorited)
+      assert post.favorites.exists?(organization_membership: @member)
+
+      unfavorited = call_tool("set_favorite", {
+        org_slug: @org.slug, subject_type: "post", subject_id: post.public_id, favorite: false,
+      })
+      assert_not tool_error?(unfavorited)
+      assert_not post.favorites.exists?(organization_membership: @member)
+
+      read = call_tool("set_read_state", {
+        org_slug: @org.slug, subject_type: "thread", subject_id: thread.public_id, read: true,
+      })
+      assert_not tool_error?(read)
+    end
+
+    test "pins and removes a project post" do
+      post = create(:post, project: @project, organization: @org)
+
+      pinned = call_tool("pin_to_project", { org_slug: @org.slug, subject_type: "post", subject_id: post.public_id })
+      assert_not tool_error?(pinned)
+      pin_id = structured_content(pinned)["pin_id"]
+
+      removed = call_tool("remove_project_pin", { org_slug: @org.slug, project_id: @project.public_id, pin_id: pin_id })
+      assert_not tool_error?(removed)
+      assert @project.pins.find_by!(public_id: pin_id).discarded?
+    end
+
+    test "write tools reject tokens missing their content scope" do
+      comment = create(:comment, subject: create(:post, project: @project, organization: @org), member: @member)
+      token = create(:access_token, resource_owner: @user, application: @oauth_app, scopes: "mcp read_post")
+
+      result = call_tool(
+        "update_comment",
+        { org_slug: @org.slug, comment_id: comment.public_id, body_html: "<p>No</p>" },
+        token: token.plaintext_token,
+      )
+
+      assert tool_error?(result)
+      assert_equal "invalid_request", structured_content(result).dig("error", "code")
+      assert_match(/write_post/, tool_text(result))
+    end
+
+    test "returns structured errors" do
+      result = call_tool("read_comment", { org_slug: @org.slug, comment_id: "missing" })
+
+      assert tool_error?(result)
+      assert_equal "not_found", structured_content(result).dig("error", "code")
+    end
+
+    test "returns structured validation errors without a transport failure" do
+      result = call_tool("update_project", { org_slug: @org.slug, project_id: @project.public_id, name: "" })
+
+      assert tool_error?(result)
+      assert_equal "validation_failed", structured_content(result).dig("error", "code")
+      assert structured_content(result).dig("error", "details", "name").present?
     end
   end
 

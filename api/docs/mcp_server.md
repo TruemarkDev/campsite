@@ -90,6 +90,8 @@ discover the organizations and slugs available.
 | `list_posts`                | Published posts, optionally filtered to one project.                                                                         |
 | `search_posts`              | Full-text search over an org's posts.                                                                                        |
 | `read_post`                 | A single post and its top-level comments.                                                                                    |
+| `read_comment`              | A single comment and its serialized reply context.                                                                           |
+| `read_project`              | A single accessible project.                                                                                                 |
 | `list_message_threads`      | The user's DMs and group chats in an organization.                                                                           |
 | `read_messages`             | Recent messages in a thread.                                                                                                 |
 | `list_notes`                | Notes in an organization the user can see.                                                                                   |
@@ -98,9 +100,15 @@ discover the organizations and slugs available.
 | `list_notifications`        | The user's inbox (or activity) notifications in an org.                                                                      |
 | `mark_notification_read`    | Mark one of the user's own notifications as read (mutates self only; no extra scope).                                        |
 | `create_follow_up`          | Set a personal follow-up reminder on a post, note, or comment for yourself (mutates self only; no extra scope beyond `mcp`). |
+| `list_follow_ups`           | List your pending personal follow-ups.                                                                                        |
+| `update_follow_up`          | Reschedule your personal follow-up.                                                                                           |
+| `cancel_follow_up`          | Cancel your personal follow-up.                                                                                               |
+| `remove_reaction`           | Remove a reaction created by you.                                                                                             |
+| `set_favorite`              | Favorite or unfavorite a post, note, project, or message thread for yourself.                                                |
+| `set_read_state`            | Mark a project or message thread read or unread for yourself.                                                                 |
 | `get_attachment_transcript` | Get transcription status and plain text for an attachment the caller can view.                                               |
 
-### Write tools (additive only)
+### Write and lifecycle tools
 
 | Tool                    | Description                                                                                          | Scope                       |
 | ----------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------- |
@@ -110,15 +118,29 @@ discover the organizations and slugs available.
 | `resolve_post`          | Resolve or unresolve a post (optional resolution note).                                              | `write_post`                |
 | `update_post`           | Update a post's title, body, or project.                                                             | `write_post`                |
 | `reply_to_comment`      | Reply to an existing comment (threaded reply).                                                       | `write_post`                |
+| `update_comment`        | Update a comment the user may edit.                                                                  | `write_post`                |
+| `remove_comment`        | Discard a comment the user may remove.                                                               | `write_post`                |
+| `remove_post`           | Discard a post the user may remove.                                                                  | `write_post`                |
 | `create_project`        | Create a new project (channel) in an org.                                                            | `write_project`             |
+| `update_project`        | Update a project's name or description.                                                              | `write_project`             |
+| `archive_project`       | Archive a non-general project.                                                                       | `write_project`             |
+| `unarchive_project`     | Restore an archived project.                                                                         | `write_project`             |
+| `pin_to_project`        | Pin a post or project note in its project.                                                           | `write_project`             |
+| `remove_project_pin`    | Remove a pin from a project.                                                                          | `write_project`             |
 | `send_message`          | Send a message into an existing thread.                                                              | `write_message`             |
 | `create_message_thread` | Start a new DM or group chat.                                                                        | `write_message`             |
+| `update_message`        | Update a message the user may edit.                                                                   | `write_message`             |
+| `remove_message`        | Discard a message the user may remove.                                                                | `write_message`             |
 | `create_note`           | Create a note (optionally in a project), body set at creation.                                       | `write_note`                |
 | `update_note`           | Update an existing note's **title** only.                                                            | `write_note`                |
+| `edit_note`             | Safely edit collaborative content through the replica-coordinated sync facade.                       | `write_note`                |
+| `remove_note`           | Discard a note the user may remove.                                                                   | `write_note`                |
 | `create_upload`         | Get presigned S3 fields to upload a file (mints credentials only, no Campsite write).                | `mcp`                       |
 | `attach_file`           | Attach an already-uploaded file (by S3 key) to a post or note.                                       | `write_post` / `write_note` |
 | `upload_attachment`     | Upload a small file inline (base64, ≤5 MB) and attach it to a post or note.                          | `write_post` / `write_note` |
 | `speak_reply`           | Synthesize an MP3 and attach it to a post or note; accepts an optional provider-specific `voice_id`. | `write_post` / `write_note` |
+| `update_attachment`     | Update attachment preview metadata or dimensions.                                                    | `write_post` / `write_note` |
+| `remove_attachment`     | Remove an attachment record from its post or note.                                                   | `write_post` / `write_note` |
 
 > **Attaching files.** Two paths: for any file, `create_upload` → upload the bytes to
 > the returned S3 `url` → `attach_file` with the returned `key` as `file_path`. For
@@ -133,14 +155,24 @@ discover the organizations and slugs available.
 > when no override is supplied. The default Edge provider requires outbound HTTPS;
 > ElevenLabs is optional and falls back to Edge if its credentials or request fail.
 
-> **Note bodies are write-once.** A note's body (`description_html`) can only be
-> set at `create_note` time. Editing an existing note's body is **unsupported** —
-> the body is collaborative (real-time) state, so `update_note` only changes the
-> title. To put fresh content in a note, create a new note per run rather than
-> trying to rewrite an existing one's body.
+> **Collaborative note bodies.** `update_note` changes title only. Use `edit_note`
+> for body changes. It creates a short-lived agent grant and calls the sync-server
+> facade so active-human detection, Redis coordination, Yjs lineage, suggestions,
+> attribution, and rate limits stay intact. It never replaces collaboration state
+> directly and fails closed when coordination is unavailable.
 
-There are **no delete or bulk-destructive tools** — the connector is safe by
-default.
+Archive, cancel, discard, and remove tools advertise MCP's `destructiveHint` even
+when the underlying Campsite record is recoverable. There are no bulk, hard-delete,
+membership-administration, public-sharing, integration, OAuth-administration, export,
+or raw collaboration-state tools.
+
+### Machine-readable contracts
+
+Every `tools/list` entry includes `inputSchema`, `outputSchema`, standard MCP safety
+annotations, and `_meta` fields for required OAuth scopes, category, and contract
+version. Tool failures include `structuredContent.error.code` and
+`structuredContent.error.message` for deterministic recovery; validation failures
+may additionally include field-level `structuredContent.error.details`.
 
 ### @mentioning people
 
@@ -177,6 +209,7 @@ URI scheme:
 campsite://{org_slug}/posts/{public_id}
 campsite://{org_slug}/notes/{public_id}
 campsite://{org_slug}/threads/{public_id}
+campsite://docs/agent-guide
 ```
 
 - `resources/templates/list` advertises these templates — use them to address any
@@ -186,6 +219,8 @@ campsite://{org_slug}/threads/{public_id}
   enumerated.
 - `resources/read` resolves a URI to its serialized content; an unknown URI,
   forbidden entity, or org you don't belong to returns a JSON-RPC error.
+- `campsite://docs/agent-guide` is versioned Markdown generated from the live tool
+  registry. It requires MCP authentication but no organization lookup.
 
 Resource change **subscriptions** (`resources/subscribe`) are not advertised yet —
 they need a server→client stream the remote transport hasn't been shown to hold; see
@@ -222,10 +257,9 @@ the subscription spike in the `add-mcp-tier-3` change.
   least 2027-07-28. Removal after that date requires usage evidence, a migration
   plan, a separate OpenSpec change, and release communication.
 - **Routing:** `/mcp`, the `/.well-known/*` discovery paths, and `/oauth/*` are
-  served by Rails on the **API host** (e.g. `camp-api.polo-apps.com`). They must be
-  proxied straight through to Rails by that host's web server (Hatchbox/nginx) and
-  not shadowed. Do **not** expect them on the web host: the Next.js web app
-  (`camp.polo-apps.com`) treats `/mcp` as an org slug and will 307-redirect it to
+  served by Rails on the configured **API host** and must be proxied straight to
+  Rails by the homelab ingress. Do **not** expect them on the web host: the Next.js
+  web app treats `/mcp` as an org slug and will 307-redirect it to
   `/mcp/posts`, so clients must point at the API host, never the web host.
 
 ## Implementation
