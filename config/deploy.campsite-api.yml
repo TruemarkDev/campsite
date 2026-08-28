@@ -34,16 +34,16 @@ builder:
   context: api
   dockerfile: api/Dockerfile
   args:
-    BUNDLER_VERSION: "4.0.15"
-    RUBY_VERSION: "4.0.6"
+    BUNDLER_VERSION: '4.0.15'
+    RUBY_VERSION: '4.0.6'
 
 env:
   clear:
     RAILS_ENV: production
-    RAILS_SERVE_STATIC_FILES: "true"
-    RAILS_LOG_TO_STDOUT: "true"
-    PORT: "8080"
-    SESSION_COOKIE_SECURE: "false"
+    RAILS_SERVE_STATIC_FILES: 'true'
+    RAILS_LOG_TO_STDOUT: 'true'
+    PORT: '8080'
+    SESSION_COOKIE_SECURE: 'false'
     APP_URL: http://camp.home
     MARKETING_SITE_URL: http://camp.home
     STYLED_TEXT_API_URL: http://styled-text.camp.home
@@ -60,21 +60,21 @@ env:
     MAILER_PROTOCOL: http
     MAILER_FROM: Campsite <campsite@agents.home>
     SMTP_ADDRESS: smtp.home
-    SMTP_PORT: "25"
+    SMTP_PORT: '25'
     SMTP_DOMAIN: agents.home
     SMTP_AUTHENTICATION: none
-    SMTP_STARTTLS: "false"
-    SMTP_OPEN_TIMEOUT: "15"
-    SMTP_READ_TIMEOUT: "25"
+    SMTP_STARTTLS: 'false'
+    SMTP_OPEN_TIMEOUT: '15'
+    SMTP_READ_TIMEOUT: '25'
     ALLOWED_HOSTS: api.camp.home,auth.camp.home,admin.camp.home,cdn.camp.home,camp-api.tokdio.com,camp-auth.tokdio.com,camp-admin.tokdio.com,camp-cdn.tokdio.com
     REDIS_URL: redis://campsite-api-staging-redis:6379/0
     REDIS_SIDEKIQ_URL: redis://campsite-api-staging-redis:6379/1
     RACK_ATTACK_REDIS_URL: redis://campsite-api-staging-redis:6379/2
-    SIDEKIQ_SCHEDULER_ENABLED: "false"
+    SIDEKIQ_SCHEDULER_ENABLED: 'false'
     S3_REGION: us-east-1
     S3_ENDPOINT: http://s3.camp.home
     S3_BUCKET: campsite-media
-    S3_FORCE_PATH_STYLE: "true"
+    S3_FORCE_PATH_STYLE: 'true'
   secret:
     - RAILS_MASTER_KEY
     - SECRET_KEY_BASE
@@ -149,16 +149,16 @@ accessories:
   elasticsearch:
     service: campsite-api-staging-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:9.5.0@sha256:8818ab9af72d7482e38a9d6f0454d5ee667564a25bbdc42360c0f9b8f8f72fc5
-    host: shuri@192.168.20.14
-    port: "9201:9200"
+    host: prakash@192.168.10.26
+    port: '9201:9200'
     env:
       clear:
         cluster.name: campsite-staging
         node.name: campsite-staging-es01
         discovery.type: single-node
-        xpack.security.enabled: "true"
-        node.store.allow_mmap: "false"
-        ingest.geoip.downloader.enabled: "false"
+        xpack.security.enabled: 'true'
+        node.store.allow_mmap: 'false'
+        ingest.geoip.downloader.enabled: 'false'
       secret:
         - ELASTIC_PASSWORD
     files:

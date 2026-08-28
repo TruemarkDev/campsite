@@ -1,0 +1,15 @@
+{
+  "_meta": {
+    "description": "Zero-replica Searchkick indices for the single-node Campsite staging cluster",
+    "owner": "campsite"
+  },
+  "index_patterns": ["posts_production_*", "notes_production_*", "calls_production_*"],
+  "priority": 500,
+  "template": {
+    "settings": {
+      "index": {
+        "number_of_replicas": 0
+      }
+    }
+  }
+}

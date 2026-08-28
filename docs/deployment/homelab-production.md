@@ -1,8 +1,8 @@
 # Campsite homelab staging platform
 
-Status: partially deployed. The staging application services are live on Odin;
-sections below retain explicit gap markers for unverified or unbuilt parts of
-the wider platform.
+Status: partially deployed. The staging application services are live on Odin,
+and the dedicated Elasticsearch VM is live on Vyas; sections below retain
+explicit gap markers for unverified or unbuilt parts of the wider platform.
 
 This is the target platform for the `camp.tokdio.com` migration. Kamal is the
 deployment control plane for every Campsite application runtime and stateful
@@ -12,29 +12,29 @@ deployments.
 
 ## Service placement
 
-| Component                  | Kamal unit  | Host                  | Ceiling           | Persistence                 | Health signal                   |
-| -------------------------- | ----------- | --------------------- | ----------------- | --------------------------- | ------------------------------- |
-| Next.js web                | application | Odin `192.168.10.7`   | 512 MiB           | none                        | HTTP `/up`                      |
-| Rails API/auth             | application | Odin                  | 768 MiB           | none                        | HTTP `/up`                      |
-| Sidekiq                    | application | Odin                  | 512 MiB           | none                        | process plus queue latency      |
-| Sync server                | application | Odin                  | 256 MiB           | none                        | HTTP `/up` and WebSocket probe  |
-| Styled-text server         | application | Odin                  | 256 MiB           | none                        | HTTP `/up`                      |
-| HTML-to-image              | application | Odin                  | 512 MiB           | none                        | HTTP `/up` and PNG render probe |
-| MySQL 8                    | accessory   | Odin                  | 1 GiB             | local named volume          | `mysqladmin ping`               |
-| Redis                      | accessory   | Odin                  | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
-| S3-compatible object store | accessory   | Odin                  | 512 MiB           | local named volume          | readiness endpoint              |
-| Elasticsearch 9.5          | accessory   | Shuri `192.168.20.14` | 2 GiB, 1 GiB heap | local named volume          | cluster health                  |
+| Component                  | Kamal unit  | Host                     | Ceiling           | Persistence                 | Health signal                   |
+| -------------------------- | ----------- | ------------------------ | ----------------- | --------------------------- | ------------------------------- |
+| Next.js web                | application | Odin `192.168.10.7`      | 512 MiB           | none                        | HTTP `/up`                      |
+| Rails API/auth             | application | Odin                     | 768 MiB           | none                        | HTTP `/up`                      |
+| Sidekiq                    | application | Odin                     | 512 MiB           | none                        | process plus queue latency      |
+| Sync server                | application | Odin                     | 256 MiB           | none                        | HTTP `/up` and WebSocket probe  |
+| Styled-text server         | application | Odin                     | 256 MiB           | none                        | HTTP `/up`                      |
+| HTML-to-image              | application | Odin                     | 512 MiB           | none                        | HTTP `/up` and PNG render probe |
+| MySQL 8                    | accessory   | Odin                     | 1 GiB             | local named volume          | `mysqladmin ping`               |
+| Redis                      | accessory   | Odin                     | 256 MiB           | local named volume with AOF | `redis-cli ping`                |
+| S3-compatible object store | accessory   | Odin                     | 512 MiB           | local named volume          | readiness endpoint              |
+| Elasticsearch 9.5          | accessory   | Vyas VMM `192.168.10.26` | 2 GiB, 1 GiB heap | guest-local named volume    | authenticated cluster health    |
 
-⚠️ The 2 GiB / 1 GiB-heap figure was measured against Elasticsearch 8.8; it has
-not been re-measured since the 9.5 upgrade (Lucene 10, additional bundled
-modules). Re-measure the container's steady-state footprint on Shuri before
-treating the cap as verified.
+The 2 GiB / 1 GiB-heap limit is verified against Elasticsearch 9.5 after the
+production reindex: the container used 1.39 GiB, the 4 GiB guest retained about
+2 GiB available, and its 60 GiB disk retained 53 GiB free. Vyas retained about
+3 GiB available with Builder, Friday, and Elasticsearch running, so further
+fixed-memory VMM guests require a fresh capacity check.
 
-Odin is the application and primary-data host. Shuri is the search host because
-Elasticsearch's measured footprint fits its 2 GiB cap while Asgard has only
-about 1.64 GB of unallocated host memory with its normal VM set running. This
-is a small, single-node topology for one or two users, not a high-availability
-cluster.
+Odin is the application and primary-data host. Elasticsearch runs in a dedicated
+Debian 13 VMM guest on Vyas because Odin and the XCP-ng pool lack safe memory
+headroom. This is a small, single-node topology for one or two users, not a
+high-availability cluster.
 
 The listed ceilings total 4.6 GiB on Odin before Kamal proxy and system
 overhead. Provisioning must stop if imported durable data does not fit with at
@@ -46,14 +46,14 @@ unavailable until Fly/provider authentication is restored.
 The staging declaration is split into these destination-specific files
 while sharing host, registry, secret, and network conventions:
 
-| File                                | Responsibility                                                  |
-| ----------------------------------- | --------------------------------------------------------------- |
-| `deploy.campsite-web.yml`           | Next.js web                                                     |
-| `deploy.campsite-api.yml`           | Rails web and the authenticated Shuri Elasticsearch declaration |
-| `deploy.campsite-worker.yml`        | Sidekiq only; explicit writer-custody activation                |
-| `deploy.campsite-sync.yml`          | Sync server                                                     |
-| `deploy.campsite-styled-text.yml`   | Styled-text server                                              |
-| `deploy.campsite-html-to-image.yml` | HTML-to-image                                                   |
+| File                                | Responsibility                                                     |
+| ----------------------------------- | ------------------------------------------------------------------ |
+| `deploy.campsite-web.yml`           | Next.js web                                                        |
+| `deploy.campsite-api.yml`           | Rails web and the authenticated Vyas VMM Elasticsearch declaration |
+| `deploy.campsite-worker.yml`        | Sidekiq only; explicit writer-custody activation                   |
+| `deploy.campsite-sync.yml`          | Sync server                                                        |
+| `deploy.campsite-styled-text.yml`   | Styled-text server                                                 |
+| `deploy.campsite-html-to-image.yml` | HTML-to-image                                                      |
 
 The Rails web and Sidekiq services deliberately do not share a Kamal config.
 Deploying `deploy.campsite-api.yml` therefore cannot start a queue consumer.
@@ -83,11 +83,11 @@ interfaces, not environment labels, and remain unchanged. The existing
 service rename cannot create empty MySQL, Redis, object, or Elasticsearch
 stores.
 
-🟡 The checked-in service identities are renamed, but the running containers
-still use their previous names until the coordinated Kamal cutover. The active
-`campsite-shadow-html-to-image` and `campsite-shadow-elasticsearch` containers
-are legacy duplicate services; they are not represented by a deploy declaration
-and require separate operator approval before removal.
+🟡 The checked-in service identities are renamed, but some running containers
+still use previous names pending the coordinated Kamal cutover. The active
+`campsite-shadow-html-to-image` container is a legacy duplicate service. The
+former Shuri Elasticsearch state is outside the live topology; retirement of
+either orphan still requires separate operator approval.
 
 ### Voice-note runtime gate
 
@@ -104,14 +104,12 @@ writer custody is activated and SHALL be repeated after a speech-tool or base-im
 upgrade (Verification: Demonstration).
 
 All application images are immutable and tagged with the exact Git revision.
-Build placement follows the destination architecture. Custom images deployed to
-the arm64 Shuri host are built locally on the operator's arm64 Mac. Custom images
-deployed to the amd64 Debian host are built remotely on Odin. Campsite does not
-use Forge as a builder. The current topology deploys every custom Campsite image
-to Odin; Shuri only pulls Elasticsearch's upstream multi-platform image, so no
-custom arm64 build is currently required. Images use a private registry; the
-current Odin-local registry is acceptable for staging work but is not a durable
-production registry until its storage and backup are declared.
+Custom amd64 application images are built on `builder.home` and deployed to
+Odin. The Elasticsearch guest pulls Elastic's pinned upstream amd64 image
+directly, so it is not an application builder or private-registry target. Images
+use a private registry; the current Odin-local registry is acceptable for
+staging work but is not a durable production registry until its storage and
+backup are declared.
 
 Runtime base images and Elasticsearch are also pinned to immutable manifest
 digests. Node-based images use the repository's declared Node 24.19.0 runtime;
@@ -119,7 +117,7 @@ all application processes run as unprivileged users. Updating a base image or
 Elasticsearch therefore requires an explicit digest refresh and rebuild rather
 than silently following a mutable registry tag.
 
-### Upgrading Elasticsearch (❌ not yet performed on Shuri)
+### Elasticsearch 9.5 migration (✅ deployed 2026-08-28)
 
 The declared image moved from 8.8.0 to 9.5.0. Elastic does not support a direct
 rolling upgrade from 8.8 to 9.x — the documented path is 8.8 → 8.19 (the last
@@ -129,8 +127,8 @@ Campsite's Elasticsearch holds only derived search indices, every one of which
 is rebuildable from MySQL, so the recommended path skips the ladder entirely:
 
 1. Stop the accessory and the workers that write to it.
-2. Remove the `campsite-api-tokdio_elasticsearch-data` volume — do not carry the
-   8.8 data directory across.
+2. Create a fresh `campsite-api-tokdio_elasticsearch-data` volume — do not carry
+   the inaccessible Shuri 8.8 data directory across.
 3. `kamal accessory boot elasticsearch` on the 9.5.0 digest, and wait for the
    cluster-health check to report green.
 4. Reindex from the application against the live database — from `api/`,
@@ -147,9 +145,16 @@ is rebuildable from MySQL, so the recommended path skips the ladder entirely:
    end
    ```
 
-Steps 3–5 were rehearsed locally against a clean 9.5.0 container: the reindex
-task completes for all three models and the counts match exactly. The Shuri
-execution itself is ❌ still outstanding.
+The live migration completed on the dedicated VMM guest. The pinned digest is
+`sha256:8818ab9af72d7482e38a9d6f0454d5ee667564a25bbdc42360c0f9b8f8f72fc5`;
+authenticated health from Odin was green with one node and no unassigned
+shards. A Kamal accessory restart preserved the cluster UUID. With Sidekiq
+paused, `searchkick:reindex:all` completed and counts matched exactly: Post
+760/760, Note 67/67, and Call 0/0. API and worker then both proved authenticated
+connectivity before Sidekiq resumed. The declared
+`config/elasticsearch/staging-index-template.json` applies zero replicas to
+future Searchkick indices; without it, a healthy single-node cluster remains
+yellow because each unassignable replica has no second node.
 
 Preserving the existing volume instead would require the 8.19 intermediate hop
 first; there is no reason to take that path for a rebuildable index.
@@ -182,11 +187,11 @@ Redis coordination is unavailable, and `/up` SHALL return unavailable after a
 Redis disconnect. Verification method: Test with two independently running sync
 processes and Inspection of the rendered Kamal environment.
 
-Elasticsearch listens on Shuri's LAN address only, requires an application
-credential, and is restricted to Odin at the host firewall. Its HTTP port is
-never routed through Cloudflare. The loopback-only
-`campsite-shadow-elasticsearch` legacy binding must remain isolated until that
-orphan receives separate retirement approval.
+Elasticsearch listens on `192.168.10.26:9201`, requires the application
+credential, and is restricted to Odin (`192.168.10.7/32`) by the guest's
+Docker-aware UFW policy. An authenticated Odin request returns green, an
+unauthenticated Odin request returns 401, and a non-Odin port probe is rejected.
+Its HTTP port is never routed through Cloudflare.
 
 Heimdall's named Cloudflare Tunnel is the only public ingress. It forwards the
 tokdio host family to Kamal proxy on Odin over private HTTP:
@@ -261,21 +266,19 @@ after-commit flag is set. A production Action Mailer message from
 `campsite@agents.home` was accepted by SMTP in 0.75s and ingested to the
 `prakash@agents.home` inbox.
 
-⚠️ **`config/deploy.campsite-api.yml` cannot deploy the Elasticsearch
-accessory.** Its `host:` is `shuri@192.168.20.14`; Kamal 2.12 has no
-per-accessory SSH user, so it resolves that whole string as a hostname and the
-registry port-forward step fails with `Socket::ResolutionError`. The global
-`ssh.user` is `debian`, which Shuri refuses — `shuri` and `prakash` are
-accepted. Deploys currently work around it with `--hosts 192.168.10.7`, which
-excludes the accessory host. The fix is `host: 192.168.20.14` plus a
-`~/.ssh/config` `User shuri` entry for that address.
+⚠️ **Kamal 2.12 app deploys must remain host-scoped.** Accessory commands accept
+`host: prakash@192.168.10.26`, but an unscoped application deploy also treats
+that user-qualified accessory host as a registry-forward target and fails with
+`Socket::ResolutionError`. Deploy the API with `--hosts=192.168.10.7`; direct
+`kamal accessory` commands continue to own Elasticsearch lifecycle operations.
 
 ## Durable storage and backups
 
-Live MySQL, Redis, and object data stay on Odin-local Docker volumes so a NAS
-or LAN interruption does not corrupt an active database. Elasticsearch stays
-on Shuri-local Docker storage. `/mnt/starkdrive-shared` is a soft NFS mount and
-is backup-only; it must not hold live database files.
+Live MySQL, Redis, and object data stay on Odin-local Docker volumes.
+Elasticsearch uses a guest-local Docker volume on the Vyas VMM datastore; it is
+derived from MySQL and can be rebuilt when the VM or volume is lost.
+`/mnt/starkdrive-shared` is a soft NFS mount and is backup-only; it must not hold
+live database files.
 
 Backup destinations are rooted under a dedicated, access-controlled
 `starkdrive:/volume1/backups/campsite/` namespace:
@@ -291,7 +294,7 @@ Backup destinations are rooted under a dedicated, access-controlled
 Runtime and backup credentials are separate. Backup writes are append-oriented;
 the runtime credential cannot delete backup history. A backup is not accepted
 until its restore rehearsal passes. XO VM backups complement but do not replace
-these application-level backups, and Shuri is outside XO coverage.
+these application-level backups. The Synology VMM guest is outside XO coverage.
 
 Initial objectives are RPO 24 hours, RTO 8 hours, a four-hour cutover window,
 and a seven-day rollback window. Those are planning baselines for the stated
@@ -351,10 +354,11 @@ remain unchanged unless their callback or hostname contract requires rotation.
 
 ## Observability and operations
 
-Beszel already observes Odin, Shuri, and Heimdall. Add Campsite container
-visibility and alerts for host memory/disk, container restarts, MySQL health and
-free space, Redis persistence/queue latency, Elasticsearch heap/cluster state,
-object-store disk, Cloudflare origin failures, and backup age.
+Beszel already observes Odin, Shuri, and Heimdall. ❌ The new Elasticsearch VM
+does not yet have a Beszel agent. Add guest/container visibility and alerts for
+host memory/disk, container restarts, Elasticsearch heap/cluster state, MySQL
+health and free space, Redis persistence/queue latency, object-store disk,
+Cloudflare origin failures, and backup age.
 
 Synthetic checks must cover the public web page, authenticated API path,
 WebSocket connection, styled-text request, HTML-to-image PNG response, an
@@ -363,16 +367,16 @@ health endpoint does not prove those user paths.
 
 ## Failure and rollback behavior
 
-| Failure                   | Expected behavior                                                              | Recovery                                                                        |
-| ------------------------- | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------- |
-| Odin VM/container restart | auto-start VM; Kamal-managed containers restart                                | verify durable stores before apps/workers                                       |
-| Shuri/Elasticsearch loss  | writes continue only where app semantics allow; search is reported unavailable | restore/start ES, then reconcile/reindex                                        |
-| Heimdall/tunnel loss      | public site unavailable; private services remain closed                        | restore tunnel; no direct public port fallback                                  |
-| starkdrive/NFS loss       | live service continues; backups fail closed and alert                          | restore NAS path, then run and verify missed backup                             |
-| Internet loss             | local stack stays up; external integrations fail/retry                         | reconcile provider jobs after connectivity returns                              |
-| Power loss                | Odin VM auto-starts; Shuri behavior must be verified separately                | ordered datastore health checks before workers                                  |
-| Bad application release   | previous immutable image remains selectable                                    | `kamal rollback` per runtime                                                    |
-| Bad data migration        | staging stack remains isolated                                                 | stop new writers, restore destination, return DNS/provider custody to old stack |
+| Failure                   | Expected behavior                                                                                        | Recovery                                                                        |
+| ------------------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Odin VM/container restart | auto-start VM; Kamal-managed containers restart                                                          | verify durable stores before apps/workers                                       |
+| Elasticsearch VM loss     | writes continue only where app semantics allow; search is reported unavailable                           | restore/rebuild guest and fresh index, then reconcile/reindex                   |
+| Heimdall/tunnel loss      | public site unavailable; private services remain closed                                                  | restore tunnel; no direct public port fallback                                  |
+| starkdrive/NFS loss       | live service continues; backups fail closed and alert                                                    | restore NAS path, then run and verify missed backup                             |
+| Internet loss             | local stack stays up; external integrations fail/retry                                                   | reconcile provider jobs after connectivity returns                              |
+| Power loss                | Odin auto-starts; VMM autorun and container restart are configured, but a Vyas power-cycle is unverified | ordered datastore health checks before workers                                  |
+| Bad application release   | previous immutable image remains selectable                                                              | `kamal rollback` per runtime                                                    |
+| Bad data migration        | staging stack remains isolated                                                                           | stop new writers, restore destination, return DNS/provider custody to old stack |
 
 There is no evidence of UPS protection, so the declared availability is
 single-site and power-loss exposed. The staging scheduler stays disabled until
@@ -380,9 +384,9 @@ its separate promotion gate, preventing duplicate scheduled outbound effects.
 
 ## Promotion gates
 
-Provisioning may begin only after provider data sizes are measured or bounded,
-backup paths and credentials are created, Elasticsearch's authenticated private
-path is ready, and the destination-matched builder can publish immutable images.
+Elasticsearch's authenticated private path is ready. Remaining promotion gates
+are provider data-size bounds, created and tested backup paths/credentials, and
+proof that the destination-matched builder can publish immutable images.
 Cutover additionally requires restored backups, a full staging-stack acceptance
 run, one rehearsed rollback, and an immutable provider/DNS change set. Each host,
 Cloudflare, DNS, and provider mutation remains a separately approved action.
