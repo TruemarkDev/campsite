@@ -17,6 +17,7 @@ class McpResource
   class ResourceError < StandardError; end
 
   SCHEME = "campsite"
+  AGENT_GUIDE_URI = "campsite://docs/agent-guide"
   URI_PATTERN = %r{\A#{SCHEME}://(?<org_slug>[^/]+)/(?<type>posts|notes|threads)/(?<public_id>[^/]+)\z}
 
   # How many recent entities of each kind to advertise per org in resources/list.
@@ -55,6 +56,10 @@ class McpResource
   # MCP `resources/read` contract). Raises ResourceError / ActiveRecord::RecordNotFound
   # / Pundit::NotAuthorizedError, which the handler translates.
   def read(uri)
+    if uri.to_s == AGENT_GUIDE_URI
+      return [MCP::Resource::TextContents.new(uri: uri, mime_type: "text/markdown", text: agent_guide)]
+    end
+
     match = URI_PATTERN.match(uri.to_s)
     raise ResourceError, "Unknown resource URI '#{uri}'. Expected campsite://{org_slug}/{posts|notes|threads}/{public_id}." unless match
 
@@ -70,7 +75,7 @@ class McpResource
   # is authorized by the same `policy_scope` the list tools use; orgs the user is
   # 2FA-blocked from are skipped.
   def list
-    @context.user.kept_organization_memberships.includes(:organization).flat_map do |membership|
+    [agent_guide_resource] + @context.user.kept_organization_memberships.includes(:organization).flat_map do |membership|
       organization = membership.organization
       next [] if organization.enforce_two_factor_authentication? && !@context.user.otp_enabled?
 
@@ -83,6 +88,54 @@ class McpResource
   end
 
   private
+
+  def agent_guide_resource
+    MCP::Resource.new(
+      uri: AGENT_GUIDE_URI,
+      name: "Campsite MCP agent guide",
+      description: "Versioned operating contract for Campsite tools, scopes, safety, pagination, and errors.",
+      mime_type: "text/markdown",
+    )
+  end
+
+  def agent_guide
+    tools = McpToolRegistry.tools.map do |tool|
+      contract = McpToolRegistry.contract_for(tool)
+      "| `#{tool.name_value}` | #{contract[:category]} | #{contract[:scopes].join(", ")} | #{contract[:destructive] ? "yes" : "no"} |"
+    end.join("\n")
+
+    <<~MARKDOWN
+      # Campsite MCP Agent Guide
+
+      Contract version: 1
+
+      ## Operating sequence
+
+      1. Call `whoami`, then `list_organizations`; use public ids and an `org_slug`.
+      2. Read before updating. List tools use cursor pagination (`after`, `before`, `limit`).
+      3. Use `<@member_public_id>` for mentions. Never invent ids.
+      4. Treat archive, cancel, remove, and discard operations as destructive even when Campsite retains recovery data.
+      5. Tool errors return `structuredContent.error` with `code` and `message`; validation failures may also include field-level `details`. Correct the request or permission rather than retrying blindly.
+
+      ## Scopes and authorization
+
+      Every call requires `mcp`. Content writes additionally require the advertised write scope. OAuth scope is necessary but never sufficient: organization membership, 2FA, and Pundit policy are enforced for every record.
+
+      ## Collaborative notes
+
+      Use `edit_note` for note bodies. It obtains a short-lived grant and calls the replica-safe sync facade. Never write `description_state` or replace collaborative HTML directly. An active human editor or coordination outage fails closed.
+
+      ## Exclusions
+
+      No tool provides bulk mutation, permanent deletion, raw collaboration state, project membership administration, public visibility/sharing, integrations, OAuth application administration, exports, shell commands, or arbitrary URL fetching.
+
+      ## Tool catalog
+
+      | Tool | Category | Required scopes | Destructive |
+      | --- | --- | --- | --- |
+      #{tools}
+    MARKDOWN
+  end
 
   def render(type, public_id, actor:, organization:, member:)
     case type

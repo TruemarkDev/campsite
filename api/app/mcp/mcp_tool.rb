@@ -59,11 +59,16 @@ class McpTool < MCP::Tool
   def run
     execute
   rescue Pundit::NotAuthorizedError
-    error("You are not authorized to perform this action.")
+    error("You are not authorized to perform this action.", code: "forbidden")
   rescue ActiveRecord::RecordNotFound
-    error("The requested resource could not be found.")
+    error("The requested resource could not be found.", code: "not_found")
+  rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotDestroyed, ActiveRecord::RecordNotSaved => e
+    details = e.record&.errors&.to_hash
+    error("The requested change is invalid.", code: "validation_failed", details: details)
+  rescue ActiveRecord::RecordNotUnique
+    error("The requested change conflicts with existing state.", code: "conflict")
   rescue ToolError => e
-    error(e.message)
+    error(e.message, code: "invalid_request")
   end
 
   private
@@ -138,7 +143,13 @@ class McpTool < MCP::Tool
     )
   end
 
-  def error(message)
-    MCP::Tool::Response.new([{ type: "text", text: message }], error: true)
+  def error(message, code: "tool_error", details: nil)
+    payload = { "error" => { "code" => code, "message" => message } }
+    payload["error"]["details"] = details if details.present?
+    MCP::Tool::Response.new(
+      [{ type: "text", text: message }],
+      structured_content: payload,
+      error: true,
+    )
   end
 end

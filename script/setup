@@ -2,7 +2,7 @@
 # curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 # source ~/.nvm/nvm.sh && nvm install && nvm use
 
-brew install tmux overmind flyctl pnpm yarn
+brew install tmux overmind pnpm yarn
 
 # Setup API
 (cd api && script/setup)

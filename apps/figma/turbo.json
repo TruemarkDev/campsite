@@ -6,7 +6,7 @@
       "dependsOn": ["build"]
     },
     "build": {
-      "env": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT", "TIPTAP_PRIVATE_REGISTRY_KEY"]
+      "env": ["SENTRY_AUTH_TOKEN", "SENTRY_ORG", "SENTRY_PROJECT"]
     }
   }
 }

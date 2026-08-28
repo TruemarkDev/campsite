@@ -24,7 +24,7 @@ module Api
 
           sign_in @member.user
 
-          post batched_post_views_path, params: { views: views }, as: :json, headers: { "HTTP_FLY_CLIENT_IP" => @ip, "HTTP_USER_AGENT" => @user_agent }
+          post batched_post_views_path, params: { views: views }, as: :json, headers: { "HTTP_CF_CONNECTING_IP" => @ip, "HTTP_USER_AGENT" => @user_agent }
 
           assert_response :no_content
           assert_enqueued_sidekiq_job(
@@ -49,7 +49,7 @@ module Api
 
           sign_in @member.user
 
-          post batched_post_views_path, params: { views: views }, as: :json, headers: { "HTTP_FLY_CLIENT_IP" => @ip, "HTTP_USER_AGENT" => @user_agent }
+          post batched_post_views_path, params: { views: views }, as: :json, headers: { "HTTP_CF_CONNECTING_IP" => @ip, "HTTP_USER_AGENT" => @user_agent }
 
           assert_response :no_content
           assert_enqueued_sidekiq_jobs(2, only: PostViewsJob)

@@ -4,21 +4,6 @@ const SENTRY_DSN = process.env.SENTRY_DSN || process.env.NEXT_PUBLIC_SENTRY_DSN
 
 Sentry.init({
   dsn: SENTRY_DSN,
-  beforeSend(event, hint) {
-    // Check if the error is a TypeError: Failed to fetch
-    if (hint.originalException instanceof TypeError && hint.originalException.message === 'Failed to fetch') {
-      const anyFrameHasVercelSpeedInsightsVitals = event.exception?.values?.some((value) =>
-        value.stacktrace?.frames?.some((frame) => frame.filename?.includes('_vercel/speed-insights'))
-      )
-
-      if (anyFrameHasVercelSpeedInsightsVitals) {
-        // Ignore the error
-        return null
-      }
-    }
-    // If conditions are not met, return the event
-    return event
-  },
   ignoreErrors: [
     // https://linear.app/campsite/issue/CAM-601/ignore-error-invariant-attempted-to-hard-navigate-to-the-same-url
     /Invariant: attempted to hard navigate to the same URL.*/,

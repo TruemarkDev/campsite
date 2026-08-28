@@ -106,9 +106,6 @@ namespace :dev do
         push_key: "TODO",
         push_id: "TODO",
       },
-      vercel: {
-        revalidate_static_cache: "TODO",
-      },
       webpush_vapid: {
         public_key: "TODO",
         private_key: "TODO",

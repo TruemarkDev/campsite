@@ -1,11 +1,10 @@
 import { m } from 'framer-motion'
 
+import { IS_PRODUCTION } from '@campsite/config'
 import { cn } from '@campsite/ui/src/utils'
 
 export function DevModeBanner() {
-  const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
-
-  if (isProd) return null
+  if (IS_PRODUCTION) return null
 
   return (
     <m.div className={cn('border-brand-primary fixed top-0 right-0 left-0 z-40 border-t-2')}>

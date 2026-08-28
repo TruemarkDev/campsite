@@ -9,7 +9,7 @@ This is the API that powers https://app.campsite.com
 
 ### Running the app
 
-The API can be started with `script/server`. The API is accessible on http://api.campsite.test:3001 and the frontend on http://app.campsite.test:3000 (after you've run `vercel dev` in that repo).
+The API can be started with `script/server`. The API is accessible on http://api.campsite.test:3001 and the frontend on http://app.campsite.test:3000 after starting the web development server from the workspace root.
 
 ### Useful commands & shortcuts
 
@@ -47,8 +47,8 @@ click the link in the email :)
 
 The current deployment source of truth is
 [`docs/deployment/homelab-production.md`](../docs/deployment/homelab-production.md).
-The legacy hosted-provider steps below are retained for historical context and
-are ⚠️ non-conformant with the current operator-run Kamal deployment.
+Deployments and rollbacks are operator-run with the repository's Kamal
+configuration.
 
 ### Voice-note worker prerequisites
 
@@ -74,25 +74,6 @@ attachments remain usable but transcription/TTS jobs will fail with explicit
 errors. ElevenLabs is an opt-in alternative configured with
 `tts.provider: elevenlabs` and `elevenlabs.api_key`; callers must also supply or
 inherit a valid ElevenLabs voice id.
-
-### Steps
-
-1. Open a PR, get an approval, merge to `main`.
-2. Merge your approved PR to `main` and the [Deploy](https://github.com/campsite/campsite-api/actions/workflows/deploy.yml) action will deploy to production.
-3. Monitor Skylight for performance regressions and Sentry for exceptions.
-
-### Rolling back
-
-1. Open a PR to revert the change, get an approval, merge to `main`.
-2. Merge your approved revert PR to `main` and the [Deploy](https://github.com/campsite/campsite-api/actions/workflows/deploy.yml) action will deploy to production.
-
-### Manual deploys
-
-If we ever run into any issues that involve quickly deploying to production, the [manual deploy](https://github.com/campsite/campsite-api/actions/workflows/deploy.yml) workflow can be used to deploy to production.
-
-1. Navigate to [manual deploy](https://github.com/campsite/campsite-api/actions/workflows/production.yml) workflow
-2. Select `main` for the first input, enter the name of the branch you'd like to deploy for the second input.
-3. Run the workflow
 
 ## Using ngrok for publicly accessible HTTPS development URLs
 

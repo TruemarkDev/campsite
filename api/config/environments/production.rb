@@ -42,7 +42,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
-  # Disable IP spoofing check since Fly.io's load balancer changes headers
+  # Trust the reverse proxy's forwarded client IP headers.
   config.action_dispatch.ip_spoofing_check = false
 
   # Store uploaded files on the local file system (see config/storage.yml for options).

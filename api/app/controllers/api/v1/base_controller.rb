@@ -242,7 +242,7 @@ module Api
       end
 
       def client_ip
-        request.env["HTTP_CF_CONNECTING_IP"] || request.env["HTTP_FLY_CLIENT_IP"] || request.remote_ip
+        request.env["HTTP_CF_CONNECTING_IP"] || request.remote_ip
       end
 
       def set_user_preferred_timezone

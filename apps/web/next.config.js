@@ -18,8 +18,7 @@ const cspResourcesByDirective = {
     'todesktop-internal:',
     'blob:',
     // unsafe-eval required in development for hot module reloading and in production for 100ms noise cancellation
-    "'unsafe-eval'",
-    process.env.NODE_ENV !== 'production' && 'https://cdn.vercel-insights.com'
+    "'unsafe-eval'"
   ],
   'style-src': [
     "'self'",
@@ -47,9 +46,6 @@ const cspResourcesByDirective = {
     process.env.NODE_ENV !== 'production' && 'd1tk25h31rf8pv.cloudfront.net', // campsite-hls-dev
     'd2m0evjsyl9ile.cloudfront.net', // campsite-hls
     'https://o1244295.ingest.sentry.io',
-    'https://vercel-vitals.axiom.co',
-    'https://cdn.vercel-insights.com',
-    'https://vitals.vercel-insights.com',
     'https://*.lottiefiles.com',
     'https://*.100ms.live',
     'wss://*.100ms.live',
