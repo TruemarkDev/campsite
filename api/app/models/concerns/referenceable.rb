@@ -1,8 +1,9 @@
 # frozen_string_literal: true
 
 module Referenceable
-  POST_URL_REGEX = %r{#{Campsite.base_app_url}/(?<org_slug>[a-zA-Z0-9_-]+)/posts/(?<post_id>[a-zA-Z0-9]+)(?:#comment-(?<comment_id>[a-zA-Z0-9]+))?}i
-  NOTE_URL_REGEX = %r{#{Campsite.base_app_url}/(?<org_slug>[a-zA-Z0-9_-]+)/notes/(?<note_id>[a-zA-Z0-9]+)(?:#comment-(?<comment_id>[a-zA-Z0-9]+))?}i
+  APP_URL_PATTERN = Regexp.escape(Campsite.base_app_url.to_s).sub(/\Ahttps?/, "https?")
+  POST_URL_REGEX = %r{#{APP_URL_PATTERN}/(?<org_slug>[a-zA-Z0-9_-]+)/posts/(?<post_id>[a-zA-Z0-9]+)(?:#comment-(?<comment_id>[a-zA-Z0-9]+))?}i
+  NOTE_URL_REGEX = %r{#{APP_URL_PATTERN}/(?<org_slug>[a-zA-Z0-9_-]+)/notes/(?<note_id>[a-zA-Z0-9]+)(?:#comment-(?<comment_id>[a-zA-Z0-9]+))?}i
 
   def extract_post_ids(text)
     matches(text).filter { |match| match[:comment_id].blank? }.pluck(:post_id).uniq
