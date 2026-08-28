@@ -55,6 +55,18 @@ class ProjectBeadsSnapshotTest < ActiveSupport::TestCase
     assert_equal first, @source.reload.current_snapshot
   end
 
+  test "accepts a deferred issue in the Deferred column" do
+    payload = snapshot_payload
+    issue = payload.fetch("issues").first
+    issue["status"] = "deferred"
+    issue["board_state"] = "Deferred"
+    payload["digest"] = digest(payload.except("digest"))
+
+    snapshot = ProjectBeadsSnapshot.ingest!(source: @source, attributes: payload)
+
+    assert_equal "Deferred", snapshot.payload.first.fetch("board_state")
+  end
+
   test "retains an older accepted snapshot for audit without replacing the current snapshot" do
     current = ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
     older_payload = snapshot_payload(collected_at: 1.hour.ago, revision: "older")

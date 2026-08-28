@@ -110,6 +110,12 @@ describe('ProjectBeadsBoardView', () => {
     expect(within(screen.getByRole('region', { name: 'In progress' })).getByText('Fix sync')).not.toBeNull()
   })
 
+  it('keeps deferred work in its own source column', () => {
+    renderBoard(board([card({ id: 'later-1', title: 'Revisit later', status: 'deferred', board_state: 'Deferred' })]))
+
+    expect(within(screen.getByRole('region', { name: 'Deferred' })).getByText('Revisit later')).not.toBeNull()
+  })
+
   it('hides Closed by default and progressively reveals long history', () => {
     const closedCards = Array.from({ length: 21 }, (_, index) =>
       card({ id: `closed-${index}`, title: `Closed task ${index}`, board_state: 'Closed', status: 'closed' })

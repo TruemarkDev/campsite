@@ -2404,7 +2404,7 @@ export type BeadsCard = {
   id: string
   title: string
   status: string
-  board_state: 'Ready' | 'In progress' | 'Blocked' | 'Closed'
+  board_state: 'Ready' | 'In progress' | 'Blocked' | 'Deferred' | 'Closed'
   priority: number
   issue_type: string
   assignee: string | null

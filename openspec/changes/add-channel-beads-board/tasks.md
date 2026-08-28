@@ -136,8 +136,8 @@
       audience/allowlisted-data preview, pending/expired retry, and verified
       repository/source/freshness status; show replace/detach only to managers
       and no disconnected section to ordinary viewers or guests.
-- [ ] 5.5 Build the read-only Ready, In progress, Blocked, and Closed Board with
-      accessible cards and no drag dependency or write affordance; verify tests
+- [ ] 5.5 Build the read-only Ready, In progress, Blocked, Deferred, and Closed
+      Board with accessible cards and no drag dependency or write affordance; verify tests
       cover state precedence, blocker ids, zero tasks, long titles, unknown safe
       metadata, and progressively revealed Closed work.
 - [ ] 5.6 Add filters for id/title, type, priority, assignee, label, and Closed

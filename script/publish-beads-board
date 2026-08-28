@@ -142,6 +142,10 @@ module BeadsBoardPublisher
         raise Error, "Closed issue classification is incoherent" if ready || blocked
 
         "Closed"
+      when "deferred"
+        raise Error, "Deferred issue classification is incoherent" if ready || blocked
+
+        "Deferred"
       when "in_progress"
         raise Error, "In-progress issue classification is incoherent" if ready
 

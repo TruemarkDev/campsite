@@ -10,8 +10,8 @@ class ProjectBeadsSnapshotSchema
   TOP_LEVEL_FIELDS = %w[schema_version source_id source_project_id beads_version beads_schema_version branch revision collected_at digest issues].freeze
   ISSUE_FIELDS = %w[id title status board_state priority issue_type assignee owner labels parent_id dependencies created_at updated_at closed_at].freeze
   DEPENDENCY_FIELDS = %w[id type].freeze
-  BOARD_STATES = ["Ready", "In progress", "Blocked", "Closed"].freeze
-  STATUSES = %w[open in_progress closed].freeze
+  BOARD_STATES = ["Ready", "In progress", "Blocked", "Deferred", "Closed"].freeze
+  STATUSES = %w[open in_progress deferred closed].freeze
   MAX_ISSUES = 5_000
   MAX_LABELS = 50
   MAX_DEPENDENCIES = 100
@@ -81,6 +81,8 @@ class ProjectBeadsSnapshotSchema
     def validate_state!(issue)
       expected = if issue["status"] == "closed"
         "Closed"
+      elsif issue["status"] == "deferred"
+        "Deferred"
       elsif issue["board_state"] == "Blocked"
         "Blocked"
       elsif issue["status"] == "in_progress"

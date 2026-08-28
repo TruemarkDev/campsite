@@ -82,6 +82,20 @@ class BeadsBoardPublisherTest < Minitest::Test
     assert_equal "In progress", snapshot.fetch("issues").first.fetch("board_state")
   end
 
+  def test_accepts_deferred_issue_omitted_from_ready_and_blocked
+    runner = Runner.new(
+      "context --json" => JSON.generate(project_id: "campsite.board", repo_root: "/repo", bd_version: "1.2.2"),
+      "vc status --json" => JSON.generate(branch: "main", commit: "abc123"),
+      "export" => JSON.generate([{ id: "x.1", title: "Later", status: "deferred", priority: 1, issue_type: "task", created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }]),
+      "ready --json" => "[]",
+      "blocked --json" => "[]",
+    )
+
+    snapshot = BeadsBoardPublisher::Collector.new(beads_bin: "bd", repository: "/repo", runner: runner).snapshot(source_id: "source", expected_source_project_id: "campsite.board")
+
+    assert_equal "Deferred", snapshot.fetch("issues").first.fetch("board_state")
+  end
+
   def test_executable_runs_one_shot_in_a_bare_environment
     publisher = File.expand_path("publish-beads-board", __dir__)
     assert File.executable?(publisher)

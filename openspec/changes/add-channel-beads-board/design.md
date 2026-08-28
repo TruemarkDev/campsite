@@ -219,14 +219,16 @@ Beads remains the audit source.
 The publisher assigns mutually exclusive columns with this precedence:
 
 1. `status == closed` → Closed;
-2. id reported by `bd blocked --json` → Blocked;
-3. `status == in_progress` → In progress;
-4. id reported by `bd ready --json` → Ready.
+2. `status == deferred` → Deferred;
+3. id reported by `bd blocked --json` → Blocked;
+4. `status == in_progress` → In progress;
+5. id reported by `bd ready --json` → Ready.
 
 For an open issue, membership in Ready and Blocked SHALL be exclusive and one of
-them SHALL be present. Inconsistent input is rejected instead of guessed. This
-uses Beads' native dependency semantics rather than reimplementing blocker
-resolution in Rails or TypeScript.
+them SHALL be present. Deferred issues SHALL be absent from both native sets and
+remain Deferred until Beads changes their status. Inconsistent input is
+rejected instead of guessed. This uses Beads' native dependency semantics rather
+than reimplementing blocker resolution in Rails or TypeScript.
 
 Closed work is paged or progressively revealed so a long project history does
 not swamp active work. Filtering by title/id, type, priority, assignee, label,

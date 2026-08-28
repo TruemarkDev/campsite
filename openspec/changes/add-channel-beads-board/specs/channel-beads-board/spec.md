@@ -171,11 +171,13 @@ and last successful collection time represented by its cards.
 
 ### Requirement: SyR-4 — Board columns preserve Beads state
 
-The system SHALL display Ready, In progress, Blocked, and Closed columns using
-the mutually exclusive state classification supplied by the publisher. Closed
-status SHALL take precedence, followed by Beads' blocked classification,
-in-progress status, and Beads' ready classification. The ingest contract SHALL
-reject an open issue that is neither Ready nor Blocked or is classified as both.
+The system SHALL display Ready, In progress, Blocked, Deferred, and Closed
+columns using the mutually exclusive state classification supplied by the
+publisher. Closed status SHALL take precedence, followed by deferred status,
+Beads' blocked classification, in-progress status, and Beads' ready
+classification. The ingest contract SHALL reject an open issue that is neither
+Ready nor Blocked or is classified as both, and SHALL reject a deferred issue
+reported by either native classification.
 
 **Verification:** Test
 
@@ -200,6 +202,12 @@ reject an open issue that is neither Ready nor Blocked or is classified as both.
 - **WHEN** an issue has Beads status `closed`
 - **THEN** the Board displays it in Closed regardless of historical dependency
   metadata
+
+#### Scenario: Deferred issue is displayed
+
+- **WHEN** an issue has Beads status `deferred` and is absent from the Ready and
+  Blocked classifications
+- **THEN** the Board displays it in Deferred with its source status unchanged
 
 #### Scenario: State classifications conflict
 

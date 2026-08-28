@@ -8,7 +8,7 @@ import { ProjectArchiveBanner } from '@/components/Projects/ProjectArchiveBanner
 import { PROJECT_PAGE_SCROLL_CONTAINER_ID } from '@/components/Projects/utils'
 import { longTimestamp } from '@/utils/timestamp'
 
-const BOARD_STATES = ['Ready', 'In progress', 'Blocked', 'Closed'] as const
+const BOARD_STATES = ['Ready', 'In progress', 'Blocked', 'Deferred', 'Closed'] as const
 const CLOSED_PAGE_SIZE = 20
 
 interface ProjectBeadsBoardProps {
