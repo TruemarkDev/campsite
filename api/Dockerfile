@@ -84,16 +84,16 @@ RUN --mount=type=cache,id=prod-apt-cache,sharing=locked,target=/var/cache/apt \
     ${PROD_PACKAGES} \
     && rm -rf /var/lib/apt/lists /var/cache/apt/archives
 
-COPY --from=gems /app /app
-COPY . .
-COPY --from=assets /app/public/assets /app/public/assets
+RUN groupadd --system rails && \
+    useradd --system --gid rails --create-home rails && \
+    chown rails:rails /app /app/tmp /app/tmp/pids
+
+COPY --chown=rails:rails --from=gems /app /app
+COPY --chown=rails:rails . .
+COPY --chown=rails:rails --from=assets /app/public/assets /app/public/assets
 
 ENV LD_PRELOAD=/usr/lib/x86_64-linux-gnu/libjemalloc.so.2
 ENV MALLOC_CONF=dirty_decay_ms:1000,narenas:2,background_thread:true
-
-RUN groupadd --system rails && \
-    useradd --system --gid rails --create-home rails && \
-    chown -R rails:rails /app
 
 USER rails
 
