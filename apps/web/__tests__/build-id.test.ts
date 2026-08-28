@@ -9,7 +9,7 @@ describe('build-id API route', () => {
   })
 
   it('returns the revision supplied to the staging web build', () => {
-    vi.stubEnv('NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA', '7d7f8e4c9b')
+    vi.stubEnv('NEXT_PUBLIC_RELEASE_SHA', '7d7f8e4c9b')
     const json = vi.fn()
     const status = vi.fn().mockReturnValue({ json })
 

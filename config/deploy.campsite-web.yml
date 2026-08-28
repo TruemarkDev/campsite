@@ -35,7 +35,7 @@ builder:
     NEXT_PUBLIC_OBJECT_STORAGE_URL: https://camp-objects.tokdio.com
     NEXT_PUBLIC_PUSHER_KEY: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_KEY") %>
     NEXT_PUBLIC_PUSHER_CLUSTER: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_CLUSTER") %>
-    NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA: <%= `git rev-parse HEAD`.strip %>
+    NEXT_PUBLIC_RELEASE_SHA: <%= `git rev-parse HEAD`.strip %>
 env:
   clear:
     NODE_ENV: production

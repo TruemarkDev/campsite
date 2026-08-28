@@ -12,8 +12,6 @@ proposals live in `openspec/changes/`.
 Toolchain: node 24.19.0 + ruby 4.0.6 + pnpm 11.9.0 via mise (`mise.toml`).
 `.nvmrc`, `api/mise.toml`, every `Dockerfile`, and `package.json` `engines`
 all agree on node 24.19.0, the baseline `MAINTENANCE.md` declares.
-⚠️ `api/fly.toml` still carries node 26.4.0 in `[build.args]`, but the Fly
-deploy is dead (see `api/CLAUDE.md`) — it is not a mirror target.
 
 ```bash
 # First-time setup
@@ -33,7 +31,7 @@ pnpm test                                         # turbo run test (JS packages)
 pnpm -F @campsite/web test                        # vitest
 pnpm -F @campsite/sync-server test
 
-# Lint / format (CI auto-commits fixes)
+# Lint / format
 pnpm lint && pnpm format
 cd api && bundle exec rubocop        # -A to autofix; shopify style, line max 240
 
@@ -41,9 +39,8 @@ cd api && bundle exec rubocop        # -A to autofix; shopify style, line max 24
 script/gen-client       # rake apigen/openapi → packages/types/generated.ts
 ```
 
-CI truth: `.github/workflows/api-tests.yml` (rubocop + schema:load +
-assets:precompile + rails test against MySQL 8/Redis/Elasticsearch) and
-`client-build.yml` (`pnpm turbo run test --filter=@campsite/web`).
+❌ This repository has no checked-in CI workflows. Run the relevant local test,
+lint, and build gates before handing off a change.
 
 ## Architecture Overview
 
@@ -71,9 +68,7 @@ Deployment: **Kamal to the homelab** — Odin `192.168.10.7` (apps, MySQL,
 Redis), Shuri `192.168.20.14` (Elasticsearch), Cloudflare Tunnel ingress; full
 design in `docs/deployment/homelab-production.md`. Worker deploys separately
 from API by design (writer custody). Secrets preflight:
-`mise -E deploy exec -- script/check-campsite-kamal-secrets`. ⚠️ `api/CLAUDE.md` still
-says Hatchbox and Fly leftovers exist (`api/fly.toml`, `script/prod-*`) — all
-`deploy-*.yml` workflows are `.disabled`; deploys are operator-run Kamal.
+`mise -E deploy exec -- script/check-campsite-kamal-secrets`. Deploys are operator-run Kamal.
 
 ## Conventions & Patterns
 

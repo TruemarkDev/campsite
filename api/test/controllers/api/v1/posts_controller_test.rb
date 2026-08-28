@@ -994,7 +994,7 @@ module Api
           enable_rack_attack do
             simulate_rack_attack_requests(request_count: Rack::Attack::REQUESTS_BY_IP_LIMIT, ip: ip)
             headers = {
-              "HTTP_FLY_CLIENT_IP" => ip,
+              "HTTP_CF_CONNECTING_IP" => ip,
             }
             get organization_post_path(@organization.slug, @post.public_id), headers: headers
           end
@@ -1010,7 +1010,7 @@ module Api
           enable_rack_attack do
             simulate_rack_attack_requests(request_count: Rack::Attack::REQUESTS_BY_IP_LIMIT, ip: ip)
             headers = {
-              "HTTP_FLY_CLIENT_IP" => ip,
+              "HTTP_CF_CONNECTING_IP" => ip,
               "x-campsite-ssr-secret" => Rails.application.credentials.rack_attack.ssr_secret,
             }
             get organization_post_path(@organization.slug, @post.public_id), headers: headers
@@ -1027,7 +1027,7 @@ module Api
           enable_rack_attack do
             simulate_rack_attack_requests(request_count: Rack::Attack::REQUESTS_BY_IP_LIMIT, ip: ip)
             headers = {
-              "HTTP_FLY_CLIENT_IP" => ip,
+              "HTTP_CF_CONNECTING_IP" => ip,
               "x-campsite-ssr-secret" => "this-is-not-the-secret",
             }
             get organization_post_path(@organization.slug, @post.public_id), headers: headers

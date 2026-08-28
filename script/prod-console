@@ -1,2 +1,0 @@
-#!/bin/bash
-(cd api && bin/rails fly:console $*)

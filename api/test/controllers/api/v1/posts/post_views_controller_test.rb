@@ -211,7 +211,7 @@ module Api
 
             sign_in user
             assert_difference -> { NonMemberPostView.count }, 1 do
-              post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_FLY_CLIENT_IP" => "1.2.3.4" }
+              post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_CF_CONNECTING_IP" => "1.2.3.4" }
             end
 
             assert_response :ok
@@ -228,7 +228,7 @@ module Api
 
               sign_in user
               assert_difference -> { NonMemberPostView.count }, 0 do
-                post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_FLY_CLIENT_IP" => "1.2.3.4" }
+                post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_CF_CONNECTING_IP" => "1.2.3.4" }
               end
 
               assert_response :ok
@@ -249,7 +249,7 @@ module Api
             @post.update!(visibility: :public)
 
             assert_difference -> { NonMemberPostView.count }, 1 do
-              post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_FLY_CLIENT_IP" => ip, "HTTP_USER_AGENT" => user_agent }
+              post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_CF_CONNECTING_IP" => ip, "HTTP_USER_AGENT" => user_agent }
             end
 
             assert_response :ok
@@ -266,7 +266,7 @@ module Api
               view = create(:non_member_post_view, post: @post, anonymized_ip: IpAnonymizer.mask_ip(ip), user_agent: user_agent, updated_at: 1.month.ago)
 
               assert_difference -> { NonMemberPostView.count }, 0 do
-                post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_FLY_CLIENT_IP" => ip, "HTTP_USER_AGENT" => user_agent }
+                post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_CF_CONNECTING_IP" => ip, "HTTP_USER_AGENT" => user_agent }
               end
 
               assert_response :ok
@@ -283,7 +283,7 @@ module Api
             create(:non_member_post_view, post: @post, anonymized_ip: IpAnonymizer.mask_ip(ip), user_agent: "Old/User agent")
 
             assert_difference -> { NonMemberPostView.count }, 1 do
-              post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_FLY_CLIENT_IP" => ip, "HTTP_USER_AGENT" => new_user_agent }
+              post organization_post_views_path(@organization.slug, @post.public_id), headers: { "HTTP_CF_CONNECTING_IP" => ip, "HTTP_USER_AGENT" => new_user_agent }
             end
 
             assert_response :ok

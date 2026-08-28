@@ -309,7 +309,7 @@ module Api
 
             sign_in user
             assert_difference -> { NonMemberNoteView.count }, 1 do
-              post organization_note_views_path(@org.slug, @note.public_id), headers: { "HTTP_FLY_CLIENT_IP" => "1.2.3.4" }
+              post organization_note_views_path(@org.slug, @note.public_id), headers: { "HTTP_CF_CONNECTING_IP" => "1.2.3.4" }
             end
 
             assert_response :created

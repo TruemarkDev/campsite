@@ -211,7 +211,7 @@ class McpControllerTest < ActionDispatch::IntegrationTest
           "/mcp",
           params: { jsonrpc: "2.0", id: 1, method: "tools/list" },
           as: :json,
-          headers: { "HTTP_FLY_CLIENT_IP" => ip, "Mcp-Method" => "tools/list" },
+          headers: { "HTTP_CF_CONNECTING_IP" => ip, "Mcp-Method" => "tools/list" },
         )
 
         assert_response :too_many_requests

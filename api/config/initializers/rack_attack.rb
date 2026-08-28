@@ -45,7 +45,6 @@ module Rack
 
     CLIENT_IP = lambda do |request|
       request.get_header("HTTP_CF_CONNECTING_IP").presence ||
-        request.get_header("HTTP_FLY_CLIENT_IP").presence ||
         request.ip
     end
   end

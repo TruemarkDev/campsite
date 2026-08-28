@@ -4,7 +4,7 @@ import { useTheme } from 'next-themes'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 
-import { DEFAULT_SEO, IS_NGROK } from '@campsite/config'
+import { DEFAULT_SEO, IS_NGROK, IS_PRODUCTION } from '@campsite/config'
 import { PostSeoInfo } from '@campsite/types'
 
 import { useGetPostSeoInfo } from '@/hooks/useGetPostSeoInfo'
@@ -21,15 +21,14 @@ export const setFaviconBadgeAtom = atom(null, (_get, set, isBadged: boolean) => 
 
 export function GlobalMetaTags() {
   const { resolvedTheme } = useTheme()
-  const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
   const appleIcon = IS_NGROK
     ? '/meta/apple-touch-icon-ngrok.png'
-    : isProd
+    : IS_PRODUCTION
       ? '/meta/apple-touch-icon.png'
       : '/meta/apple-touch-icon-dev.png'
   const manifest = IS_NGROK
     ? '/meta/manifest-ngrok.webmanifest'
-    : isProd
+    : IS_PRODUCTION
       ? '/meta/manifest.webmanifest'
       : '/meta/manifest-dev.webmanifest'
   const favicon = useAtomValue(faviconAtom)

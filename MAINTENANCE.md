@@ -42,7 +42,7 @@ An agent may **merge** a dependency bump only when **all** hold:
 If a fix would require a behavior change, a new dependency, or a major upgrade:
 **stop and open an issue** describing the advisory and the options. Do not implement it.
 
-CI is the source of truth. Green-stays-green ⇒ safe & mechanical. Otherwise ⇒ escalate.
+Local test, lint, and build gates are the source of truth. Green-stays-green ⇒ safe & mechanical. Otherwise ⇒ escalate.
 
 ---
 
@@ -56,13 +56,11 @@ These four must always agree. When bumping one, bump all:
 | mise api       | `api/mise.toml`                                                                     |
 | Ruby pin       | `api/.ruby-version` (symlinked from `/.ruby-version`)                               |
 | Node engines   | `package.json` → `engines.node`                                                     |
-| CI runners     | `.github/workflows/*` → `node-version`                                              |
 | Container base | `apps/*/Dockerfile` → `FROM node:*`; API uses `api/Dockerfile` → `ARG RUBY_VERSION` |
 
 Current baseline: **Node 24.x, Ruby 4.0.6.**
 
 ## Automated watchdog
 
-`.github/dependabot.yml` covers `npm` (pnpm monorepo), `bundler` (`/api`), and
-`github-actions`. Version-update PRs are intentionally throttled; **security advisories
-bypass the limit** so CVEs still surface even in maintenance mode.
+❌ No repository-owned dependency-update automation is configured. Dependency and
+security updates require an operator-run review.

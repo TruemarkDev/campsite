@@ -1,8 +1,9 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { IS_PRODUCTION } from '@campsite/config'
+
 export function useHasLatestBuild() {
-  const isProd = process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
-  const clientBuildId = process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA
+  const clientBuildId = process.env.NEXT_PUBLIC_RELEASE_SHA
   const getServerBuildId = useQuery<{ buildId: string }>({
     queryKey: ['server-build-id'],
     queryFn: () => fetch('/api/build-id').then((res) => res.json() as Promise<{ buildId: string }>),
@@ -13,10 +14,10 @@ export function useHasLatestBuild() {
     */
     refetchOnWindowFocus: true,
     staleTime: 1000 * 60 * 60, // 1 hour
-    enabled: isProd // dev is always latest
+    enabled: IS_PRODUCTION // dev is always latest
   })
   const serverBuildId = getServerBuildId.data?.buildId
   const isLatestBuild = serverBuildId === clientBuildId
 
-  return !isProd || isLatestBuild
+  return !IS_PRODUCTION || isLatestBuild
 }

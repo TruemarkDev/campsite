@@ -15,7 +15,7 @@ https://<api-host>/mcp
 ```
 
 This must be the **API host**, which is distinct from the web host. The web app
-(Next.js/Vercel) routes `/<something>` as an organization slug, so pointing a client
+(Next.js) routes `/<something>` as an organization slug, so pointing a client
 at `https://<web-host>/mcp` does **not** reach Rails — it 307-redirects to
 `/mcp/posts` and the `/.well-known/*` discovery paths 404. Always use the separate
 API subdomain.

@@ -429,7 +429,7 @@ class Note < ApplicationRecord
 
   def revalidate_public_static_cache_path
     params = {
-      secret: Rails.application.credentials.vercel.revalidate_static_cache,
+      secret: ENV.fetch("REVALIDATE_STATIC_CACHE_TOKEN"),
       rpath: public_share_path,
     }
 

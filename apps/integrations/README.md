@@ -4,18 +4,10 @@ This project contains integrations for third-party services, such as webhook han
 
 ## Running the app
 
-1. Follow the steps in the [main Campsite README](../../README.md) to connect the `apps/integrations` repo to the `campsite-integrations` project on Vercel.
-
-2. Pull environment variables from Vercel
+Configure the required local environment variables, then run the app from the workspace root:
 
 ```shell
-cd apps/integrations && npx vercel env pull
-```
-
-3. Run the app
-
-```shell
-pnpm dev
+pnpm -F @campsite/integrations dev
 ```
 
 This is intended to be a "headless" project, so you shouldn't see any UI, but you can access the project at [http://localhost:3004](http://localhost:3004).

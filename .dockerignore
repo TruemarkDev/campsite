@@ -21,7 +21,6 @@ ops/aws
 script
 vendor
 .venv
-.vercel
 .vscode
 .github
 zapier

@@ -3,7 +3,7 @@
 This is the Rails API for Campsite, living in the `api/` folder of a monorepo
 (`apps/`, `packages/`, `html-to-image/`, `sync-server/`, etc. sit alongside it).
 This repo is a **fork of the open-source Campsite codebase**, maintained by
-Truemark/Varicon. Some upstream tooling is now stale — see **Deployment** below.
+Truemark/Varicon.
 
 ## Stack
 
@@ -55,31 +55,18 @@ http://api.campsite.test:3001.
 - RuboCop, inheriting `rubocop-shopify` + `rubocop-rails`, plus the local `no_focus` cop.
 - `NewCops: enable`. `bin/`, `db/`, `script/`, `vendor/` are excluded.
 
-## Deployment — Hatchbox, NOT Fly ⚠️
+## Deployment
 
-We deploy this API with **Hatchbox**. The upstream Campsite project deployed to
-Fly.io, so this fork still contains Fly leftovers that are **stale / dead** and
-must not be treated as the source of truth:
-
-- `api/fly.toml` — upstream Fly config, unused
-- `bin/rails fly:ssh` / `fly:console` (`lib/tasks/fly.rake`), and the root
-  `script/prod-ssh` / `script/prod-console` that wrap them — Fly-specific, do not use
-- `.github/workflows/deploy-*.yml.disabled` — all disabled
-- The README's "Deploying" section (PlanetScale/Fly/GitHub Actions) is upstream docs
-
-When asked about prod access, deploys, or rollbacks, use the Hatchbox workflow —
-do not reach for the Fly tasks above.
+The API is deployed to the homelab with Kamal. The source-of-truth configuration
+is `../config/deploy.campsite-api.yml`; the worker has separate writer custody in
+`../config/deploy.campsite-worker.yml`.
 
 ### Puma bind
 
 `config/puma.rb` binds via the `port` directive (`tcp://0.0.0.0:PORT`, default 3000)
-— correct for local dev and for Hatchbox/nginx setups that proxy to a TCP port. To
+— correct for local dev and reverse proxies that connect to a TCP port. To
 serve over a Unix socket instead, set `PUMA_BIND`, e.g.
 `PUMA_BIND="unix:///home/deploy/<app>/shared/sockets/puma.sock"`.
-
-(Historical note: this previously hardcoded `bind "tcp://fly-local-6pn:..."` from
-the upstream Fly deploy, which does not resolve on Hatchbox. Removed in favor of the
-env-driven bind above.)
 
 ## Layout notes
 

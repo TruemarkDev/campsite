@@ -111,6 +111,8 @@ class PostTest < ActiveSupport::TestCase
 
   context "#revalidate_public_static_cache_url" do
     test "path is correct" do
+      previous_token = ENV["REVALIDATE_STATIC_CACHE_TOKEN"]
+      ENV["REVALIDATE_STATIC_CACHE_TOKEN"] = "REVALIDATE_SECRET"
       org = create(:organization, slug: "foo")
       member = create(:organization_membership, organization: org)
       note = create(:note, member: member, visibility: :public, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>")
@@ -121,6 +123,8 @@ class PostTest < ActiveSupport::TestCase
       assert_equal params["secret"].first, "REVALIDATE_SECRET"
       assert_equal params["rpath"].first, "/foo/p/notes/foo-bar-#{note.public_id}"
       assert_equal parsed.path, "/api/revalidate"
+    ensure
+      ENV["REVALIDATE_STATIC_CACHE_TOKEN"] = previous_token
     end
   end
 

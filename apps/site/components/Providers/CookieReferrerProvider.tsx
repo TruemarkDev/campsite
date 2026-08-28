@@ -17,14 +17,14 @@ export function CookieReferrerProvider() {
       setCookie('referrer', referrer, {
         path: '/',
         sameSite: 'lax',
-        secure: process.env.NEXT_PUBLIC_VERCEL_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production',
         expires: thirtyDays,
         domain
       })
       setCookie('landing_url', landingUrl, {
         path: '/',
         sameSite: 'lax',
-        secure: process.env.NEXT_PUBLIC_VERCEL_ENV === 'production',
+        secure: process.env.NODE_ENV === 'production',
         expires: thirtyDays,
         domain
       })
