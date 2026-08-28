@@ -35,27 +35,26 @@ describe('web deployment origins', () => {
     ])
   })
 
-  it('renders the private HTTP camp.home origin set', () => {
+  it('renders the private HTTPS camp.home origin set', () => {
     const config = buildDeploymentConfig({
-      NEXT_PUBLIC_WEB_URL: 'http://camp.home',
-      NEXT_PUBLIC_API_URL: 'http://api.camp.home',
-      NEXT_PUBLIC_AUTH_URL: 'http://auth.camp.home',
-      NEXT_PUBLIC_ADMIN_URL: 'http://admin.camp.home',
-      NEXT_PUBLIC_SYNC_URL: 'ws://sync.camp.home',
-      NEXT_PUBLIC_CDN_URL: 'http://cdn.camp.home',
-      NEXT_PUBLIC_IMGIX_URL: 'http://cdn.camp.home',
-      NEXT_PUBLIC_OBJECT_STORAGE_URL: 'http://s3.camp.home'
+      NEXT_PUBLIC_WEB_URL: 'https://camp.home',
+      NEXT_PUBLIC_API_URL: 'https://api.camp.home',
+      NEXT_PUBLIC_AUTH_URL: 'https://auth.camp.home',
+      NEXT_PUBLIC_ADMIN_URL: 'https://admin.camp.home',
+      NEXT_PUBLIC_SYNC_URL: 'wss://sync.camp.home',
+      NEXT_PUBLIC_CDN_URL: 'https://cdn.camp.home',
+      NEXT_PUBLIC_IMGIX_URL: 'https://cdn.camp.home',
+      NEXT_PUBLIC_OBJECT_STORAGE_URL: 'https://s3.camp.home'
     } as unknown as NodeJS.ProcessEnv)
 
-    expect(JSON.stringify(config)).not.toContain('https://')
     expect(config.deploymentOrigins.sort()).toEqual([
-      'http://admin.camp.home',
-      'http://api.camp.home',
-      'http://auth.camp.home',
-      'http://camp.home',
-      'http://cdn.camp.home',
-      'http://s3.camp.home',
-      'ws://sync.camp.home'
+      'https://admin.camp.home',
+      'https://api.camp.home',
+      'https://auth.camp.home',
+      'https://camp.home',
+      'https://cdn.camp.home',
+      'https://s3.camp.home',
+      'wss://sync.camp.home'
     ])
   })
 })
