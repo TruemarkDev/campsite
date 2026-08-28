@@ -113,4 +113,4 @@ export const CAMPSITE_SCOPE = 'campsite'
 
 export const COUNTED_ROLES = ['admin', 'member']
 
-export * from './slack'
+export * from './slack.js'
