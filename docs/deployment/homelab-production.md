@@ -77,7 +77,7 @@ their public URLs are compiled into the image:
 | Styled text         | `campsite-styled-text-staging`   |
 | HTML-to-image       | `campsite-html-to-image-staging` |
 
-Public `camp*.tokdio.com` and private `*.camp.home` hostnames are stable
+Public `camp*.tokdio.com` and private HTTPS `*.camp.home` hostnames are stable
 interfaces, not environment labels, and remain unchanged. The existing
 `campsite-api-tokdio_*` named volumes are also retained intentionally so a
 service rename cannot create empty MySQL, Redis, object, or Elasticsearch

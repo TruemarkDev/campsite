@@ -82,17 +82,17 @@ class CampsiteConfigurationTest < Minitest::Test
     assert_equal("camp-admin", Campsite.admin_subdomain)
   end
 
-  def test_home_production_urls_keep_the_shared_cookie_parent
+  def test_home_production_urls_use_https_for_browser_links_and_http_for_internal_services
     load_campsite(
-      "APP_URL" => "http://camp.home",
+      "APP_URL" => "https://camp.home",
       "STYLED_TEXT_API_URL" => "http://styled-text.camp.home",
       "HTML_TO_IMAGE_URL" => "http://html-to-image.camp.home",
-      "MARKETING_SITE_URL" => "http://camp.home",
+      "MARKETING_SITE_URL" => "https://camp.home",
       "API_SUBDOMAIN" => "api",
       "ADMIN_SUBDOMAIN" => "admin",
     )
 
-    assert_equal("http://camp.home", Campsite.base_app_url.to_s)
+    assert_equal("https://camp.home", Campsite.base_app_url.to_s)
     assert_equal("http://styled-text.camp.home", Campsite.base_styled_text_api_url.to_s)
     assert_equal("http://html-to-image.camp.home", Campsite.base_html_to_image_url.to_s)
     assert_equal("api", Campsite.api_subdomain)
