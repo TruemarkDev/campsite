@@ -87,4 +87,30 @@ class DataExportResourceTest < ActiveSupport::TestCase
     resource.expects(:write_to_s3).with("user.json", member.export_json.to_json)
     resource.export_member
   end
+
+  test "writes fragments to the private export bucket" do
+    data_export = create(:data_export, subject: @organization)
+    resource = create(:data_export_resource, data_export: data_export)
+    object = mock("export object")
+    object.expects(:put).with(body: "{}")
+    bucket = mock("export bucket")
+    bucket.expects(:object).with("#{data_export.export_prefix}users.json").returns(object)
+    data_export.stubs(:export_bucket).returns(bucket)
+
+    resource.send(:write_to_s3, "users.json", "{}")
+  end
+
+  test "copies media into the private export bucket" do
+    data_export = create(:data_export, subject: @organization)
+    resource = create(:data_export_resource, data_export: data_export)
+    source = mock("media object")
+    target = mock("export object")
+    source.expects(:copy_to).with(target)
+    S3_BUCKET.expects(:object).with("media/file.txt").returns(source)
+    bucket = mock("export bucket")
+    bucket.expects(:object).with("#{data_export.export_prefix}files/file.txt").returns(target)
+    data_export.stubs(:export_bucket).returns(bucket)
+
+    resource.send(:copy_to_s3, "media/file.txt", "files/file.txt")
+  end
 end
