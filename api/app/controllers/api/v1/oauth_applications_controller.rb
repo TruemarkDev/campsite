@@ -53,6 +53,7 @@ module Api
           name: { type: :string, required: false },
           redirect_uri: { type: :string, required: false },
           avatar_path: { type: :string, required: false },
+          agent_capable: { type: :boolean, required: false },
           webhooks: {
             type: :object,
             is_array: true,
@@ -68,7 +69,7 @@ module Api
       def update
         authorize(current_oauth_application, :update?)
 
-        current_oauth_application.assign_attributes(params.permit(:name, :redirect_uri, :avatar_path))
+        current_oauth_application.assign_attributes(params.permit(:name, :redirect_uri, :avatar_path, :agent_capable))
 
         if params.key?(:webhooks)
           current_oauth_application.webhooks_attributes = webhook_params

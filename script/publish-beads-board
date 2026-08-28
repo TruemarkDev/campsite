@@ -1,0 +1,272 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "digest"
+require "json"
+require "net/http"
+require "open3"
+require "optparse"
+require "set"
+require "time"
+require "uri"
+
+module BeadsBoardPublisher
+  class Error < StandardError; end
+
+  CONTROL_PATTERN = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/
+  ANSI_PATTERN = /\e\[[0-?]*[ -\/]*[@-~]/
+  ISSUE_FIELDS = %w[id title status priority issue_type assignee owner labels parent_id created_at updated_at closed_at dependencies].freeze
+
+  class Collector
+    def initialize(beads_bin:, repository:, runner: Open3)
+      @beads_bin = beads_bin
+      @repository = repository
+      @runner = runner
+    end
+
+    def identity
+      context = json_command("context", "--json")
+      status = json_command("vc", "status", "--json")
+      {
+        "source_project_id" => fetch_any(context, "project_id", "project", "id"),
+        "repository_display_name" => repository_display_name(context),
+        "beads_version" => clean(fetch_any(context, "bd_version", "version", "beads_version")),
+        "beads_schema_version" => clean(context["schema_version"]),
+        "branch" => clean(fetch_any(status, "branch", "current_branch")),
+        "revision" => clean(fetch_any(status, "revision", "head", "commit")),
+      }
+    end
+
+    def snapshot(source_id:, expected_source_project_id:)
+      identity_data = identity
+      unless identity_data.fetch("source_project_id") == expected_source_project_id
+        raise Error, "Beads source project id does not match the paired source"
+      end
+
+      issues = parse_export(command("export"))
+      ready_ids = ids(json_command("ready", "--json"))
+      blocked_ids = ids(json_command("blocked", "--json"))
+      overlap = ready_ids & blocked_ids
+      raise Error, "Beads reported issues as both ready and blocked" if overlap.any?
+
+      normalized = issues.map { |issue| normalize(issue, ready_ids:, blocked_ids:) }
+      payload = identity_data.merge(
+        "schema_version" => 1,
+        "source_id" => source_id,
+        "collected_at" => Time.now.utc.iso8601(3),
+        "issues" => normalized,
+      )
+      payload["digest"] = Digest::SHA256.hexdigest(canonical_json(payload))
+      payload
+    end
+
+    private
+
+    def command(*arguments)
+      argv = [@beads_bin, "--readonly", *arguments]
+      stdout, stderr, status = @runner.capture3(*argv, chdir: @repository)
+      raise Error, "Beads read command failed" unless status.success?
+      raise Error, "Beads read command produced diagnostics" unless stderr.to_s.strip.empty?
+
+      stdout
+    rescue Errno::ENOENT
+      raise Error, "Beads binary is unavailable"
+    end
+
+    def json_command(*arguments)
+      JSON.parse(command(*arguments))
+    rescue JSON::ParserError
+      raise Error, "Beads returned invalid JSON"
+    end
+
+    def parse_export(output)
+      stripped = output.strip
+      return [] if stripped.empty?
+      parsed = JSON.parse(stripped)
+      parsed.is_a?(Array) ? parsed : [parsed]
+    rescue JSON::ParserError
+      output.lines.reject { |line| line.strip.empty? }.map { |line| JSON.parse(line) }
+    rescue JSON::ParserError
+      raise Error, "Beads export returned invalid JSON"
+    end
+
+    def ids(value)
+      records = value.is_a?(Hash) ? value.fetch("issues", value.fetch("data", [])) : value
+      raise Error, "Beads classification output is invalid" unless records.is_a?(Array)
+
+      records.map { |record| record.is_a?(Hash) ? fetch_any(record, "id", "issue_id") : record.to_s }.to_set
+    end
+
+    def normalize(raw, ready_ids:, blocked_ids:)
+      issue = raw.to_h.transform_keys(&:to_s)
+      id = clean(issue.fetch("id"))
+      status = clean(issue.fetch("status"))
+      ready = ready_ids.include?(id)
+      blocked = blocked_ids.include?(id)
+      board_state = classify(status:, ready:, blocked:)
+
+      {
+        "id" => id,
+        "title" => clean(issue.fetch("title")),
+        "status" => status,
+        "board_state" => board_state,
+        "priority" => Integer(issue.fetch("priority")),
+        "issue_type" => clean(issue.fetch("issue_type", issue.fetch("type", "unknown"))),
+        "assignee" => optional_clean(issue["assignee"]),
+        "owner" => optional_clean(issue["owner"]),
+        "labels" => Array(issue["labels"]).map { |label| clean(label) },
+        "parent_id" => optional_clean(issue["parent_id"]),
+        "dependencies" => safe_dependencies(issue["dependencies"]),
+        "created_at" => timestamp(issue.fetch("created_at")),
+        "updated_at" => timestamp(issue.fetch("updated_at")),
+        "closed_at" => issue["closed_at"] && timestamp(issue["closed_at"]),
+      }
+    rescue KeyError, ArgumentError, TypeError => error
+      raise Error, "Beads issue cannot be normalized: #{error.message}"
+    end
+
+    def safe_dependencies(value)
+      Array(value).filter_map do |dependency|
+        dependency = dependency.to_h.transform_keys(&:to_s)
+        id = dependency["id"] || dependency["depends_on_id"]
+        type = dependency["type"] || dependency["dependency_type"]
+        next unless id && type
+
+        { "id" => clean(id), "type" => clean(type) }
+      end
+    end
+
+    def classify(status:, ready:, blocked:)
+      case status
+      when "closed"
+        raise Error, "Closed issue classification is incoherent" if ready || blocked
+
+        "Closed"
+      when "in_progress"
+        raise Error, "In-progress issue classification is incoherent" if ready
+
+        blocked ? "Blocked" : "In progress"
+      else
+        raise Error, "Open issue classification is incoherent" if ready == blocked
+
+        blocked ? "Blocked" : "Ready"
+      end
+    end
+
+    def timestamp(value)
+      Time.iso8601(value.to_s).utc.iso8601(3)
+    end
+
+    def fetch_any(value, *keys)
+      keys.each do |key|
+        result = value[key]
+        return clean(result) if result && !result.to_s.empty?
+      end
+      raise Error, "Beads identity output is incomplete"
+    end
+
+    def repository_display_name(context)
+      explicit_name = context["project_name"] || context["name"]
+      return clean(explicit_name) if explicit_name && !explicit_name.to_s.empty?
+
+      File.basename(fetch_any(context, "repo_root", "cwd_repo_root"))
+    end
+
+    def optional_clean(value)
+      value.nil? ? nil : clean(value)
+    end
+
+    def clean(value)
+      value.to_s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "").gsub(ANSI_PATTERN, "").gsub(CONTROL_PATTERN, "").strip[0, 500]
+    end
+
+    def canonical_json(value)
+      case value
+      when Hash
+        "{" + value.keys.sort.map { |key| "#{JSON.generate(key)}:#{canonical_json(value.fetch(key))}" }.join(",") + "}"
+      when Array
+        "[" + value.map { |item| canonical_json(item) }.join(",") + "]"
+      else
+        JSON.generate(value)
+      end
+    end
+  end
+
+  class Client
+    def initialize(api_base_url:, org_slug:, project_id:, token:)
+      @api_base_url = api_base_url
+      @org_slug = org_slug
+      @project_id = project_id
+      @token = token
+    end
+
+    def pair(challenge:, identity:)
+      post("beads_source/pairing_completion", identity.slice("source_project_id", "repository_display_name", "beads_version", "beads_schema_version", "branch", "revision").merge("challenge" => challenge))
+    end
+
+    def publish(snapshot)
+      post("beads_source/snapshots", snapshot)
+    end
+
+    private
+
+    def post(suffix, payload)
+      base = @api_base_url.sub(%r{/+\z}, "")
+      uri = URI("#{base}/v1/organizations/#{URI.encode_uri_component(@org_slug)}/projects/#{URI.encode_uri_component(@project_id)}/#{suffix}")
+      request = Net::HTTP::Post.new(uri)
+      request["Authorization"] = "Bearer #{@token}"
+      request["Content-Type"] = "application/json"
+      request.body = JSON.generate(payload)
+      response = Net::HTTP.start(uri.host, uri.port, use_ssl: uri.scheme == "https", open_timeout: 5, read_timeout: 20, write_timeout: 20) { |http| http.request(request) }
+      raise Error, "Campsite rejected the request (HTTP #{response.code})" unless response.code.to_i.between?(200, 299)
+
+      JSON.parse(response.body.empty? ? "{}" : response.body)
+    rescue JSON::ParserError, SocketError, SystemCallError, Timeout::Error => error
+      raise Error, "Campsite publication failed: #{error.class}"
+    end
+  end
+
+  class CLI
+    def self.run(argv, input: $stdin, output: $stdout, error: $stderr)
+      options = { token_env: "CAMPSITE_BEADS_OAUTH_TOKEN", beads_bin: "bd" }
+      parser = OptionParser.new do |opts|
+        opts.banner = "Usage: publish-beads-board [options]\nOne-shot, read-only Beads snapshot publisher. Never runs task mutation commands."
+        opts.on("--api-base-url URL", "Campsite API base URL") { |value| options[:api_base_url] = value }
+        opts.on("--org SLUG", "Campsite organization slug") { |value| options[:org_slug] = value }
+        opts.on("--project-id ID", "Campsite channel id") { |value| options[:project_id] = value }
+        opts.on("--source-id ID", "Paired Campsite source id") { |value| options[:source_id] = value }
+        opts.on("--source-project-id ID", "Expected opaque Beads project id") { |value| options[:source_project_id] = value }
+        opts.on("--repository DIR", "Local Beads workspace (never transmitted or printed)") { |value| options[:repository] = value }
+        opts.on("--beads-bin PATH", "Beads bd binary") { |value| options[:beads_bin] = value }
+        opts.on("--token-env NAME", "OAuth token environment variable (default CAMPSITE_BEADS_OAUTH_TOKEN)") { |value| options[:token_env] = value }
+        opts.on("--pair", "Complete pairing; challenge is read from stdin, never argv") { options[:pair] = true }
+        opts.on("-h", "--help", "Show help") { output.puts(opts); return 0 }
+      end
+      parser.parse!(argv)
+      required = %i[api_base_url org_slug project_id repository]
+      required += options[:pair] ? [] : %i[source_id source_project_id]
+      missing = required.select { |key| options[key].to_s.empty? }
+      raise Error, "Missing required options: #{missing.join(", ")}" if missing.any?
+      token = ENV[options[:token_env]].to_s
+      raise Error, "OAuth token environment variable is missing" if token.empty?
+
+      collector = Collector.new(beads_bin: options[:beads_bin], repository: options[:repository])
+      client = Client.new(api_base_url: options[:api_base_url], org_slug: options[:org_slug], project_id: options[:project_id], token: token)
+      if options[:pair]
+        challenge = input.gets.to_s.strip
+        raise Error, "Pairing challenge is missing" if challenge.empty?
+        client.pair(challenge:, identity: collector.identity)
+        output.puts("Pairing completed")
+      else
+        client.publish(collector.snapshot(source_id: options[:source_id], expected_source_project_id: options[:source_project_id]))
+        output.puts("Snapshot accepted")
+      end
+      0
+    rescue OptionParser::ParseError, Error => exception
+      error.puts("Error: #{exception.message}")
+      1
+    end
+  end
+end
+
+exit(BeadsBoardPublisher::CLI.run(ARGV)) if $PROGRAM_NAME == __FILE__

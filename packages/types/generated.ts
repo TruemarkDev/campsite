@@ -1,5 +1,6 @@
 /* eslint-disable */
 /* tslint:disable */
+// @ts-nocheck
 /*
  * ---------------------------------------------------------------
  * ## THIS FILE WAS GENERATED VIA SWAGGER-TYPESCRIPT-API        ##
@@ -27,6 +28,7 @@ export type VerifyAgentSyncGrantPostResponse = {
   actor_id: string
   actor_name: string
   invoked_by: string
+  scopes: string[]
   expires_at: string
 }
 
@@ -1249,6 +1251,7 @@ export type OauthApplication = {
   client_secret: string | null
   mentionable: boolean
   direct_messageable: boolean
+  agent_capable: boolean
   webhooks: Webhook[]
 }
 
@@ -1481,8 +1484,6 @@ export type NoteSync = {
   description_html: string
 }
 
-export type OrganizationsOrgSlugNotesNoteIdSyncStatePutResponse = NoteSync
-
 export type OrganizationsOrgSlugNotesNoteIdSyncStatePutRequest = {
   description_html: string
   description_state: string
@@ -1673,6 +1674,7 @@ export type OrganizationsOrgSlugOauthApplicationsIdPutRequest = {
   name?: string
   redirect_uri?: string
   avatar_path?: string
+  agent_capable?: boolean
   webhooks?: {
     id?: string
     url: string
@@ -2397,6 +2399,75 @@ export type OrganizationProjectAddableMembersGetRequest = {
   after?: string
   limit?: number
 }
+
+export type BeadsCard = {
+  id: string
+  title: string
+  status: string
+  board_state: 'Ready' | 'In progress' | 'Blocked' | 'Closed'
+  priority: number
+  issue_type: string
+  assignee: string | null
+  owner: string | null
+  labels: string[]
+  parent_id: string | null
+  dependencies: {
+    id: string
+    type: string
+  }[]
+  created_at: string
+  updated_at: string
+  closed_at: string | null
+}
+
+export type ProjectBeadsSnapshot = {
+  schema_version: number
+  beads_version: string
+  beads_schema_version: string | null
+  branch: string
+  revision: string
+  collected_at: string
+  ingested_at: string
+  digest: string
+  cards: BeadsCard[]
+}
+
+export type ChannelAgentSummary = {
+  id: string
+  name: string
+  avatar_url: string
+  avatar_urls: AvatarUrls
+  status: 'Attached'
+  roles: ('Agent' | 'Beads publisher')[]
+}
+
+export type ProjectBeadsBoard = {
+  source_id: string
+  source_project_id: string
+  repository_display_name: string
+  verified_at: string
+  last_successful_collection_at: string | null
+  last_successful_ingest_at: string | null
+  current_snapshot: ProjectBeadsSnapshot | null
+  agents: ChannelAgentSummary[]
+}
+
+export type OrganizationProjectBeadsSourcePairingCompletionPostRequest = {
+  challenge: string
+  source_project_id: string
+  repository_display_name: string
+}
+
+export type ProjectBeadsPairing = {
+  challenge: string
+  expires_at: string
+}
+
+export type OrganizationProjectBeadsSourcePairingsPostRequest = {
+  oauth_application_id: string
+}
+
+export type OrganizationsOrgSlugProjectsProjectIdBeadsSourceDeleteResponse = object
 
 export type ProjectBookmark = {
   id: string
@@ -3134,43 +3205,127 @@ export type FigmaKeyPair = {
   write_key: string
 }
 
+export type PostActivityViewsParams = {
+  orgSlug: string
+}
+
 export type PostActivityViewsData = UserNotificationCounts
 
 export type PostAgentSyncGrantsVerifyData = VerifyAgentSyncGrantPostResponse
 
+export type GetAgentSyncGrantsNotesSyncStateParams = {
+  noteId: string
+}
+
 export type GetAgentSyncGrantsNotesSyncStateData = AgentSyncGrantStateGetResponse
+
+export type PutAgentSyncGrantsNotesSyncStateParams = {
+  noteId: string
+}
 
 export type PutAgentSyncGrantsNotesSyncStateData = AgentSyncGrantsNotesNoteIdSyncStatePutResponse
 
+export type PostAgentSyncGrantsNotesAttributionsParams = {
+  noteId: string
+}
+
 export type PostAgentSyncGrantsNotesAttributionsData = AgentSyncGrantsNotesNoteIdAttributionsPostResponse
+
+export type GetAttachmentsCommentersParams = {
+  orgSlug: string
+  attachmentId: string
+}
 
 export type GetAttachmentsCommentersData = OrganizationMember[]
 
+export type PostAttachmentsParams = {
+  orgSlug: string
+}
+
 export type PostAttachmentsData = Attachment
+
+export type GetAttachmentsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type GetAttachmentsByIdData = Attachment
 
 export type PostBatchedPostViewsData = BatchedPostViewsPostResponse
 
+export type GetCallRecordingsTranscriptionParams = {
+  orgSlug: string
+  callRecordingId: string
+}
+
 export type GetCallRecordingsTranscriptionData = CallRecordingTranscription
+
+export type PostCallRoomsInvitationsParams = {
+  orgSlug: string
+  callRoomId: string
+}
 
 export type PostCallRoomsInvitationsData = OrganizationCallRoomInvitationsPostResponse
 
+export type GetCallRoomsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type GetCallRoomsByIdData = CallRoom
+
+export type PostCallRoomsParams = {
+  orgSlug: string
+}
 
 export type PostCallRoomsData = CallRoom
 
+export type DeleteCallsAllRecordingsParams = {
+  orgSlug: string
+  callId: string
+}
+
 export type DeleteCallsAllRecordingsData = OrganizationCallAllRecordingsDeleteResponse
+
+export type PostCallsFavoriteParams = {
+  orgSlug: string
+  callId: string
+}
 
 export type PostCallsFavoriteData = Favorite
 
+export type DeleteCallsFavoriteParams = {
+  orgSlug: string
+  callId: string
+}
+
 export type DeleteCallsFavoriteData = OrganizationCallFavoriteDeleteResponse
+
+export type PostCallsFollowUpParams = {
+  orgSlug: string
+  callId: string
+}
 
 export type PostCallsFollowUpData = FollowUp
 
+export type PostCallsPinParams = {
+  orgSlug: string
+  callId: string
+}
+
 export type PostCallsPinData = ProjectPinCreated
 
+export type PutCallsProjectPermissionParams = {
+  orgSlug: string
+  callId: string
+}
+
 export type PutCallsProjectPermissionData = Call
+
+export type DeleteCallsProjectPermissionParams = {
+  orgSlug: string
+  callId: string
+}
 
 export type DeleteCallsProjectPermissionData = OrganizationsOrgSlugCallsCallIdProjectPermissionDeleteResponse
 
@@ -3193,35 +3348,113 @@ export type GetCallsParams = {
 
 export type GetCallsData = CallPage
 
+export type GetCallsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type GetCallsByIdData = Call
+
+export type PutCallsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type PutCallsByIdData = Call
 
+export type PutCommentsAttachmentsReorderParams = {
+  orgSlug: string
+  commentId: string
+}
+
 export type PutCommentsAttachmentsReorderData = OrganizationsOrgSlugCommentsCommentIdAttachmentsReorderPutResponse
+
+export type PostCommentsFollowUpParams = {
+  orgSlug: string
+  commentId: string
+}
 
 export type PostCommentsFollowUpData = FollowUp
 
+export type PostCommentsLinearIssuesParams = {
+  orgSlug: string
+  commentId: string
+}
+
 export type PostCommentsLinearIssuesData = CreateLinearIssue
+
+export type PostCommentsReactionsParams = {
+  orgSlug: string
+  commentId: string
+}
 
 export type PostCommentsReactionsData = Reaction
 
+export type PostCommentsRepliesParams = {
+  orgSlug: string
+  commentId: string
+}
+
 export type PostCommentsRepliesData = ReplyCreated
+
+export type PostCommentsResolutionsParams = {
+  orgSlug: string
+  commentId: string
+}
 
 export type PostCommentsResolutionsData = Comment
 
+export type DeleteCommentsResolutionsParams = {
+  orgSlug: string
+  commentId: string
+}
+
 export type DeleteCommentsResolutionsData = Comment
+
+export type PutCommentsTasksParams = {
+  orgSlug: string
+  commentId: string
+}
 
 export type PutCommentsTasksData = Comment
 
+export type GetCommentsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type GetCommentsByIdData = Comment
+
+export type PutCommentsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type PutCommentsByIdData = Comment
 
+export type DeleteCommentsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type DeleteCommentsByIdData = Commenters
+
+export type GetCustomReactionsPacksParams = {
+  orgSlug: string
+}
 
 export type GetCustomReactionsPacksData = CustomReactionsPack[]
 
+export type PostCustomReactionsPacksParams = {
+  orgSlug: string
+}
+
 export type PostCustomReactionsPacksData = OrganizationsOrgSlugCustomReactionsPacksPostResponse
+
+export type DeleteCustomReactionsPacksByNameParams = {
+  orgSlug: string
+  name: string
+}
 
 export type DeleteCustomReactionsPacksByNameData = OrganizationCustomReactionsPackDeleteResponse
 
@@ -3233,19 +3466,54 @@ export type GetCustomReactionsParams = {
 
 export type GetCustomReactionsData = CustomReactionPage
 
+export type PostCustomReactionsParams = {
+  orgSlug: string
+}
+
 export type PostCustomReactionsData = CustomReaction
+
+export type DeleteCustomReactionsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type DeleteCustomReactionsByIdData = OrganizationCustomReactionDeleteResponse
 
+export type PostDataExportsParams = {
+  orgSlug: string
+}
+
 export type PostDataExportsData = OrganizationDataExportsPostResponse
+
+export type GetDigestsMigrationsParams = {
+  orgSlug: string
+  digestId: string
+}
 
 export type GetDigestsMigrationsData = PostDigestNoteMigration
 
+export type PutFavoritesReorderParams = {
+  orgSlug: string
+}
+
 export type PutFavoritesReorderData = ReorderOrganizationFavoritesPutResponse
+
+export type GetFavoritesParams = {
+  orgSlug: string
+}
 
 export type GetFavoritesData = Favorite[]
 
+export type DeleteFavoritesByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type DeleteFavoritesByIdData = OrganizationFavoriteDeleteResponse
+
+export type PostFeedbackParams = {
+  orgSlug: string
+}
 
 export type PostFeedbackData = OrganizationFeedbacksPostResponse
 
@@ -3256,7 +3524,15 @@ export type GetFeedbackPresignedFieldsParams = {
 
 export type GetFeedbackPresignedFieldsData = PresignedPostFields
 
+export type PostFigmaFilesParams = {
+  orgSlug: string
+}
+
 export type PostFigmaFilesData = FigmaFile
+
+export type PostFigmaFileAttachmentDetailsParams = {
+  orgSlug: string
+}
 
 export type PostFigmaFileAttachmentDetailsData = FigmaFileAttachmentDetails
 
@@ -3268,7 +3544,17 @@ export type GetFollowUpsParams = {
 
 export type GetFollowUpsData = FollowUpPage
 
+export type PutFollowUpsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type PutFollowUpsByIdData = FollowUp
+
+export type DeleteFollowUpsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type DeleteFollowUpsByIdData = OrganizationsOrgSlugFollowUpsIdDeleteResponse
 
@@ -3291,13 +3577,33 @@ export type PutIntegrationsCalDotComOrganizationData = IntegrationsCalDotComOrga
 
 export type GetIntegrationsFigmaIntegrationData = FigmaIntegrationGetResponse
 
+export type GetIntegrationsLinearInstallationParams = {
+  orgSlug: string
+}
+
 export type GetIntegrationsLinearInstallationData = LinearIntegration
+
+export type DeleteIntegrationsLinearInstallationParams = {
+  orgSlug: string
+}
 
 export type DeleteIntegrationsLinearInstallationData = OrganizationsOrgSlugIntegrationsLinearInstallationDeleteResponse
 
+export type PostIntegrationsLinearTeamSyncsParams = {
+  orgSlug: string
+}
+
 export type PostIntegrationsLinearTeamSyncsData = OrganizationIntegrationsLinearTeamSyncsPostResponse
 
+export type GetIntegrationsLinearTeamsParams = {
+  orgSlug: string
+}
+
 export type GetIntegrationsLinearTeamsData = IntegrationTeam[]
+
+export type PostIntegrationsSlackChannelSyncsParams = {
+  orgSlug: string
+}
 
 export type PostIntegrationsSlackChannelSyncsData = OrganizationIntegrationsSlackChannelSyncsPostResponse
 
@@ -3309,6 +3615,11 @@ export type GetIntegrationsSlackChannelsParams = {
 }
 
 export type GetIntegrationsSlackChannelsData = SlackChannelPage
+
+export type GetIntegrationsSlackChannelsByProviderChannelIdParams = {
+  orgSlug: string
+  providerChannelId: string
+}
 
 export type GetIntegrationsSlackChannelsByProviderChannelIdData = SlackChannel
 
@@ -3324,13 +3635,37 @@ export type GetIntegrationsZapierProjectsParams = {
 
 export type GetIntegrationsZapierProjectsData = ZapierProjects
 
+export type GetInvitationUrlParams = {
+  orgSlug: string
+}
+
 export type GetInvitationUrlData = InvitationUrl
+
+export type GetThreadsDmsByUsernameParams = {
+  orgSlug: string
+  username: string
+}
 
 export type GetThreadsDmsByUsernameData = MessageThreadDmResult
 
+export type PostThreadsFavoritesParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type PostThreadsFavoritesData = Favorite
 
+export type DeleteThreadsFavoritesParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type DeleteThreadsFavoritesData = OrganizationThreadFavoritesDeleteResponse
+
+export type GetThreadsIntegrationDmsByOauthApplicationIdParams = {
+  orgSlug: string
+  oauthApplicationId: string
+}
 
 export type GetThreadsIntegrationDmsByOauthApplicationIdData = MessageThreadDmResult
 
@@ -3343,25 +3678,83 @@ export type GetThreadsMessagesParams = {
 
 export type GetThreadsMessagesData = MessagePage
 
+export type PostThreadsMessagesParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type PostThreadsMessagesData = PusherInvalidateMessage
+
+export type PutThreadsMessagesByIdParams = {
+  orgSlug: string
+  threadId: string
+  id: string
+}
 
 export type PutThreadsMessagesByIdData = OrganizationsOrgSlugThreadsThreadIdMessagesIdPutResponse
 
+export type DeleteThreadsMessagesByIdParams = {
+  orgSlug: string
+  threadId: string
+  id: string
+}
+
 export type DeleteThreadsMessagesByIdData = OrganizationsOrgSlugThreadsThreadIdMessagesIdDeleteResponse
+
+export type GetThreadsMyMembershipParams = {
+  orgSlug: string
+  threadId: string
+}
 
 export type GetThreadsMyMembershipData = MessageThreadMembership
 
+export type PutThreadsMyMembershipParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type PutThreadsMyMembershipData = MessageThreadMembership
+
+export type DeleteThreadsMyMembershipParams = {
+  orgSlug: string
+  threadId: string
+}
 
 export type DeleteThreadsMyMembershipData = OrganizationsOrgSlugThreadsThreadIdMyMembershipDeleteResponse
 
+export type PostThreadsNotificationForcesParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type PostThreadsNotificationForcesData = OrganizationThreadNotificationForcesPostResponse
+
+export type GetThreadsOauthApplicationsParams = {
+  orgSlug: string
+  threadId: string
+}
 
 export type GetThreadsOauthApplicationsData = OauthApplication[]
 
+export type PostThreadsOauthApplicationsParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type PostThreadsOauthApplicationsData = MessageThreadMembership
 
+export type DeleteThreadsOauthApplicationsByIdParams = {
+  orgSlug: string
+  threadId: string
+  id: string
+}
+
 export type DeleteThreadsOauthApplicationsByIdData = OrganizationThreadOauthApplicationDeleteResponse
+
+export type PutThreadsOtherMembershipsListParams = {
+  orgSlug: string
+  threadId: string
+}
 
 export type PutThreadsOtherMembershipsListData = MessageThread
 
@@ -3372,27 +3765,87 @@ export type GetThreadsPresignedFieldsParams = {
 
 export type GetThreadsPresignedFieldsData = PresignedPostFields
 
+export type PostThreadsReadsParams = {
+  orgSlug: string
+  threadId: string
+}
+
 export type PostThreadsReadsData = UserNotificationCounts
+
+export type DeleteThreadsReadsParams = {
+  orgSlug: string
+  threadId: string
+}
 
 export type DeleteThreadsReadsData = UserNotificationCounts
 
+export type GetThreadsParams = {
+  orgSlug: string
+}
+
 export type GetThreadsData = MessageThreadInbox
+
+export type PostThreadsParams = {
+  orgSlug: string
+}
 
 export type PostThreadsData = MessageThread
 
+export type GetThreadsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type GetThreadsByIdData = MessageThread
+
+export type PutThreadsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type PutThreadsByIdData = MessageThread
 
+export type DeleteThreadsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type DeleteThreadsByIdData = OrganizationsOrgSlugThreadsIdDeleteResponse
+
+export type DeleteMessagesAttachmentsByIdParams = {
+  orgSlug: string
+  messageId: string
+  id: string
+}
 
 export type DeleteMessagesAttachmentsByIdData = OrganizationMessageAttachmentDeleteResponse
 
+export type PostMessagesReactionsParams = {
+  orgSlug: string
+  messageId: string
+}
+
 export type PostMessagesReactionsData = Reaction
+
+export type PostNotesAgentSyncGrantsParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PostNotesAgentSyncGrantsData = OrganizationNoteAgentSyncGrantsPostResponse
 
+export type DeleteNotesAgentSyncGrantsByIdParams = {
+  orgSlug: string
+  noteId: string
+  id: string
+}
+
 export type DeleteNotesAgentSyncGrantsByIdData = OrganizationNoteAgentSyncGrantDeleteResponse
+
+export type PostNotesAiEditsParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PostNotesAiEditsData = OrganizationNoteAiEditsPostResponse
 
@@ -3406,11 +3859,33 @@ export type GetNotesAttachmentsCommentsParams = {
 
 export type GetNotesAttachmentsCommentsData = CommentPage
 
+export type PutNotesAttachmentsReorderParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type PutNotesAttachmentsReorderData = OrganizationsOrgSlugNotesNoteIdAttachmentsReorderPutResponse
+
+export type PostNotesAttachmentsParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PostNotesAttachmentsData = Attachment
 
+export type PutNotesAttachmentsByIdParams = {
+  orgSlug: string
+  noteId: string
+  id: string
+}
+
 export type PutNotesAttachmentsByIdData = Attachment
+
+export type DeleteNotesAttachmentsByIdParams = {
+  orgSlug: string
+  noteId: string
+  id: string
+}
 
 export type DeleteNotesAttachmentsByIdData = Note
 
@@ -3423,35 +3898,112 @@ export type GetNotesCommentsParams = {
 
 export type GetNotesCommentsData = CommentPage
 
+export type PostNotesCommentsParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type PostNotesCommentsData = CommentCreated
+
+export type PostNotesFavoriteParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PostNotesFavoriteData = Favorite
 
+export type DeleteNotesFavoriteParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type DeleteNotesFavoriteData = OrganizationNoteFavoriteDeleteResponse
+
+export type PostNotesFollowUpParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PostNotesFollowUpData = FollowUp
 
+export type GetNotesPermissionsParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type GetNotesPermissionsData = Permission[]
+
+export type PostNotesPermissionsParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PostNotesPermissionsData = Permission[]
 
+export type PutNotesPermissionsByIdParams = {
+  orgSlug: string
+  noteId: string
+  id: string
+}
+
 export type PutNotesPermissionsByIdData = Permission
+
+export type DeleteNotesPermissionsByIdParams = {
+  orgSlug: string
+  noteId: string
+  id: string
+}
 
 export type DeleteNotesPermissionsByIdData = OrganizationsOrgSlugNotesNoteIdPermissionsIdDeleteResponse
 
+export type PostNotesPinParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type PostNotesPinData = ProjectPinCreated
+
+export type PutNotesProjectPermissionsParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PutNotesProjectPermissionsData = Note
 
+export type DeleteNotesProjectPermissionsParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type DeleteNotesProjectPermissionsData = OrganizationsOrgSlugNotesNoteIdProjectPermissionsDeleteResponse
+
+export type GetNotesPublicNotesParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type GetNotesPublicNotesData = PublicNote
 
+export type PostNotesSuggestionResolutionsParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type PostNotesSuggestionResolutionsData = OrganizationNoteSuggestionResolutionsPostResponse
+
+export type GetNotesSyncStateParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type GetNotesSyncStateData = NoteSync
 
-export type PutNotesSyncStateData = OrganizationsOrgSlugNotesNoteIdSyncStatePutResponse
+export type PutNotesSyncStateParams = {
+  orgSlug: string
+  noteId: string
+}
+
+export type PutNotesSyncStateData = NoteSync
 
 export type GetNotesTimelineEventsParams = {
   after?: string
@@ -3462,9 +4014,24 @@ export type GetNotesTimelineEventsParams = {
 
 export type GetNotesTimelineEventsData = TimelineEventPage
 
+export type GetNotesViewsParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type GetNotesViewsData = NoteView[]
 
+export type PostNotesViewsParams = {
+  orgSlug: string
+  noteId: string
+}
+
 export type PostNotesViewsData = NoteViewCreated
+
+export type PutNotesVisibilityParams = {
+  orgSlug: string
+  noteId: string
+}
 
 export type PutNotesVisibilityData = OrganizationsOrgSlugNotesNoteIdVisibilityPutResponse
 
@@ -3481,21 +4048,63 @@ export type GetNotesParams = {
 
 export type GetNotesData = NotePage
 
+export type PostNotesParams = {
+  orgSlug: string
+}
+
 export type PostNotesData = Note
+
+export type GetNotesByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type GetNotesByIdData = Note
 
+export type PutNotesByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type PutNotesByIdData = Note
+
+export type DeleteNotesByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type DeleteNotesByIdData = OrganizationsOrgSlugNotesIdDeleteResponse
 
+export type DeleteMembersMeNotificationsArchiveParams = {
+  orgSlug: string
+  notificationId: string
+}
+
 export type DeleteMembersMeNotificationsArchiveData = OrganizationNotificationArchiveDeleteResponse
+
+export type PostMembersMeNotificationsDeleteAllParams = {
+  orgSlug: string
+}
 
 export type PostMembersMeNotificationsDeleteAllData = OrganizationNotificationDeleteAllPostResponse
 
+export type PostMembersMeNotificationsMarkAllReadParams = {
+  orgSlug: string
+}
+
 export type PostMembersMeNotificationsMarkAllReadData = OrganizationNotificationMarkAllReadPostResponse
 
+export type PostMembersMeNotificationsReadParams = {
+  orgSlug: string
+  notificationId: string
+}
+
 export type PostMembersMeNotificationsReadData = OrganizationNotificationReadPostResponse
+
+export type DeleteMembersMeNotificationsReadParams = {
+  orgSlug: string
+  notificationId: string
+}
 
 export type DeleteMembersMeNotificationsReadData =
   OrganizationsOrgSlugMembersMeNotificationsNotificationIdReadDeleteResponse
@@ -3510,6 +4119,11 @@ export type GetMembersMeNotificationsParams = {
 
 export type GetMembersMeNotificationsData = NotificationPage
 
+export type DeleteMembersMeNotificationsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type DeleteMembersMeNotificationsByIdData = OrganizationNotificationDeleteResponse
 
 export type GetOauthApplicationsPresignedFieldsParams = {
@@ -3519,19 +4133,56 @@ export type GetOauthApplicationsPresignedFieldsParams = {
 
 export type GetOauthApplicationsPresignedFieldsData = PresignedPostFields
 
+export type PostOauthApplicationsSecretRenewalsParams = {
+  orgSlug: string
+  oauthApplicationId: string
+}
+
 export type PostOauthApplicationsSecretRenewalsData = OauthApplication
+
+export type PostOauthApplicationsTokensParams = {
+  orgSlug: string
+  oauthApplicationId: string
+}
 
 export type PostOauthApplicationsTokensData = AccessToken
 
+export type GetOauthApplicationsParams = {
+  orgSlug: string
+}
+
 export type GetOauthApplicationsData = OauthApplication[]
+
+export type PostOauthApplicationsParams = {
+  orgSlug: string
+}
 
 export type PostOauthApplicationsData = OauthApplication
 
+export type GetOauthApplicationsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type GetOauthApplicationsByIdData = OauthApplication
+
+export type PutOauthApplicationsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type PutOauthApplicationsByIdData = OauthApplication
 
+export type DeleteOauthApplicationsByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type DeleteOauthApplicationsByIdData = OrganizationsOrgSlugOauthApplicationsIdDeleteResponse
+
+export type PostOnboardProjectsParams = {
+  orgSlug: string
+}
 
 export type PostOnboardProjectsData = OrganizationOnboardProjectsPostResponse
 
@@ -3550,11 +4201,29 @@ export type GetInvitationsParams = {
 
 export type GetInvitationsData = OrganizationInvitationPage
 
+export type PostInvitationsParams = {
+  orgSlug: string
+}
+
 export type PostInvitationsData = OrganizationInvitation[]
+
+export type GetInvitationsByInviteTokenParams = {
+  orgSlug: string
+  inviteToken: string
+}
 
 export type GetInvitationsByInviteTokenData = OrganizationInvitation
 
+export type PostInvitationsByTokenAcceptParams = {
+  inviteToken: string
+}
+
 export type PostInvitationsByTokenAcceptData = AcceptInvitationByTokenPostResponse
+
+export type DeleteInvitationsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type DeleteInvitationsByIdData = OrganizationsOrgSlugInvitationsIdDeleteResponse
 
@@ -3573,6 +4242,11 @@ export type GetMembersParams = {
 
 export type GetMembersData = OrganizationMemberPage
 
+export type GetMembersByUsernameParams = {
+  orgSlug: string
+  username: string
+}
+
 export type GetMembersByUsernameData = OrganizationMember
 
 export type GetMembersPostsParams = {
@@ -3588,9 +4262,24 @@ export type GetMembersPostsParams = {
 
 export type GetMembersPostsData = PostPage
 
+export type PutMembersByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type PutMembersByIdData = OrganizationMember
 
+export type DeleteMembersByIdParams = {
+  orgSlug: string
+  id: string
+}
+
 export type DeleteMembersByIdData = OrganizationsOrgSlugMembersIdDeleteResponse
+
+export type PutMembersReactivateParams = {
+  orgSlug: string
+  id: string
+}
 
 export type PutMembersReactivateData = OrganizationsOrgSlugMembersIdReactivatePutResponse
 
@@ -3601,11 +4290,29 @@ export type GetMembershipRequestsParams = {
 
 export type GetMembershipRequestsData = OrganizationMembershipRequestPage
 
+export type PostMembershipRequestsParams = {
+  orgSlug: string
+}
+
 export type PostMembershipRequestsData = OrganizationMembershipRequest
+
+export type GetMembershipRequestParams = {
+  orgSlug: string
+}
 
 export type GetMembershipRequestData = OrganizationMembershipRequestGetResponse
 
+export type PostMembershipRequestsApproveParams = {
+  orgSlug: string
+  id: string
+}
+
 export type PostMembershipRequestsApproveData = OrganizationApproveMembershipRequestPostResponse
+
+export type PostMembershipRequestsDeclineParams = {
+  orgSlug: string
+  id: string
+}
 
 export type PostMembershipRequestsDeclineData = OrganizationDeclineMembershipRequestPostResponse
 
@@ -3616,6 +4323,10 @@ export type GetMembersMeArchivedNotificationsParams = {
 }
 
 export type GetMembersMeArchivedNotificationsData = NotificationPage
+
+export type PostMembersMeDataExportParams = {
+  orgSlug: string
+}
 
 export type PostMembersMeDataExportData = OrganizationMembershipDataExportPostResponse
 
@@ -3646,7 +4357,15 @@ export type GetMembersMeForMePostsParams = {
 
 export type GetMembersMeForMePostsData = PostPage
 
+export type PutMembersMeIndexViewsParams = {
+  orgSlug: string
+}
+
 export type PutMembersMeIndexViewsData = PublicOrganizationMembership
+
+export type GetMembersMePersonalCallRoomParams = {
+  orgSlug: string
+}
 
 export type GetMembersMePersonalCallRoomData = CallRoom
 
@@ -3662,25 +4381,63 @@ export type GetMembersMePersonalDraftPostsParams = {
 
 export type GetMembersMePersonalDraftPostsData = PostPage
 
+export type PutMembersProjectMembershipListParams = {
+  orgSlug: string
+  memberUsername: string
+}
+
 export type PutMembersProjectMembershipListData = ProjectMembershipList
+
+export type GetMembersProjectMembershipsParams = {
+  orgSlug: string
+  memberUsername: string
+}
 
 export type GetMembersProjectMembershipsData = ProjectMembershipList
 
 export type PutOrganizationMembershipsReorderData = OrganizationMembershipsReorderPutResponse
 
+export type GetMembersMeSlackNotificationPreferenceParams = {
+  orgSlug: string
+}
+
 export type GetMembersMeSlackNotificationPreferenceData = OrganizationMembershipSlackNotificationPreferenceGetResponse
+
+export type PostMembersMeSlackNotificationPreferenceParams = {
+  orgSlug: string
+}
 
 export type PostMembersMeSlackNotificationPreferenceData =
   OrganizationsOrgSlugMembersMeSlackNotificationPreferencePostResponse
 
+export type DeleteMembersMeSlackNotificationPreferenceParams = {
+  orgSlug: string
+}
+
 export type DeleteMembersMeSlackNotificationPreferenceData =
   OrganizationsOrgSlugMembersMeSlackNotificationPreferenceDeleteResponse
 
+export type GetMembersMeStatusesParams = {
+  orgSlug: string
+}
+
 export type GetMembersMeStatusesData = OrganizationMembershipStatus[]
+
+export type PostMembersMeStatusesParams = {
+  orgSlug: string
+}
 
 export type PostMembersMeStatusesData = OrganizationMembershipStatus
 
+export type PutMembersMeStatusesParams = {
+  orgSlug: string
+}
+
 export type PutMembersMeStatusesData = OrganizationMembershipStatus
+
+export type DeleteMembersMeStatusesParams = {
+  orgSlug: string
+}
 
 export type DeleteMembersMeStatusesData = OrganizationsOrgSlugMembersMeStatusesDeleteResponse
 
@@ -3712,27 +4469,72 @@ export type GetMembersMeViewerPostsData = PostPage
 
 export type GetOrganizationMembershipsData = PublicOrganizationMembership[]
 
+export type PostBulkInvitesParams = {
+  orgSlug: string
+}
+
 export type PostBulkInvitesData = OrganizationInvitation[]
+
+export type GetFeaturesParams = {
+  orgSlug: string
+}
 
 export type GetFeaturesData = OrganizationFeaturesGetResponse
 
+export type PostSsoParams = {
+  orgSlug: string
+}
+
 export type PostSsoData = Organization
+
+export type DeleteSsoParams = {
+  orgSlug: string
+}
 
 export type DeleteSsoData = Organization
 
+export type PostVerifiedDomainMembershipsParams = {
+  orgSlug: string
+}
+
 export type PostVerifiedDomainMembershipsData = OrganizationMember
+
+export type GetByOrgSlugParams = {
+  orgSlug: string
+}
 
 export type GetByOrgSlugData = Organization
 
+export type PutByOrgSlugParams = {
+  orgSlug: string
+}
+
 export type PutByOrgSlugData = Organization
+
+export type DeleteByOrgSlugParams = {
+  orgSlug: string
+}
 
 export type DeleteByOrgSlugData = OrganizationsOrgSlugDeleteResponse
 
 export type PostOrganizationsData = Organization
 
+export type PatchResetInviteTokenParams = {
+  orgSlug: string
+}
+
 export type PatchResetInviteTokenData = Organization
 
+export type PostJoinByTokenParams = {
+  orgSlug: string
+  token: string
+}
+
 export type PostJoinByTokenData = SuggestedOrganization
+
+export type PutOnboardParams = {
+  orgSlug: string
+}
 
 export type PutOnboardData = Organization
 
@@ -3742,6 +4544,11 @@ export type GetAvatarPresignedFieldsParams = {
 }
 
 export type GetAvatarPresignedFieldsData = PresignedPostFields
+
+export type DeletePinsByIdParams = {
+  orgSlug: string
+  id: string
+}
 
 export type DeletePinsByIdData = OrganizationPinDeleteResponse
 
@@ -3755,19 +4562,61 @@ export type GetPostsAttachmentsCommentsParams = {
 
 export type GetPostsAttachmentsCommentsData = CommentPage
 
+export type PutPostsAttachmentsReorderParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PutPostsAttachmentsReorderData = OrganizationsOrgSlugPostsPostIdAttachmentsReorderPutResponse
+
+export type PostPostsAttachmentsParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsAttachmentsData = Attachment
 
+export type PutPostsAttachmentsByIdParams = {
+  orgSlug: string
+  postId: string
+  id: string
+}
+
 export type PutPostsAttachmentsByIdData = Attachment
+
+export type DeletePostsAttachmentsByIdParams = {
+  orgSlug: string
+  postId: string
+  id: string
+}
 
 export type DeletePostsAttachmentsByIdData = Post
 
+export type PostPostsFavoriteParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsFavoriteData = Favorite
+
+export type DeletePostsFavoriteParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type DeletePostsFavoriteData = OrganizationPostFavoriteDeleteResponse
 
+export type PostPostsFeedbackDismissalsParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsFeedbackDismissalsData = FeedbackRequest
+
+export type PostPostsFollowUpParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsFollowUpData = FollowUp
 
@@ -3779,7 +4628,17 @@ export type GetPostsGeneratedResolutionParams = {
 
 export type GetPostsGeneratedResolutionData = GeneratedHtml
 
+export type GetPostsGeneratedTldrParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type GetPostsGeneratedTldrData = GeneratedHtml
+
+export type PostPostsLinearIssuesParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsLinearIssuesData = CreateLinearIssue
 
@@ -3792,15 +4651,46 @@ export type GetPostsLinearTimelineEventsParams = {
 
 export type GetPostsLinearTimelineEventsData = TimelineEventPage
 
+export type PostPostsPinParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsPinData = ProjectPinCreated
+
+export type PostPostsPoll2OptionsVoteParams = {
+  orgSlug: string
+  postId: string
+  optionId: string
+}
 
 export type PostPostsPoll2OptionsVoteData = Post
 
+export type PostPostsPoll2Params = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsPoll2Data = Post
+
+export type PutPostsPoll2Params = {
+  orgSlug: string
+  postId: string
+}
 
 export type PutPostsPoll2Data = Post
 
+export type DeletePostsPoll2Params = {
+  orgSlug: string
+  postId: string
+}
+
 export type DeletePostsPoll2Data = OrganizationsOrgSlugPostsPostIdPoll2DeleteResponse
+
+export type GetPostsCanvasCommentsParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type GetPostsCanvasCommentsData = Comment[]
 
@@ -3813,19 +4703,61 @@ export type GetPostsCommentsParams = {
 
 export type GetPostsCommentsData = CommentPage
 
+export type PostPostsComments2Params = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsComments2Data = CommentCreated
+
+export type PostPostsFeedbackRequestsParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsFeedbackRequestsData = FeedbackRequest
 
+export type DeletePostsFeedbackRequestsByIdParams = {
+  orgSlug: string
+  postId: string
+  id: string
+}
+
 export type DeletePostsFeedbackRequestsByIdData = OrganizationPostFeedbackRequestDeleteResponse
+
+export type PostPostsFeedbackRequestsDismissalParams = {
+  orgSlug: string
+  postId: string
+  feedbackRequestId: string
+}
 
 export type PostPostsFeedbackRequestsDismissalData = FeedbackRequest
 
+export type PostPostsLinksParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsLinksData = PostLink
+
+export type PostPostsReactionsParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsReactionsData = Reaction
 
+export type GetPostsVersionsParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type GetPostsVersionsData = PostVersion[]
+
+export type PostPostsVersionsParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsVersionsData = Post
 
@@ -3837,19 +4769,59 @@ export type GetPostsViewsParams = {
 
 export type GetPostsViewsData = PostViewPage
 
+export type PostPostsViewsParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsViewsData = PostViewCreated
+
+export type PostPostsPublicationParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsPublicationData = Post
 
+export type PostPostsResolutionParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsResolutionData = Post
+
+export type DeletePostsResolutionParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type DeletePostsResolutionData = Post
 
+export type GetPostsSeoInfoParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type GetPostsSeoInfoData = PostSeoInfo
+
+export type PostPostsSharesParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PostPostsSharesData = OrganizationPostSharesPostResponse
 
+export type PutPostsStatusParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PutPostsStatusData = OrganizationsOrgSlugPostsPostIdStatusPutResponse
+
+export type PutPostsTasksParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type PutPostsTasksData = Post
 
@@ -3861,6 +4833,11 @@ export type GetPostsTimelineEventsParams = {
 }
 
 export type GetPostsTimelineEventsData = TimelineEventPage
+
+export type PutPostsVisibilityParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type GetPostsPollOptionsVotersParams = {
   after?: string
@@ -3885,15 +4862,44 @@ export type GetPostsParams = {
 
 export type GetPostsData = PostPage
 
+export type PostPostsParams = {
+  orgSlug: string
+}
+
 export type PostPostsData = Post
+
+export type GetPostsByPostIdParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type GetPostsByPostIdData = Post
 
+export type PutPostsByPostIdParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PutPostsByPostIdData = Post
+
+export type DeletePostsByPostIdParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type DeletePostsByPostIdData = OrganizationsOrgSlugPostsPostIdDeleteResponse
 
+export type PostPostsSubscribeParams = {
+  orgSlug: string
+  postId: string
+}
+
 export type PostPostsSubscribeData = OrganizationPostSubscribePostResponse
+
+export type DeletePostsUnsubscribeParams = {
+  orgSlug: string
+  postId: string
+}
 
 export type DeletePostsUnsubscribeData = OrganizationPostUnsubscribeDeleteResponse
 
@@ -3906,7 +4912,15 @@ export type GetPostsPresignedFieldsData = PresignedPostFields
 
 export type PostProductLogsData = ProductLogsPostResponse
 
+export type PutProjectMembershipsReorderParams = {
+  orgSlug: string
+}
+
 export type PutProjectMembershipsReorderData = OrganizationsOrgSlugProjectMembershipsReorderPutResponse
+
+export type GetProjectMembershipsParams = {
+  orgSlug: string
+}
 
 export type GetProjectMembershipsData = ProjectMembership[]
 
@@ -3919,13 +4933,82 @@ export type GetProjectsAddableMembersParams = {
 
 export type GetProjectsAddableMembersData = OrganizationMemberPage
 
+export type GetProjectsBeadsBoardParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type GetProjectsBeadsBoardData = ProjectBeadsBoard
+
+export type PostProjectsBeadsSourcePairingCompletionParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type PostProjectsBeadsSourcePairingCompletionData = ProjectBeadsBoard
+
+export type PostProjectsBeadsSourcePairingsParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type PostProjectsBeadsSourcePairingsData = ProjectBeadsPairing
+
+export type PostProjectsBeadsSourceSnapshotsParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type PostProjectsBeadsSourceSnapshotsData = ProjectBeadsSnapshot
+
+export type GetProjectsBeadsSourceParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type GetProjectsBeadsSourceData = ProjectBeadsBoard
+
+export type DeleteProjectsBeadsSourceParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type DeleteProjectsBeadsSourceData = OrganizationsOrgSlugProjectsProjectIdBeadsSourceDeleteResponse
+
+export type GetProjectsBookmarksParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type GetProjectsBookmarksData = ProjectBookmark[]
+
+export type PostProjectsBookmarksParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type PostProjectsBookmarksData = ProjectBookmark
 
+export type PatchProjectsBookmarksByIdParams = {
+  orgSlug: string
+  projectId: string
+  id: string
+}
+
 export type PatchProjectsBookmarksByIdData = ProjectBookmark
 
+export type DeleteProjectsBookmarksByIdParams = {
+  orgSlug: string
+  projectId: string
+  id: string
+}
+
 export type DeleteProjectsBookmarksByIdData = OrganizationsOrgSlugProjectsProjectIdBookmarksIdDeleteResponse
+
+export type PutProjectsBookmarksReorderParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type PutProjectsBookmarksReorderData = ProjectBookmark[]
 
@@ -3939,17 +5022,52 @@ export type GetProjectsCallsParams = {
 
 export type GetProjectsCallsData = CallPage
 
+export type PostProjectsDataExportsParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsDataExportsData = OrganizationProjectDataExportsPostResponse
+
+export type PutProjectsDisplayPreferencesParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type PutProjectsDisplayPreferencesData = Project
 
+export type PostProjectsFavoritesParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsFavoritesData = Favorite
+
+export type DeleteProjectsFavoritesParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type DeleteProjectsFavoritesData = OrganizationProjectFavoritesDeleteResponse
 
+export type PostProjectsInvitationUrlAcceptancesParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsInvitationUrlAcceptancesData = OrganizationProjectInvitationUrlAcceptancesPostResponse
 
+export type PostProjectsInvitationUrlParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsInvitationUrlData = InvitationUrl
+
+export type GetProjectsInvitationUrlParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type GetProjectsInvitationUrlData = InvitationUrl
 
@@ -3965,7 +5083,17 @@ export type GetProjectsMembersParams = {
 
 export type GetProjectsMembersData = OrganizationMemberPage
 
+export type PostProjectsMembershipsParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsMembershipsData = ProjectMembership
+
+export type DeleteProjectsMembershipsParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type DeleteProjectsMembershipsData = Project
 
@@ -3983,11 +5111,32 @@ export type GetProjectsNotesParams = {
 
 export type GetProjectsNotesData = NotePage
 
+export type GetProjectsOauthApplicationsParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type GetProjectsOauthApplicationsData = OauthApplication[]
+
+export type PostProjectsOauthApplicationsParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type PostProjectsOauthApplicationsData = ProjectMembership
 
+export type DeleteProjectsOauthApplicationsByIdParams = {
+  orgSlug: string
+  projectId: string
+  id: string
+}
+
 export type DeleteProjectsOauthApplicationsByIdData = OrganizationProjectOauthApplicationDeleteResponse
+
+export type GetProjectsPinsParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type GetProjectsPinsData = ProjectPinList
 
@@ -4006,17 +5155,52 @@ export type GetProjectsPostsParams = {
 
 export type GetProjectsPostsData = PostPage
 
+export type PostProjectsReadsParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsReadsData = OrganizationsOrgSlugProjectsProjectIdReadsPostResponse
+
+export type DeleteProjectsReadsParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type DeleteProjectsReadsData = OrganizationProjectReadsDeleteResponse
 
+export type PostProjectsSubscriptionParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PostProjectsSubscriptionData = Project
+
+export type DeleteProjectsSubscriptionParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type DeleteProjectsSubscriptionData = Project
 
+export type PutProjectsViewerDisplayPreferencesParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PutProjectsViewerDisplayPreferencesData = Project
 
+export type DeleteProjectsViewerDisplayPreferencesParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type DeleteProjectsViewerDisplayPreferencesData = Project
+
+export type PostProjectsViewsParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type PostProjectsViewsData = Project
 
@@ -4030,15 +5214,44 @@ export type GetProjectsParams = {
 
 export type GetProjectsData = ProjectPage
 
+export type PostProjectsParams = {
+  orgSlug: string
+}
+
 export type PostProjectsData = Project
+
+export type GetProjectsByProjectIdParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type GetProjectsByProjectIdData = Project
 
+export type PutProjectsByProjectIdParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PutProjectsByProjectIdData = Project
+
+export type DeleteProjectsByProjectIdParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type DeleteProjectsByProjectIdData = OrganizationsOrgSlugProjectsProjectIdDeleteResponse
 
+export type PatchProjectsArchiveParams = {
+  orgSlug: string
+  projectId: string
+}
+
 export type PatchProjectsArchiveData = Project
+
+export type PatchProjectsUnarchiveParams = {
+  orgSlug: string
+  projectId: string
+}
 
 export type PatchProjectsUnarchiveData = Project
 
@@ -4049,9 +5262,21 @@ export type GetProjectCoverPhotoPresignedFieldsParams = {
 
 export type GetProjectCoverPhotoPresignedFieldsData = PresignedPostFields
 
+export type GetOrganizationByTokenParams = {
+  token: string
+}
+
 export type GetOrganizationByTokenData = PublicOrganization
 
+export type GetPublicProjectsByTokenParams = {
+  token: string
+}
+
 export type GetPublicProjectsByTokenData = PublicProject
+
+export type DeleteReactionsParams = {
+  orgSlug: string
+}
 
 export type DeleteReactionsData = CustomReaction
 
@@ -4096,17 +5321,45 @@ export type GetSearchResourceMentionsParams = {
 
 export type GetSearchResourceMentionsData = ResourceMentionResults
 
+export type GetIntegrationsSlackParams = {
+  orgSlug: string
+}
+
 export type GetIntegrationsSlackData = SlackIntegration
+
+export type DeleteIntegrationsSlackParams = {
+  orgSlug: string
+}
 
 export type DeleteIntegrationsSlackData = OrganizationIntegrationsSlackDeleteResponse
 
+export type GetSyncCustomReactionsParams = {
+  orgSlug: string
+}
+
 export type GetSyncCustomReactionsData = SyncCustomReaction[]
+
+export type GetSyncMembersParams = {
+  orgSlug: string
+}
 
 export type GetSyncMembersData = SyncOrganizationMember[]
 
+export type GetSyncMessageThreadsParams = {
+  orgSlug: string
+}
+
 export type GetSyncMessageThreadsData = SyncMessageThreads
 
+export type GetSyncProjectsParams = {
+  orgSlug: string
+}
+
 export type GetSyncProjectsData = SyncProject[]
+
+export type GetSyncTagsParams = {
+  orgSlug: string
+}
 
 export type GetSyncTagsData = Tag[]
 
@@ -4119,11 +5372,30 @@ export type GetTagsParams = {
 
 export type GetTagsData = TagPage
 
+export type PostTagsParams = {
+  orgSlug: string
+}
+
 export type PostTagsData = Tag
+
+export type GetTagsByTagNameParams = {
+  orgSlug: string
+  tagName: string
+}
 
 export type GetTagsByTagNameData = Tag
 
+export type PatchTagsByTagNameParams = {
+  orgSlug: string
+  tagName: string
+}
+
 export type PatchTagsByTagNameData = Tag
+
+export type DeleteTagsByTagNameParams = {
+  orgSlug: string
+  tagName: string
+}
 
 export type DeleteTagsByTagNameData = OrganizationsOrgSlugTagsTagNameDeleteResponse
 
@@ -4160,7 +5432,15 @@ export type GetMeScheduledNotificationsData = ScheduledNotification[]
 
 export type PostMeScheduledNotificationsData = ScheduledNotification
 
+export type PutMeScheduledNotificationsByIdParams = {
+  id: string
+}
+
 export type PutMeScheduledNotificationsByIdData = ScheduledNotification
+
+export type DeleteMeScheduledNotificationsByIdParams = {
+  id: string
+}
 
 export type DeleteMeScheduledNotificationsByIdData = UsersMeScheduledNotificationsIdDeleteResponse
 
@@ -4198,6 +5478,10 @@ export type GetMeCoverPhotoPresignedFieldsData = PresignedPostFields
 
 export type PostPushSubscriptionsData = WebPushSubscriptionsPostResponse
 
+export type PostMembersMessagesV2Params = {
+  memberId: string
+}
+
 export type PostMembersMessagesV2Data = V2Message
 
 export type GetMembersV2Params = {
@@ -4229,9 +5513,21 @@ export type GetPostsCommentsV2Params = {
 
 export type GetPostsCommentsV2Data = V2CommentPage
 
+export type PostPostsCommentsV2Params = {
+  postId: string
+}
+
 export type PostPostsCommentsV2Data = V2Comment
 
+export type PostPostsResolutionV2Params = {
+  postId: string
+}
+
 export type PostPostsResolutionV2Data = V2Post
+
+export type DeletePostsResolutionV2Params = {
+  postId: string
+}
 
 export type DeletePostsResolutionV2Data = V2Post
 
@@ -4249,6 +5545,10 @@ export type GetPostsV2Params = {
 export type GetPostsV2Data = V2PostPage
 
 export type PostPostsV2Data = V2Post
+
+export type GetPostsByIdV2Params = {
+  id: string
+}
 
 export type GetPostsByIdV2Data = V2Post
 
@@ -4276,6 +5576,10 @@ export type GetThreadsMessagesV2Params = {
 }
 
 export type GetThreadsMessagesV2Data = V2MessagePage
+
+export type PostThreadsMessagesV2Params = {
+  threadId: string
+}
 
 export type PostThreadsMessagesV2Data = V2Message
 
@@ -4587,6 +5891,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -4609,6 +5914,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetAttachmentsCommentersData>({
             path: `/v1/organizations/${orgSlug}/attachments/${attachmentId}/commenters`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -4632,6 +5938,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -4653,6 +5960,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetAttachmentsByIdData>({
             path: `/v1/organizations/${orgSlug}/attachments/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -4675,6 +5983,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetCallRecordingsTranscriptionData>({
             path: `/v1/organizations/${orgSlug}/call_recordings/${callRecordingId}/transcription`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -4704,6 +6013,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -4725,6 +6035,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetCallRoomsByIdData>({
             path: `/v1/organizations/${orgSlug}/call_rooms/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -4748,6 +6059,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -4770,6 +6082,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCallsAllRecordingsData>({
             path: `/v1/organizations/${orgSlug}/calls/${callId}/all_recordings`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -4792,6 +6105,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostCallsFavoriteData>({
             path: `/v1/organizations/${orgSlug}/calls/${callId}/favorite`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -4814,6 +6128,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCallsFavoriteData>({
             path: `/v1/organizations/${orgSlug}/calls/${callId}/favorite`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -4843,6 +6158,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -4864,6 +6180,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostCallsPinData>({
             path: `/v1/organizations/${orgSlug}/calls/${callId}/pin`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -4893,6 +6210,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -4915,6 +6233,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCallsProjectPermissionData>({
             path: `/v1/organizations/${orgSlug}/calls/${callId}/project_permission`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -4937,6 +6256,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/calls/${callId}/recordings`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -4959,6 +6279,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/calls`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -4980,6 +6301,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetCallsByIdData>({
             path: `/v1/organizations/${orgSlug}/calls/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5008,6 +6330,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5037,6 +6360,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5066,6 +6390,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5095,6 +6420,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5124,6 +6450,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5153,6 +6480,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5175,6 +6503,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostCommentsResolutionsData>({
             path: `/v1/organizations/${orgSlug}/comments/${commentId}/resolutions`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -5197,6 +6526,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCommentsResolutionsData>({
             path: `/v1/organizations/${orgSlug}/comments/${commentId}/resolutions`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5226,6 +6556,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5247,6 +6578,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetCommentsByIdData>({
             path: `/v1/organizations/${orgSlug}/comments/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5275,6 +6607,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5296,6 +6629,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCommentsByIdData>({
             path: `/v1/organizations/${orgSlug}/comments/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5317,6 +6651,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetCustomReactionsPacksData>({
             path: `/v1/organizations/${orgSlug}/custom_reactions/packs`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5344,6 +6679,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5366,6 +6702,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCustomReactionsPacksByNameData>({
             path: `/v1/organizations/${orgSlug}/custom_reactions/packs/${name}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5388,6 +6725,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/custom_reactions`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -5411,6 +6749,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5433,6 +6772,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteCustomReactionsByIdData>({
             path: `/v1/organizations/${orgSlug}/custom_reactions/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5454,6 +6794,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostDataExportsData>({
             path: `/v1/organizations/${orgSlug}/data_exports`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -5476,6 +6817,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetDigestsMigrationsData>({
             path: `/v1/organizations/${orgSlug}/digests/${digestId}/migrations`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5499,6 +6841,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5520,6 +6863,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetFavoritesData>({
             path: `/v1/organizations/${orgSlug}/favorites`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5541,6 +6885,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteFavoritesByIdData>({
             path: `/v1/organizations/${orgSlug}/favorites/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5564,6 +6909,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5587,6 +6933,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/feedback/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -5610,6 +6957,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5637,6 +6985,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5659,6 +7008,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/follow_ups`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -5687,6 +7037,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -5708,6 +7059,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteFollowUpsByIdData>({
             path: `/v1/organizations/${orgSlug}/follow_ups/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5730,6 +7082,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/gifs`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -5751,6 +7104,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetIntegrationsLinearInstallationData>({
             path: `/v1/organizations/${orgSlug}/integrations/linear/installation`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5772,6 +7126,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteIntegrationsLinearInstallationData>({
             path: `/v1/organizations/${orgSlug}/integrations/linear/installation`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5793,6 +7148,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostIntegrationsLinearTeamSyncsData>({
             path: `/v1/organizations/${orgSlug}/integrations/linear/team_syncs`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -5814,6 +7170,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetIntegrationsLinearTeamsData>({
             path: `/v1/organizations/${orgSlug}/integrations/linear/teams`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5835,6 +7192,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostIntegrationsSlackChannelSyncsData>({
             path: `/v1/organizations/${orgSlug}/integrations/slack/channel_syncs`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -5858,6 +7216,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/integrations/slack/channels`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -5880,6 +7239,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetIntegrationsSlackChannelsByProviderChannelIdData>({
             path: `/v1/organizations/${orgSlug}/integrations/slack/channels/${providerChannelId}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5901,6 +7261,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetInvitationUrlData>({
             path: `/v1/organizations/${orgSlug}/invitation_url`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5923,6 +7284,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetThreadsDmsByUsernameData>({
             path: `/v1/organizations/${orgSlug}/threads/dms/${username}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -5945,6 +7307,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostThreadsFavoritesData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/favorites`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -5967,6 +7330,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteThreadsFavoritesData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/favorites`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -5989,6 +7353,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetThreadsIntegrationDmsByOauthApplicationIdData>({
             path: `/v1/organizations/${orgSlug}/threads/integration_dms/${oauthApplicationId}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -6011,6 +7376,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/messages`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -6040,6 +7406,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6070,6 +7437,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6092,6 +7460,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteThreadsMessagesByIdData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/messages/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6114,6 +7483,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetThreadsMyMembershipData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/my_membership`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -6143,6 +7513,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6165,6 +7536,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteThreadsMyMembershipData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/my_membership`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6187,6 +7559,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostThreadsNotificationForcesData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/notification_forces`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -6209,6 +7582,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetThreadsOauthApplicationsData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/oauth_applications`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -6238,6 +7612,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6260,6 +7635,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteThreadsOauthApplicationsByIdData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/oauth_applications/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6289,6 +7665,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6312,6 +7689,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/threads/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -6334,6 +7712,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostThreadsReadsData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/reads`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -6356,6 +7735,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteThreadsReadsData>({
             path: `/v1/organizations/${orgSlug}/threads/${threadId}/reads`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6377,6 +7757,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetThreadsData>({
             path: `/v1/organizations/${orgSlug}/threads`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -6400,6 +7781,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6421,6 +7803,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetThreadsByIdData>({
             path: `/v1/organizations/${orgSlug}/threads/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -6449,6 +7832,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6470,6 +7854,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteThreadsByIdData>({
             path: `/v1/organizations/${orgSlug}/threads/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6492,6 +7877,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMessagesAttachmentsByIdData>({
             path: `/v1/organizations/${orgSlug}/messages/${messageId}/attachments/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6521,6 +7907,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6550,6 +7937,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6572,6 +7960,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteNotesAgentSyncGrantsByIdData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/agent_sync_grants/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6601,6 +7990,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6627,6 +8017,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/attachments/${attachmentId}/comments`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -6656,6 +8047,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6685,6 +8077,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6715,6 +8108,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6737,6 +8131,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteNotesAttachmentsByIdData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/attachments/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6759,6 +8154,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/comments`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -6788,6 +8184,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6810,6 +8207,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostNotesFavoriteData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/favorite`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -6832,6 +8230,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteNotesFavoriteData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/favorite`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6861,6 +8260,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6883,6 +8283,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetNotesPermissionsData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/permissions`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -6912,6 +8313,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6942,6 +8344,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -6964,6 +8367,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteNotesPermissionsByIdData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/permissions/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -6985,6 +8389,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostNotesPinData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/pin`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -7014,6 +8419,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7036,6 +8442,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteNotesProjectPermissionsData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/project_permissions`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7058,6 +8465,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetNotesPublicNotesData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/public_notes`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7087,6 +8495,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7109,6 +8518,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetNotesSyncStateData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/sync_state`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7138,6 +8548,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7161,6 +8572,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/timeline_events`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7182,6 +8594,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetNotesViewsData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/views`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7204,6 +8617,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostNotesViewsData>({
             path: `/v1/organizations/${orgSlug}/notes/${noteId}/views`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -7233,6 +8647,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7255,6 +8670,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/notes`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7278,6 +8694,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7299,6 +8716,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetNotesByIdData>({
             path: `/v1/organizations/${orgSlug}/notes/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7327,6 +8745,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7348,6 +8767,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteNotesByIdData>({
             path: `/v1/organizations/${orgSlug}/notes/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7370,6 +8790,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMembersMeNotificationsArchiveData>({
             path: `/v1/organizations/${orgSlug}/members/me/notifications/${notificationId}/archive`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7393,6 +8814,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7416,6 +8838,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7438,6 +8861,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMembersMeNotificationsReadData>({
             path: `/v1/organizations/${orgSlug}/members/me/notifications/${notificationId}/read`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -7460,6 +8884,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMembersMeNotificationsReadData>({
             path: `/v1/organizations/${orgSlug}/members/me/notifications/${notificationId}/read`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7483,6 +8908,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/notifications`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7512,6 +8938,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'DELETE',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7535,6 +8962,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/oauth_applications/presigned_fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7558,6 +8986,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostOauthApplicationsSecretRenewalsData>({
             path: `/v1/organizations/${orgSlug}/oauth_applications/${oauthApplicationId}/secret_renewals`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -7580,6 +9009,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostOauthApplicationsTokensData>({
             path: `/v1/organizations/${orgSlug}/oauth_applications/${oauthApplicationId}/tokens`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -7601,6 +9031,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetOauthApplicationsData>({
             path: `/v1/organizations/${orgSlug}/oauth_applications`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7628,6 +9059,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7650,6 +9082,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetOauthApplicationsByIdData>({
             path: `/v1/organizations/${orgSlug}/oauth_applications/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7679,6 +9112,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7701,6 +9135,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteOauthApplicationsByIdData>({
             path: `/v1/organizations/${orgSlug}/oauth_applications/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7724,6 +9159,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7746,6 +9182,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/invitations`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7769,6 +9206,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7791,6 +9229,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetInvitationsByInviteTokenData>({
             path: `/v1/organizations/${orgSlug}/invitations/${inviteToken}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7812,6 +9251,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteInvitationsByIdData>({
             path: `/v1/organizations/${orgSlug}/invitations/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7834,6 +9274,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7856,6 +9297,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMembersByUsernameData>({
             path: `/v1/organizations/${orgSlug}/members/${username}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -7878,6 +9320,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/${username}/posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7906,6 +9349,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -7927,6 +9371,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMembersByIdData>({
             path: `/v1/organizations/${orgSlug}/members/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -7948,6 +9393,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PutMembersReactivateData>({
             path: `/v1/organizations/${orgSlug}/members/${id}/reactivate`,
             method: 'PUT',
+            format: 'json',
             ...params
           })
       }
@@ -7971,6 +9417,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/membership-requests`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -7992,6 +9439,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMembershipRequestsData>({
             path: `/v1/organizations/${orgSlug}/membership-requests`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8013,6 +9461,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMembershipRequestData>({
             path: `/v1/organizations/${orgSlug}/membership-request`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8035,6 +9484,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMembershipRequestsApproveData>({
             path: `/v1/organizations/${orgSlug}/membership-requests/${id}/approve`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8057,6 +9507,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMembershipRequestsDeclineData>({
             path: `/v1/organizations/${orgSlug}/membership-requests/${id}/decline`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8080,6 +9531,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/archived_notifications`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8101,6 +9553,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMembersMeDataExportData>({
             path: `/v1/organizations/${orgSlug}/members/me/data_export`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8124,6 +9577,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/for_me_notes`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8147,6 +9601,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/for_me_posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8174,6 +9629,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8195,6 +9651,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMembersMePersonalCallRoomData>({
             path: `/v1/organizations/${orgSlug}/members/me/personal_call_room`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8218,6 +9675,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/personal_draft_posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8247,6 +9705,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8269,6 +9728,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMembersProjectMembershipsData>({
             path: `/v1/organizations/${orgSlug}/members/${memberUsername}/project_memberships`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8291,6 +9751,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMembersMeSlackNotificationPreferenceData>({
             path: `/v1/organizations/${orgSlug}/members/me/slack_notification_preference`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8313,6 +9774,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMembersMeSlackNotificationPreferenceData>({
             path: `/v1/organizations/${orgSlug}/members/me/slack_notification_preference`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8335,6 +9797,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMembersMeSlackNotificationPreferenceData>({
             path: `/v1/organizations/${orgSlug}/members/me/slack_notification_preference`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8356,6 +9819,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMembersMeStatusesData>({
             path: `/v1/organizations/${orgSlug}/members/me/statuses`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8383,6 +9847,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8406,6 +9871,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8427,6 +9893,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMembersMeStatusesData>({
             path: `/v1/organizations/${orgSlug}/members/me/statuses`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8450,6 +9917,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/viewer_notes`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8473,6 +9941,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/members/me/viewer_posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8496,6 +9965,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8517,6 +9987,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetFeaturesData>({
             path: `/v1/organizations/${orgSlug}/features`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8540,6 +10011,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8561,6 +10033,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteSsoData>({
             path: `/v1/organizations/${orgSlug}/sso`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8582,6 +10055,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostVerifiedDomainMembershipsData>({
             path: `/v1/organizations/${orgSlug}/verified_domain_memberships`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8603,6 +10077,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetByOrgSlugData>({
             path: `/v1/organizations/${orgSlug}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -8626,6 +10101,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8647,6 +10123,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteByOrgSlugData>({
             path: `/v1/organizations/${orgSlug}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8670,6 +10147,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8691,6 +10169,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PatchResetInviteTokenData>({
             path: `/v1/organizations/${orgSlug}/reset-invite-token`,
             method: 'PATCH',
+            format: 'json',
             ...params
           })
       }
@@ -8712,6 +10191,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostJoinByTokenData>({
             path: `/v1/organizations/${orgSlug}/join/${token}`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8733,6 +10213,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PutOnboardData>({
             path: `/v1/organizations/${orgSlug}/onboard`,
             method: 'PUT',
+            format: 'json',
             ...params
           })
       }
@@ -8756,6 +10237,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/avatar/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8777,6 +10259,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePinsByIdData>({
             path: `/v1/organizations/${orgSlug}/pins/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8803,6 +10286,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/attachments/${attachmentId}/comments`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -8832,6 +10316,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8861,6 +10346,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8891,6 +10377,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -8913,6 +10400,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsAttachmentsByIdData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/attachments/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8935,6 +10423,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsFavoriteData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/favorite`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -8957,6 +10446,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsFavoriteData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/favorite`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -8979,6 +10469,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsFeedbackDismissalsData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/feedback-dismissals`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9008,6 +10499,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9031,6 +10523,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/generated_resolution`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9053,6 +10546,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPostsGeneratedTldrData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/generated_tldr`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -9082,6 +10576,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9105,6 +10600,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/linear_timeline_events`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9126,6 +10622,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsPinData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/pin`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9148,6 +10645,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsPoll2OptionsVoteData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/poll2/options/${optionId}/vote`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9177,6 +10675,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9205,6 +10704,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9227,6 +10727,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsPoll2Data>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/poll2`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -9249,6 +10750,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPostsCanvasCommentsData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/canvas_comments`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -9271,6 +10773,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/comments`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9300,6 +10803,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9329,6 +10833,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9351,6 +10856,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsFeedbackRequestsByIdData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/feedback_requests/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -9374,6 +10880,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsFeedbackRequestsDismissalData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/feedback_requests/${feedbackRequestId}/dismissal`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9403,6 +10910,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9432,6 +10940,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9454,6 +10963,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPostsVersionsData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/versions`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -9476,6 +10986,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsVersionsData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/versions`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9498,6 +11009,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/views`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9527,6 +11039,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9549,6 +11062,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsPublicationData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/publication`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9578,6 +11092,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9600,6 +11115,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsResolutionData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/resolution`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -9622,6 +11138,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPostsSeoInfoData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/seo_info`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -9651,6 +11168,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9680,6 +11198,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9708,6 +11227,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9731,6 +11251,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/timeline_events`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9785,6 +11306,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/${postId}/poll_options/${pollOptionId}/voters`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9807,6 +11329,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9830,6 +11353,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9852,6 +11376,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPostsByPostIdData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -9881,6 +11406,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -9903,6 +11429,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsByPostIdData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -9925,6 +11452,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostPostsSubscribeData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/subscribe`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -9947,6 +11475,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsUnsubscribeData>({
             path: `/v1/organizations/${orgSlug}/posts/${postId}/unsubscribe`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -9970,6 +11499,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/posts/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -9997,6 +11527,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10018,6 +11549,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetProjectMembershipsData>({
             path: `/v1/organizations/${orgSlug}/project_memberships`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -10041,6 +11573,159 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/addable_members`,
             method: 'GET',
             query: query,
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name GetProjectsBeadsBoard
+     * @request GET:/v1/organizations/{org_slug}/projects/{project_id}/beads_board
+     */
+    getProjectsBeadsBoard: () => {
+      const base = 'GET:/v1/organizations/{org_slug}/projects/{project_id}/beads_board' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<GetProjectsBeadsBoardData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<GetProjectsBeadsBoardData>([base, orgSlug, projectId]),
+        request: (orgSlug: string, projectId: string, params: RequestParams = {}) =>
+          this.request<GetProjectsBeadsBoardData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_board`,
+            method: 'GET',
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PostProjectsBeadsSourcePairingCompletion
+     * @request POST:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/pairing_completion
+     */
+    postProjectsBeadsSourcePairingCompletion: () => {
+      const base = 'POST:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/pairing_completion' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostProjectsBeadsSourcePairingCompletionData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<PostProjectsBeadsSourcePairingCompletionData>([base, orgSlug, projectId]),
+        request: (
+          orgSlug: string,
+          projectId: string,
+          data: OrganizationProjectBeadsSourcePairingCompletionPostRequest,
+          params: RequestParams = {}
+        ) =>
+          this.request<PostProjectsBeadsSourcePairingCompletionData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_source/pairing_completion`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PostProjectsBeadsSourcePairings
+     * @request POST:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/pairings
+     */
+    postProjectsBeadsSourcePairings: () => {
+      const base = 'POST:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/pairings' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostProjectsBeadsSourcePairingsData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<PostProjectsBeadsSourcePairingsData>([base, orgSlug, projectId]),
+        request: (
+          orgSlug: string,
+          projectId: string,
+          data: OrganizationProjectBeadsSourcePairingsPostRequest,
+          params: RequestParams = {}
+        ) =>
+          this.request<PostProjectsBeadsSourcePairingsData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_source/pairings`,
+            method: 'POST',
+            body: data,
+            type: ContentType.Json,
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name PostProjectsBeadsSourceSnapshots
+     * @request POST:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/snapshots
+     */
+    postProjectsBeadsSourceSnapshots: () => {
+      const base = 'POST:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/snapshots' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<PostProjectsBeadsSourceSnapshotsData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<PostProjectsBeadsSourceSnapshotsData>([base, orgSlug, projectId]),
+        request: (orgSlug: string, projectId: string, params: RequestParams = {}) =>
+          this.request<PostProjectsBeadsSourceSnapshotsData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_source/snapshots`,
+            method: 'POST',
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name GetProjectsBeadsSource
+     * @request GET:/v1/organizations/{org_slug}/projects/{project_id}/beads_source
+     */
+    getProjectsBeadsSource: () => {
+      const base = 'GET:/v1/organizations/{org_slug}/projects/{project_id}/beads_source' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<GetProjectsBeadsSourceData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<GetProjectsBeadsSourceData>([base, orgSlug, projectId]),
+        request: (orgSlug: string, projectId: string, params: RequestParams = {}) =>
+          this.request<GetProjectsBeadsSourceData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_source`,
+            method: 'GET',
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name DeleteProjectsBeadsSource
+     * @request DELETE:/v1/organizations/{org_slug}/projects/{project_id}/beads_source
+     */
+    deleteProjectsBeadsSource: () => {
+      const base = 'DELETE:/v1/organizations/{org_slug}/projects/{project_id}/beads_source' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<DeleteProjectsBeadsSourceData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<DeleteProjectsBeadsSourceData>([base, orgSlug, projectId]),
+        request: (orgSlug: string, projectId: string, params: RequestParams = {}) =>
+          this.request<DeleteProjectsBeadsSourceData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_source`,
+            method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10063,6 +11748,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetProjectsBookmarksData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/bookmarks`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -10092,6 +11778,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10122,6 +11809,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PATCH',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10144,6 +11832,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsBookmarksByIdData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/bookmarks/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10173,6 +11862,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10195,6 +11885,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/calls`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -10217,6 +11908,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostProjectsDataExportsData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/data_exports`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -10246,6 +11938,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10268,6 +11961,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostProjectsFavoritesData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/favorites`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -10290,6 +11984,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsFavoritesData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/favorites`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10319,6 +12014,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10341,6 +12037,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostProjectsInvitationUrlData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/invitation_url`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -10363,6 +12060,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetProjectsInvitationUrlData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/invitation_url`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -10385,6 +12083,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/members`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -10414,6 +12113,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10443,6 +12143,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'DELETE',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10465,6 +12166,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/notes`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -10487,6 +12189,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetProjectsOauthApplicationsData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/oauth_applications`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -10516,6 +12219,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10538,6 +12242,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsOauthApplicationsByIdData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/oauth_applications/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10560,6 +12265,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetProjectsPinsData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/pins`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -10582,6 +12288,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -10604,6 +12311,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostProjectsReadsData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/reads`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -10626,6 +12334,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsReadsData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/reads`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10655,6 +12364,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10677,6 +12387,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsSubscriptionData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/subscription`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10706,6 +12417,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10728,6 +12440,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsViewerDisplayPreferencesData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/viewer_display_preferences`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10750,6 +12463,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostProjectsViewsData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/views`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -10772,6 +12486,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/projects`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -10795,6 +12510,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10817,6 +12533,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetProjectsByProjectIdData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -10846,6 +12563,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10868,6 +12586,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteProjectsByProjectIdData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -10890,6 +12609,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PatchProjectsArchiveData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/archive`,
             method: 'PATCH',
+            format: 'json',
             ...params
           })
       }
@@ -10912,6 +12632,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PatchProjectsUnarchiveData>({
             path: `/v1/organizations/${orgSlug}/projects/${projectId}/unarchive`,
             method: 'PATCH',
+            format: 'json',
             ...params
           })
       }
@@ -10935,6 +12656,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/project/cover-photo/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -10958,6 +12680,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'DELETE',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -10980,6 +12703,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/resource_mentions`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11002,6 +12726,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/search/groups`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11024,6 +12749,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/search/mixed`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11046,6 +12772,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/search/posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11069,6 +12796,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/search/resource_mentions`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11090,6 +12818,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetIntegrationsSlackData>({
             path: `/v1/organizations/${orgSlug}/integrations/slack`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11111,6 +12840,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteIntegrationsSlackData>({
             path: `/v1/organizations/${orgSlug}/integrations/slack`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -11132,6 +12862,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetSyncCustomReactionsData>({
             path: `/v1/organizations/${orgSlug}/sync/custom_reactions`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11153,6 +12884,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetSyncMembersData>({
             path: `/v1/organizations/${orgSlug}/sync/members`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11174,6 +12906,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetSyncMessageThreadsData>({
             path: `/v1/organizations/${orgSlug}/sync/message_threads`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11195,6 +12928,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetSyncProjectsData>({
             path: `/v1/organizations/${orgSlug}/sync/projects`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11216,6 +12950,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetSyncTagsData>({
             path: `/v1/organizations/${orgSlug}/sync/tags`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11238,6 +12973,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/tags`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11261,6 +12997,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11283,6 +13020,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetTagsByTagNameData>({
             path: `/v1/organizations/${orgSlug}/tags/${tagName}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11312,6 +13050,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PATCH',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11334,6 +13073,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteTagsByTagNameData>({
             path: `/v1/organizations/${orgSlug}/tags/${tagName}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -11356,6 +13096,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/organizations/${orgSlug}/tags/${tagName}/posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11380,6 +13121,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11401,6 +13143,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetAgentSyncGrantsNotesSyncStateData>({
             path: `/v1/agent-sync-grants/notes/${noteId}/sync-state`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11424,6 +13167,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11451,6 +13195,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11475,6 +13220,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11499,6 +13245,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11521,6 +13268,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostIntegrationsCalDotComCallRoomsData>({
             path: `/v1/integrations/cal_dot_com/call_rooms`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -11542,6 +13290,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetIntegrationsCalDotComIntegrationData>({
             path: `/v1/integrations/cal_dot_com/integration`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11565,6 +13314,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11586,6 +13336,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetIntegrationsFigmaIntegrationData>({
             path: `/v1/integrations/figma_integration`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11609,6 +13360,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11632,6 +13384,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11655,6 +13408,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11678,6 +13432,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/integrations/zapier/projects`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11701,6 +13456,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/open_graph_links`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -11723,6 +13479,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostInvitationsByTokenAcceptData>({
             path: `/v1/invitations_by_token/${inviteToken}/accept`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -11747,6 +13504,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11768,6 +13526,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetOrganizationMembershipsData>({
             path: `/v1/organization_memberships`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11792,6 +13551,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11814,6 +13574,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetOrganizationByTokenData>({
             path: `/v1/organization-by-token/${token}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11836,6 +13597,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPublicProjectsByTokenData>({
             path: `/v1/public_projects/${token}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11860,6 +13622,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11882,6 +13645,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMeSyncTokenData>({
             path: `/v1/users/me/sync-token`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -11905,6 +13669,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11926,6 +13691,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMeNotificationPauseData>({
             path: `/v1/users/me/notification_pause`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -11947,6 +13713,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMeNotificationScheduleData>({
             path: `/v1/users/me/notification_schedule`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -11970,6 +13737,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -11991,6 +13759,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMeNotificationScheduleData>({
             path: `/v1/users/me/notification_schedule`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -12012,6 +13781,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMeNotificationsUnreadAllCountData>({
             path: `/v1/users/me/notifications/unread/all_count`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -12033,6 +13803,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMeOrganizationInvitationsData>({
             path: `/v1/users/me/organization-invitations`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -12056,6 +13827,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12077,6 +13849,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMeScheduledNotificationsData>({
             path: `/v1/users/me/scheduled-notifications`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -12100,6 +13873,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12123,6 +13897,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12144,6 +13919,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMeScheduledNotificationsByIdData>({
             path: `/v1/users/me/scheduled-notifications/${id}`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -12165,6 +13941,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeleteMeSignOutData>({
             path: `/v1/users/me/sign-out`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -12186,6 +13963,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMeSuggestedOrganizationsData>({
             path: `/v1/users/me/suggested-organizations`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -12209,6 +13987,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12230,6 +14009,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMeTwoFactorAuthenticationData>({
             path: `/v1/users/me/two-factor-authentication`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -12253,6 +14033,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PUT',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12276,6 +14057,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'DELETE',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12297,6 +14079,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetMeData>({
             path: `/v1/users/me`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -12320,6 +14103,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'PATCH',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12341,6 +14125,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PutMeOnboardData>({
             path: `/v1/users/me/onboard`,
             method: 'PUT',
+            format: 'json',
             ...params
           })
       }
@@ -12362,6 +14147,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostMeSendEmailConfirmationData>({
             path: `/v1/users/me/send-email-confirmation`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }
@@ -12385,6 +14171,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/users/me/avatar/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12408,6 +14195,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v1/users/me/cover-photo/presigned-fields`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12432,6 +14220,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12457,6 +14246,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12480,6 +14270,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v2/members`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12504,6 +14295,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v2/posts/${postId}/comments`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12528,6 +14320,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12552,6 +14345,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12574,6 +14368,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<DeletePostsResolutionV2Data>({
             path: `/v2/posts/${postId}/resolution`,
             method: 'DELETE',
+            format: 'json',
             ...params
           })
       }
@@ -12597,6 +14392,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v2/posts`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12621,6 +14417,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12643,6 +14440,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<GetPostsByIdV2Data>({
             path: `/v2/posts/${id}`,
             method: 'GET',
+            format: 'json',
             ...params
           })
       }
@@ -12667,6 +14465,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v2/channels`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12692,6 +14491,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             path: `/v2/threads/${threadId}/messages`,
             method: 'GET',
             query: query,
+            format: 'json',
             ...params
           })
       }
@@ -12716,6 +14516,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12740,6 +14541,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
             ...params
           })
       }
@@ -12762,6 +14564,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
           this.request<PostSignInFigmaData>({
             path: `/sign-in/figma`,
             method: 'POST',
+            format: 'json',
             ...params
           })
       }

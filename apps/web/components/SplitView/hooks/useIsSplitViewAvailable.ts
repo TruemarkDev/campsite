@@ -20,7 +20,8 @@ export function useIsSplitViewAvailable() {
   const isProject =
     router.pathname === '/[org]/projects/[projectId]' ||
     router.pathname === '/[org]/projects/[projectId]/docs' ||
-    router.pathname === '/[org]/projects/[projectId]/calls'
+    router.pathname === '/[org]/projects/[projectId]/calls' ||
+    router.pathname === '/[org]/projects/[projectId]/board'
   const isCalls = router.pathname === '/[org]/calls'
   const isNotes = router.pathname === '/[org]/notes'
   const isPosts = router.pathname === '/[org]/posts'

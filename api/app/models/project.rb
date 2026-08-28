@@ -53,6 +53,8 @@ class Project < ApplicationRecord
   has_many :completed_recorded_calls, -> { completed.recorded }, class_name: "Call"
   has_one :call_room, as: :subject, dependent: :destroy_async
   has_many :display_preferences, class_name: "ProjectDisplayPreference", dependent: :destroy_async
+  has_one :project_beads_source, dependent: :destroy
+  has_many :project_beads_pairing_challenges, dependent: :destroy
 
   accepts_nested_attributes_for :bookmarks
 

@@ -164,7 +164,10 @@ function TrailingAccessory() {
   const isPost = router.pathname === '/[org]/posts/[postId]'
   const isVersions = router.pathname === '/[org]/posts/[postId]/versions'
   const isProject =
-    router.pathname === '/[org]/projects/[projectId]' || router.pathname === '/[org]/projects/[projectId]/docs'
+    router.pathname === '/[org]/projects/[projectId]' ||
+    router.pathname === '/[org]/projects/[projectId]/docs' ||
+    router.pathname === '/[org]/projects/[projectId]/calls' ||
+    router.pathname === '/[org]/projects/[projectId]/board'
   const isProjects = router.pathname === '/[org]/projects' || router.pathname === '/[org]/projects/archived'
   const isPeople = router.pathname === '/[org]/people'
   const isChatThread = router.pathname === '/[org]/chat/[threadId]'
@@ -406,7 +409,10 @@ function CenterAccessory() {
   const isPosts = router.pathname === '/[org]/posts'
   const isPost = router.pathname === '/[org]/posts/[postId]'
   const isProject =
-    router.pathname === '/[org]/projects/[projectId]' || router.pathname === '/[org]/projects/[projectId]/docs'
+    router.pathname === '/[org]/projects/[projectId]' ||
+    router.pathname === '/[org]/projects/[projectId]/docs' ||
+    router.pathname === '/[org]/projects/[projectId]/calls' ||
+    router.pathname === '/[org]/projects/[projectId]/board'
   const isProjects = router.pathname === '/[org]/projects' || router.pathname === '/[org]/projects/archived'
   const isPeople = router.pathname === '/[org]/people'
   const isSearch = router.pathname === '/[org]/search'

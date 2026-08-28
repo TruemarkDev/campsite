@@ -9,6 +9,7 @@ const routeDocs = includeFile("@base/route-docs", { config, route, utils });
 const queryName = (query && query.name) || "query";
 const pathParams = _.values(parameters);
 const pathParamsNames = _.map(pathParams, "name");
+const hasQueryParams = Boolean(query);
 
 const isFetchTemplate = config.httpClientType === HTTP_CLIENT.FETCH;
 
@@ -23,12 +24,12 @@ const argToTmpl = ({ name, optional, type, defaultValue }) => `${name}${!default
 
 const rawWrapperArgs = config.extractRequestParams ?
     _.compact([
-        requestParams && {
+        hasQueryParams && requestParams && {
           name: pathParams.length ? `{ ${_.join(pathParamsNames, ", ")}, ...${queryName} }` : queryName,
           optional: false,
           type: getInlineParseContent(requestParams),
         },
-        ...(!requestParams ? pathParams : []),
+        ...(!hasQueryParams ? pathParams : []),
         payload,
         requestConfigParam,
     ]) :
@@ -80,12 +81,12 @@ const describeReturnType = () => {
 
 const keyRawWrapperArgs = config.extractRequestParams ?
     _.compact([
-        requestParams && {
+        hasQueryParams && requestParams && {
           name: "params",
           optional: false,
           type: getInlineParseContent(requestParams),
         },
-        ...(!requestParams ? pathParams : []),
+        ...(!hasQueryParams ? pathParams : []),
     ]) :
     _.compact([
         ...pathParams,

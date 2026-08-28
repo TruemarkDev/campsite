@@ -89,6 +89,14 @@ class ProjectPolicy < ApplicationPolicy
     confirmed_user? && update?
   end
 
+  def manage_beads_source?
+    confirmed_user? && project_member? && manage_integrations?
+  end
+
+  def read_beads_board?
+    project_member? || project_integration?
+  end
+
   def list_pins?
     show?
   end

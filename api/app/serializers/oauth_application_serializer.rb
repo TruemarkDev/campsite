@@ -14,5 +14,6 @@ class OauthApplicationSerializer < ApiSerializer
   end
   api_field :mentionable?, name: :mentionable, type: :boolean
   api_field :direct_messageable?, name: :direct_messageable, type: :boolean
+  api_field :agent_capable?, name: :agent_capable, type: :boolean
   api_association :kept_webhooks, name: :webhooks, blueprint: WebhookSerializer, is_array: true
 end

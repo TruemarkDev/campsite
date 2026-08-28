@@ -16,7 +16,7 @@ SWAGGER_FILE_PATH=api/gen/schema_swagger.json
 mv .prettierrc.json .prettierrc_temp.json
 
 # generate client types
-pnpm swagger-typescript-api \
+pnpm swagger-typescript-api generate \
   --extract-request-params \
   --extract-request-body \
   --extract-response-body \

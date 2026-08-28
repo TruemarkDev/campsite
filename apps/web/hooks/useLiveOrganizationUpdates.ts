@@ -19,6 +19,10 @@ interface NewPostEvent {
   tag_names: string[]
 }
 
+interface ProjectBeadsBoardStaleEvent {
+  project_id: string
+}
+
 const getMe = apiClient.users.getMe()
 const getSyncMembers = apiClient.organizations.getSyncMembers()
 
@@ -89,6 +93,20 @@ export function useLiveOrganizationUpdates(organization?: Organization) {
     [currentUser?.id, queryClient, queryNormalizer, scope]
   )
 
+  const invalidateProjectBeadsBoard = useCallback(
+    ({ project_id }: ProjectBeadsBoardStaleEvent) => {
+      if (!organization) return
+
+      queryClient.invalidateQueries({
+        queryKey: apiClient.organizations
+          .getProjectsBeadsBoard()
+          .requestKey(organization.slug, project_id)
+      })
+    },
+    [organization, queryClient]
+  )
+
   useBindChannelEvent(organizationChannel, 'posts-stale', invalidateFeedQueries)
   useBindChannelEvent(organizationChannel, 'user-stale', updateUser)
+  useBindChannelEvent(organizationChannel, 'project-beads-board-stale', invalidateProjectBeadsBoard)
 }

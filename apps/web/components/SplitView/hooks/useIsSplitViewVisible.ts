@@ -9,7 +9,8 @@ export function useIsSplitViewVisible() {
   const isProject =
     router.pathname === '/[org]/projects/[projectId]' ||
     router.pathname === '/[org]/projects/[projectId]/docs' ||
-    router.pathname === '/[org]/projects/[projectId]/calls'
+    router.pathname === '/[org]/projects/[projectId]/calls' ||
+    router.pathname === '/[org]/projects/[projectId]/board'
   const isDesktopProjectSidebarOpen = useAtomValue(isDesktopProjectSidebarOpenAtom)
   const debouncedSelectedSplitViewSubject = useAtomValue(debouncedSelectedSplitViewSubjectAtom)
 

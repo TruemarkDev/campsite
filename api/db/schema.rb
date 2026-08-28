@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_28_130000) do
   create_table "agent_sync_grants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "public_id", limit: 12, null: false
     t.bigint "note_id", null: false, unsigned: true
@@ -842,6 +842,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
     t.integer "provider"
     t.bigint "creator_id", unsigned: true
     t.datetime "last_copied_secret_at"
+    t.boolean "agent_capable", default: false, null: false
     t.index ["creator_id"], name: "index_oauth_applications_on_creator_id"
     t.index ["discarded_at"], name: "index_oauth_applications_on_discarded_at"
     t.index ["owner_type", "owner_id"], name: "index_oauth_applications_on_owner"
@@ -1260,6 +1261,59 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
     t.index ["subject_type", "subject_id"], name: "index_product_logs_on_subject"
   end
 
+  create_table "project_beads_pairing_challenges", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.datetime "consumed_at"
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.bigint "oauth_application_id", null: false
+    t.bigint "organization_membership_id", null: false, unsigned: true
+    t.bigint "project_id", null: false, unsigned: true
+    t.string "token_digest", limit: 64, null: false
+    t.datetime "updated_at", null: false
+    t.index ["oauth_application_id"], name: "index_project_beads_pairing_challenges_on_oauth_application_id"
+    t.index ["organization_membership_id"], name: "index_beads_pairings_on_initiator_id"
+    t.index ["project_id", "consumed_at"], name: "index_beads_pairings_on_project_and_consumed_at"
+    t.index ["project_id"], name: "index_project_beads_pairing_challenges_on_project_id"
+    t.index ["token_digest"], name: "index_project_beads_pairing_challenges_on_token_digest", unique: true
+  end
+
+  create_table "project_beads_snapshots", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.string "beads_schema_version"
+    t.string "beads_version", null: false
+    t.string "branch", null: false
+    t.datetime "collected_at", null: false
+    t.datetime "created_at", null: false
+    t.string "digest", limit: 64, null: false
+    t.datetime "ingested_at", null: false
+    t.json "payload", null: false
+    t.bigint "project_beads_source_id", null: false, unsigned: true
+    t.string "revision", null: false
+    t.integer "schema_version", null: false
+    t.datetime "updated_at", null: false
+    t.index ["id", "project_beads_source_id"], name: "index_beads_snapshots_on_id_and_source_id", unique: true
+    t.index ["project_beads_source_id", "digest"], name: "index_beads_snapshots_on_source_and_digest", unique: true
+    t.index ["project_beads_source_id"], name: "index_beads_snapshots_on_source_id"
+  end
+
+  create_table "project_beads_sources", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "current_snapshot_id", unsigned: true
+    t.datetime "last_successful_collection_at"
+    t.datetime "last_successful_ingest_at"
+    t.bigint "oauth_application_id", null: false
+    t.bigint "project_id", null: false, unsigned: true
+    t.string "public_id", null: false
+    t.string "repository_display_name", null: false
+    t.string "source_project_id", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "verified_at", null: false
+    t.index ["current_snapshot_id", "id"], name: "index_beads_sources_on_current_snapshot_and_id"
+    t.index ["oauth_application_id", "source_project_id"], name: "index_project_beads_sources_on_connector_and_source"
+    t.index ["oauth_application_id"], name: "index_project_beads_sources_on_oauth_application_id"
+    t.index ["project_id"], name: "index_project_beads_sources_on_project_id", unique: true
+    t.index ["public_id"], name: "index_project_beads_sources_on_public_id", unique: true
+  end
+
   create_table "project_display_preferences", id: { type: :bigint, unsigned: true }, charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.bigint "project_id", null: false, unsigned: true
     t.bigint "organization_membership_id", null: false, unsigned: true
@@ -1555,4 +1609,12 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
     t.index ["owner_type", "owner_id"], name: "index_webhooks_on_owner"
     t.index ["public_id"], name: "index_webhooks_on_public_id", unique: true
   end
+
+  add_foreign_key "project_beads_pairing_challenges", "oauth_applications"
+  add_foreign_key "project_beads_pairing_challenges", "organization_memberships"
+  add_foreign_key "project_beads_pairing_challenges", "projects", on_delete: :cascade
+  add_foreign_key "project_beads_snapshots", "project_beads_sources", on_delete: :cascade
+  add_foreign_key "project_beads_sources", "oauth_applications"
+  add_foreign_key "project_beads_sources", "project_beads_snapshots", column: ["current_snapshot_id", "id"], primary_key: ["id", "project_beads_source_id"], name: "fk_beads_sources_current_snapshot"
+  add_foreign_key "project_beads_sources", "projects", on_delete: :cascade
 end

@@ -7,6 +7,7 @@ import { cn } from '@campsite/ui/utils'
 import { BreadcrumbProjectCallButton } from '@/components/Projects/ProjectCallButton'
 import { ProjectOverflowMenu } from '@/components/Projects/ProjectOverflowMenu'
 import { ProjectSidebarAbout } from '@/components/Projects/ProjectSidebar/ProjectSidebarAbout'
+import { ProjectSidebarBeadsSource } from '@/components/Projects/ProjectSidebar/ProjectSidebarBeadsSource'
 import { ProjectSidebarBookmarks } from '@/components/Projects/ProjectSidebar/ProjectSidebarBookmarks'
 import { ProjectSidebarMembers } from '@/components/Projects/ProjectSidebar/ProjectSidebarMembers'
 import { ProjectSidebarNotifications } from '@/components/Projects/ProjectSidebar/ProjectSidebarNotifications'
@@ -39,6 +40,7 @@ export function ProjectSidebar({ project }: ProjectSidebarProps) {
         <ProjectSidebarAbout project={project} />
         {!project.personal && <ProjectSidebarMembers project={project} />}
         <ProjectSidebarBookmarks project={project} />
+        {!project.personal && <ProjectSidebarBeadsSource project={project} />}
         {!project.personal && <ProjectSidebarNotifications project={project} />}
       </div>
     </div>

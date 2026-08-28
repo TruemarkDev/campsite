@@ -411,6 +411,12 @@ Rails.application.routes.draw do
           resource :display_preferences, only: [:update]
           resource :viewer_display_preferences, only: [:update, :destroy]
           resource :data_exports, only: [:create]
+          resource :beads_board, only: [:show], controller: "beads_boards"
+          resource :beads_source, only: [:show, :destroy], controller: "beads_sources" do
+            resources :pairings, only: [:create], controller: "beads_pairings"
+            resource :pairing_completion, only: [:create], controller: "beads_pairing_completions"
+            resources :snapshots, only: [:create], controller: "beads_snapshots"
+          end
         end
       end
 
