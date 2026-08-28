@@ -3,7 +3,7 @@
 class DataExport < ApplicationRecord
   class InvalidZipPath < StandardError; end
 
-  CALLBACK_TOKEN_LIFETIME = 24.hours
+  DOWNLOAD_URL_LIFETIME = 5.minutes
 
   include PublicIdGenerator
   include MediaUrlBuilder
@@ -13,9 +13,7 @@ class DataExport < ApplicationRecord
   belongs_to :subject, polymorphic: true
   has_many :resources, class_name: "DataExportResource", dependent: :destroy
 
-  def completed?
-    completed_at.present?
-  end
+  enum :status, { pending: 0, archiving: 1, completed: 2, error: 3 }
 
   def perform
     create_resources
@@ -126,23 +124,34 @@ class DataExport < ApplicationRecord
   end
 
   def check_completed
-    return if resources.pending.exists?
+    archive = false
+    cleanup = false
 
-    Rails.logger.info("Data export #{public_id} completed, triggering task")
-    run_task
-  end
+    with_lock do
+      return unless pending?
+      return if resources.pending.exists?
 
-  def run_task
-    ecs_client.run_task(ecs_trigger_task_parameters)
+      if resources.error.exists?
+        update!(status: :error)
+        cleanup = true
+      else
+        Rails.logger.info("Data export #{public_id} resources completed, queueing archive")
+        update!(status: :archiving)
+        archive = true
+      end
+    end
+
+    DataExportCleanupJob.perform_in(2.days, id) if cleanup
+    DataExportArchiveJob.perform_async(id) if archive
   end
 
   def complete(zip_path)
     raise InvalidZipPath unless zip_path == expected_zip_path
 
     completed = with_lock do
-      next false if completed?
+      next false unless archiving?
 
-      update!(zip_path: zip_path, completed_at: Time.current)
+      update!(zip_path: zip_path, completed_at: Time.current, status: :completed)
       true
     end
 
@@ -154,23 +163,16 @@ class DataExport < ApplicationRecord
     true
   end
 
-  def callback_token
-    Rails.application.message_verifier(:data_export_callback).generate(
-      public_id,
-      expires_in: CALLBACK_TOKEN_LIFETIME,
-      purpose: :data_export_callback,
-    )
-  end
+  def fail!
+    failed = with_lock do
+      next false if completed? || error?
 
-  def valid_callback_token?(token)
-    verified_public_id = Rails.application.message_verifier(:data_export_callback).verify(
-      token,
-      purpose: :data_export_callback,
-    )
+      update!(status: :error)
+      true
+    end
 
-    ActiveSupport::SecurityUtils.secure_compare(verified_public_id, public_id)
-  rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError
-    false
+    DataExportCleanupJob.perform_in(2.days, id) if failed
+    failed
   end
 
   def expected_zip_path
@@ -178,23 +180,46 @@ class DataExport < ApplicationRecord
   end
 
   def zip_url
-    base = Rails.env.production? ? "https://d34kvjy7sxp73q.cloudfront.net" : "https://d3c2wobo23401l.cloudfront.net"
-    "#{base}/#{zip_path}"
+    base_url = Campsite.base_app_url
+
+    organization_data_export_download_url(
+      member.organization.slug,
+      public_id,
+      host: base_url.host,
+      protocol: base_url.scheme,
+      port: base_url.port,
+      subdomain: Campsite.api_subdomain,
+    )
+  end
+
+  def presigned_download_url
+    raise ActiveRecord::RecordNotFound unless completed? && zip_path.present?
+
+    export_bucket.object(zip_path).presigned_url(
+      :get,
+      expires_in: DOWNLOAD_URL_LIFETIME.to_i,
+      response_content_disposition: %(attachment; filename="#{download_filename}"),
+      response_content_type: "application/zip",
+    )
+  end
+
+  def export_bucket
+    DATA_EXPORT_BUCKET
+  end
+
+  def export_prefix
+    "exports/#{public_id}/"
+  end
+
+  def cleanup_fragments!
+    export_bucket.objects(prefix: export_prefix).each do |object|
+      object.delete unless object.key == expected_zip_path
+    end
   end
 
   def cleanup!
-    S3_BUCKET.object(zip_path).delete
+    export_bucket.objects(prefix: export_prefix).each(&:delete)
     destroy!
-  end
-
-  def ecs_client
-    @ecs_client ||= Aws::ECS::Client.new(
-      region: "us-east-1",
-      credentials: Aws::Credentials.new(
-        Rails.application.credentials&.dig(:aws_ecs, :access_key_id),
-        Rails.application.credentials&.dig(:aws_ecs, :secret_access_key),
-      ),
-    )
   end
 
   def upload_name
@@ -208,39 +233,7 @@ class DataExport < ApplicationRecord
     end
   end
 
-  def ecs_trigger_task_parameters
-    {
-      cluster: "data-exporter",
-      task_definition: "data-exporter-task-definition",
-      launch_type: "FARGATE",
-      network_configuration: {
-        awsvpc_configuration: {
-          subnets: [
-            "subnet-0ed5fb13e3991a037",
-            "subnet-0a9d14915d1c3bdca",
-            "subnet-05a23b57917c8e6b3",
-            "subnet-09046f9f795b2db39",
-            "subnet-00b393c3e0ba449b9",
-            "subnet-0f8134e2caa324f9b",
-          ],
-          security_groups: ["sg-0b31f01185b710e01"],
-          assign_public_ip: "ENABLED",
-        },
-      },
-      overrides: {
-        container_overrides: [
-          {
-            name: "data-exporter-container",
-            environment: [
-              { name: "EXPORT_ID", value: public_id },
-              { name: "BUCKET_NAME", value: Rails.application.credentials&.dig(:aws_ecs, :s3_bucket) },
-              { name: "CALLBACK_URL", value: data_export_callback_url(public_id, host: Campsite.base_app_url.to_s, subdomain: Campsite.api_subdomain) },
-              { name: "CALLBACK_TOKEN", value: callback_token },
-              { name: "UPLOAD_NAME", value: upload_name },
-            ],
-          },
-        ],
-      },
-    }
+  def download_filename
+    "#{upload_name}.zip".gsub(/[^a-zA-Z0-9._-]/, "-")
   end
 end

@@ -119,6 +119,7 @@ Rails.application.routes.draw do
     end
 
     scope "/organizations/:org_slug", as: :organization do
+      get "/data_exports/:id/download", to: "data_export_downloads#show", as: :data_export_download
       get "/", to: "organizations#show"
       patch "/", to: "organizations#update"
       put "/", to: "organizations#update"
@@ -615,7 +616,6 @@ Rails.application.routes.draw do
     end
 
     resource :open_graph_links, only: [:show]
-    resources :data_export_callbacks, only: [:update]
   end
 
   # endpoint used by the CDN (Cloudflare) to fetch protected S3 objects

@@ -101,15 +101,15 @@ class DataExportResource < ApplicationRecord
   private
 
   def write_to_s3(path, body)
-    S3_BUCKET.object("exports/#{data_export.public_id}/#{path}").put(body: body)
+    data_export.export_bucket.object("#{data_export.export_prefix}#{path}").put(body: body)
   end
 
   def copy_to_s3(source_path, target_path)
     source_object = S3_BUCKET.object(source_path)
-    target_object = S3_BUCKET.object("exports/#{data_export.public_id}/#{target_path}")
+    target_object = data_export.export_bucket.object("#{data_export.export_prefix}#{target_path}")
     source_object.copy_to(target_object)
   rescue Aws::S3::Errors::NoSuchKey
     Sentry.capture_message("Failed to copy attachment: #{source_path} -> #{target_path}")
-    update!(status: :error)
+    raise
   end
 end

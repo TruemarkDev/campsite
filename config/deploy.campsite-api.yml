@@ -74,6 +74,7 @@ env:
     S3_REGION: us-east-1
     S3_ENDPOINT: http://s3.camp.home
     S3_BUCKET: campsite-media
+    DATA_EXPORT_S3_BUCKET: campsite-exports
     S3_FORCE_PATH_STYLE: 'true'
   secret:
     - RAILS_MASTER_KEY

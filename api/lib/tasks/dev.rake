@@ -27,11 +27,6 @@ namespace :dev do
         access_key_id: "TODO",
         secret_access_key: "TODO",
       },
-      aws_ecs: {
-        s3_bucket: "TODO",
-        access_key_id: "TODO",
-        secret_access_key: "TODO",
-      },
       cal_dot_com: {
         client_id: "TODO",
         client_secret: "TODO",

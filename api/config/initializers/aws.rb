@@ -15,3 +15,7 @@ Aws.config.update(
 S3_BUCKET = Aws::S3::Resource.new.bucket(
   ENV["S3_BUCKET"] || Rails.application.credentials&.dig(:aws, :s3_bucket) || "",
 )
+
+DATA_EXPORT_BUCKET = Aws::S3::Resource.new.bucket(
+  ENV["DATA_EXPORT_S3_BUCKET"] || ENV["S3_BUCKET"] || Rails.application.credentials&.dig(:aws, :s3_bucket) || "",
+)

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
+ActiveRecord::Schema[7.2].define(version: 2026_08_28_134500) do
   create_table "agent_sync_grants", charset: "utf8mb4", collation: "utf8mb4_0900_ai_ci", force: :cascade do |t|
     t.string "public_id", limit: 12, null: false
     t.bigint "note_id", null: false, unsigned: true
@@ -314,6 +314,7 @@ ActiveRecord::Schema[7.2].define(version: 2026_08_25_040000) do
     t.bigint "subject_id", null: false, unsigned: true
     t.bigint "member_id", unsigned: true
     t.string "zip_path", limit: 2048
+    t.integer "status", default: 0, null: false
     t.datetime "completed_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
