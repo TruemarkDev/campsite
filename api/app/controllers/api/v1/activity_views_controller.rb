@@ -5,6 +5,8 @@ module Api
     class ActivityViewsController < BaseController
       extend Apigen::Controller
 
+      before_action :authorize_current_organization_membership
+
       response model: UserNotificationCountsSerializer, code: 200
       request_params do
         {

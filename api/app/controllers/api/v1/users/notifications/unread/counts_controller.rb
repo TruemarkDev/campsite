@@ -8,6 +8,8 @@ module Api
           class CountsController < BaseController
             skip_before_action :require_authenticated_organization_membership, only: :show
 
+            before_action :authorize_current_user, only: :show
+
             extend Apigen::Controller
 
             response model: UserNotificationCountsSerializer, code: 200

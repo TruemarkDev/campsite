@@ -58,13 +58,13 @@ class CallPolicy < ApplicationPolicy
   end
 
   def call_participant?
-    @record.peers.where(organization_membership: user.organization_memberships).any?
+    @record.peers.exists?(organization_membership: user.organization_memberships)
   end
 
   def subject_member?
     return false unless @record.room.subject.respond_to?(:memberships)
 
-    @record.room.subject.memberships.where(organization_membership: user.organization_memberships).any?
+    @record.room.subject.memberships.exists?(organization_membership: user.organization_memberships)
   end
 
   def viewer?

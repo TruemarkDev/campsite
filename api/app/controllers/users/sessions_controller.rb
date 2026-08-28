@@ -3,9 +3,10 @@
 module Users
   class SessionsController < Devise::SessionsController
     skip_before_action :require_no_authentication, only: [:desktop]
+    around_action :force_database_writing_role, only: [:desktop]
 
     def new
-      session[:otp_user_id] = nil
+      TwoFactorChallenge.clear!(session)
 
       if Rails.env.development?
         self.resource = resource_class.new({
@@ -23,7 +24,7 @@ module Users
 
       if resource.otp_enabled?
         sign_out(resource)
-        session[:otp_user_id] = resource.id
+        TwoFactorChallenge.issue!(session, resource)
 
         redirect_to(sign_in_otp_path)
       else
@@ -35,8 +36,8 @@ module Users
     end
 
     def desktop
+      sign_out(:user)
       self.resource = warden.authenticate!(:token_authenticatable, auth_options)
-      sign_out(resource)
       sign_in_and_redirect(resource)
     end
 

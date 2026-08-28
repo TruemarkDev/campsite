@@ -10,6 +10,7 @@ module Api
         skip_before_action :require_authenticated_organization_membership, only: :show
 
         before_action :require_organization
+        before_action :skip_authorization, only: :show
 
         response model: PublicNoteSerializer, code: 200
         def show

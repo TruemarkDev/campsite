@@ -125,7 +125,7 @@ module Api
           test "query count" do
             sign_in create(:organization_membership, :member, organization: @organization).user
 
-            assert_query_count 8 do
+            assert_query_count 7 do
               post organization_custom_reactions_path(@organization.slug),
                 params: { name: "party_blob", file_path: "/party_blob", file_type: "image/png" },
                 as: :json

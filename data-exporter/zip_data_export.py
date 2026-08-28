@@ -25,6 +25,7 @@ EXPORT_ID = os.environ["EXPORT_ID"]
 EXPORTS_DIR = f"{EXPORTS_DIR}/{EXPORT_ID}"
 ZIP_FILENAME = "/tmp/export.zip"
 CALLBACK_URL = os.environ["CALLBACK_URL"]
+CALLBACK_TOKEN = os.environ["CALLBACK_TOKEN"]
 # fallback if UPLOAD_NAME is not set (e.g. deploying new while other exports are triggered)
 UPLOAD_PATH = f"{EXPORTS_DIR}/{os.environ['UPLOAD_NAME'] or EXPORT_ID}.zip"
 
@@ -60,7 +61,11 @@ def upload_zip_file():
 def send_callback(zip_path):
     logger.info(f"Sending callback to: {CALLBACK_URL}")
     try:
-        response = requests.put(CALLBACK_URL, json={"zip_path": zip_path})
+        response = requests.put(
+            CALLBACK_URL,
+            headers={"X-Campsite-Export-Token": CALLBACK_TOKEN},
+            json={"zip_path": zip_path},
+        )
         response.raise_for_status()
         logger.info("Successfully sent callback")
     except Exception as e:

@@ -76,6 +76,29 @@ module Doorkeeper
         assert_equal "invalid_redirect_uri", json_response["error"]
       end
 
+      test "requires S256 PKCE for public clients" do
+        oauth_application = create(:oauth_application, confidential: false)
+        sign_in @user
+
+        get oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          response_type: "code",
+          redirect_uri: oauth_application.redirect_uri,
+        }
+
+        assert_response :bad_request
+
+        get oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          response_type: "code",
+          redirect_uri: oauth_application.redirect_uri,
+          code_challenge: "plain-challenge",
+          code_challenge_method: "plain",
+        }
+
+        assert_response :bad_request
+      end
+
       test "does not redirect when CIMD metadata cannot be fetched" do
         Flipper.enable(Oauth::Cimd::FEATURE_NAME)
         Oauth::Cimd::Resolver.any_instance.stubs(:resolve!).raises(Oauth::Cimd::FetchError)
@@ -141,6 +164,22 @@ module Doorkeeper
 
         assert_response :ok
         assert_includes response.body, "Organization"
+      end
+
+      test "does not let an actor parameter turn a user client into an organization client" do
+        oauth_application = create(:oauth_application)
+
+        sign_in @user
+        get oauth_authorization_path, params: {
+          actor: "application",
+          client_id: oauth_application.uid,
+          response_type: "code",
+          redirect_uri: oauth_application.redirect_uri,
+        }
+
+        assert_response :ok
+        assert_not_includes response.body, "Select an organization"
+        assert_not_includes response.body, 'name="resource_owner_type" value="Organization"'
       end
 
       test "returns not found when the application is discarded" do
@@ -424,6 +463,60 @@ module Doorkeeper
         access_grant = AccessGrant.last!
         assert_equal @member.organization.id, access_grant.resource_owner_id
         assert_equal Organization.polymorphic_name, access_grant.resource_owner_type
+      end
+
+      test "rejects an organization owner for a user-scoped client" do
+        oauth_application = create(:oauth_application)
+        sign_in @user
+
+        post oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          state: "state",
+          redirect_uri: oauth_application.redirect_uri,
+          response_type: "code",
+          resource_owner_type: "Organization",
+          resource_owner_id: @member.organization.id,
+        }
+
+        assert_response :bad_request
+        assert_equal "Resource owner type is not allowed for this client.", json_response["error_description"]
+        assert_nil AccessGrant.last
+      end
+
+      test "rejects a user owner for an organization-scoped client" do
+        oauth_application = create(:oauth_application, :zapier)
+        sign_in @user
+
+        post oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          state: "state",
+          redirect_uri: oauth_application.redirect_uri,
+          response_type: "code",
+          resource_owner_type: "User",
+          resource_owner_id: @user.id,
+        }
+
+        assert_response :bad_request
+        assert_equal "Resource owner type is not allowed for this client.", json_response["error_description"]
+        assert_nil AccessGrant.last
+      end
+
+      test "viewer cannot create an organization AccessGrant" do
+        viewer = create(:organization_membership, :viewer, organization: @member.organization)
+        oauth_application = create(:oauth_application, :zapier)
+        sign_in viewer.user
+
+        post oauth_authorization_path, params: {
+          client_id: oauth_application.uid,
+          state: "state",
+          redirect_uri: oauth_application.redirect_uri,
+          response_type: "code",
+          resource_owner_type: "Organization",
+          resource_owner_id: @member.organization.id,
+        }
+
+        assert_response :forbidden
+        assert_nil AccessGrant.last
       end
 
       test "user can't create an AccessGrant for an organization they aren't a member of" do

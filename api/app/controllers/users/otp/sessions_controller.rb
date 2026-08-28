@@ -6,9 +6,9 @@ module Users
       prepend_before_action :require_no_authentication, only: [:new, :create]
 
       def new
-        @user = User.find_by(id: session[:otp_user_id])
+        @user = TwoFactorChallenge.user(session)
         unless @user
-          session[:otp_user_id] = nil
+          TwoFactorChallenge.clear!(session)
           return redirect_to(new_user_session_path)
         end
 

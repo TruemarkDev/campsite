@@ -6,6 +6,8 @@ module Api
       class MarkAllReadsController < BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership
+
         request_params do
           {
             home_only: { type: :boolean, required: false },

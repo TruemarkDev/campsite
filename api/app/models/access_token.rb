@@ -9,6 +9,14 @@ class AccessToken < ApplicationRecord
 
   after_create_commit :broadcast_stale
 
+  # Doorkeeper otherwise keeps the previous refresh token usable during a
+  # transition window when this table has a previous_refresh_token column.
+  # Immediate revocation makes rotation single-use and serializes concurrent
+  # refreshes under the gem's row lock.
+  def self.refresh_token_revoked_on_use?
+    false
+  end
+
   def owned_by_organization?
     resource_owner_type == "Organization"
   end

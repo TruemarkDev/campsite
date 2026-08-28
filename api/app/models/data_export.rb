@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 class DataExport < ApplicationRecord
+  class InvalidZipPath < StandardError; end
+
+  CALLBACK_TOKEN_LIFETIME = 24.hours
+
   include PublicIdGenerator
   include MediaUrlBuilder
   include Rails.application.routes.url_helpers
@@ -133,11 +137,44 @@ class DataExport < ApplicationRecord
   end
 
   def complete(zip_path)
-    update!(zip_path: zip_path, completed_at: Time.current)
+    raise InvalidZipPath unless zip_path == expected_zip_path
+
+    completed = with_lock do
+      next false if completed?
+
+      update!(zip_path: zip_path, completed_at: Time.current)
+      true
+    end
+
+    return false unless completed
 
     OrganizationMailer.data_export_completed(self).deliver_later
 
     DataExportCleanupJob.perform_in(2.days, id)
+    true
+  end
+
+  def callback_token
+    Rails.application.message_verifier(:data_export_callback).generate(
+      public_id,
+      expires_in: CALLBACK_TOKEN_LIFETIME,
+      purpose: :data_export_callback,
+    )
+  end
+
+  def valid_callback_token?(token)
+    verified_public_id = Rails.application.message_verifier(:data_export_callback).verify(
+      token,
+      purpose: :data_export_callback,
+    )
+
+    ActiveSupport::SecurityUtils.secure_compare(verified_public_id, public_id)
+  rescue ActiveSupport::MessageVerifier::InvalidSignature, ArgumentError
+    false
+  end
+
+  def expected_zip_path
+    "exports/#{public_id}/#{upload_name}.zip"
   end
 
   def zip_url
@@ -198,6 +235,7 @@ class DataExport < ApplicationRecord
               { name: "EXPORT_ID", value: public_id },
               { name: "BUCKET_NAME", value: Rails.application.credentials&.dig(:aws_ecs, :s3_bucket) },
               { name: "CALLBACK_URL", value: data_export_callback_url(public_id, host: Campsite.base_app_url.to_s, subdomain: Campsite.api_subdomain) },
+              { name: "CALLBACK_TOKEN", value: callback_token },
               { name: "UPLOAD_NAME", value: upload_name },
             ],
           },

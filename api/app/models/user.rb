@@ -71,6 +71,7 @@ class User < ApplicationRecord
 
   attr_accessor :initial_time_zone
   attr_writer :unauthenticated_message
+  attr_reader :consumed_login_token_sso_id
 
   has_many :access_tokens,
     class_name: "Doorkeeper::AccessToken",
@@ -124,6 +125,7 @@ class User < ApplicationRecord
     :registerable,
     :recoverable,
     :rememberable,
+    :timeoutable,
     :two_factor_authenticatable,
     :validatable,
     omniauth_providers: [:google_oauth2, :desktop]
@@ -322,13 +324,13 @@ class User < ApplicationRecord
   def generate_login_token!(sso_id: nil)
     update!(
       login_token: generate_unique_token(attr_name: :login_token),
-      login_token_expires_at: 30.minutes.from_now,
+      login_token_expires_at: 5.minutes.from_now,
       login_token_sso_id: sso_id,
     )
   end
 
   def reset_login_token!
-    update!(login_token: nil, login_token_expires_at: nil)
+    update!(login_token: nil, login_token_expires_at: nil, login_token_sso_id: nil)
   end
 
   def login_token_expired?
@@ -339,7 +341,19 @@ class User < ApplicationRecord
   end
 
   def valid_login_token?(token)
-    login_token == token
+    login_token.present? && token.present? && ActiveSupport::SecurityUtils.secure_compare(login_token, token)
+  rescue ArgumentError
+    false
+  end
+
+  def consume_login_token!(token)
+    with_lock do
+      return false if login_token_expired? || !valid_login_token?(token)
+
+      @consumed_login_token_sso_id = login_token_sso_id
+      update!(login_token: nil, login_token_expires_at: nil, login_token_sso_id: nil)
+      true
+    end
   end
 
   def desktop_auth_url

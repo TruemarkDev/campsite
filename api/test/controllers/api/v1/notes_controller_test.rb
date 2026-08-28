@@ -309,7 +309,7 @@ module Api
         test "query count" do
           sign_in @member.user
 
-          assert_query_count 23 do
+          assert_query_count 22 do
             post organization_notes_path(@organization.slug),
               params: {
                 title: "My new note",

@@ -39,10 +39,12 @@ class TagPolicy < ApplicationPolicy
   private
 
   def org_member?
-    @record.organization.members.include?(@user)
+    organization_membership.present?
   end
 
   def organization_membership
-    @record.organization.kept_memberships.find_by!(user_id: @user.id)
+    return @organization_membership if defined?(@organization_membership)
+
+    @organization_membership = @record.organization.kept_memberships.find_by(user_id: @user&.id)
   end
 end

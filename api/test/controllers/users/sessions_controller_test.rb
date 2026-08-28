@@ -57,7 +57,7 @@ module Users
         post user_session_path, params: { user: { email: user.email, password: "mypasswordisverystrong!" } }
 
         assert_response :redirect
-        assert_equal(user.id, controller.session[:otp_user_id])
+        assert_equal user, TwoFactorChallenge.user(controller.session)
         assert_includes response.redirect_url, sign_in_otp_path
       end
 
@@ -107,12 +107,17 @@ module Users
       end
 
       test "authenticates a user with valid params" do
-        get desktop_session_path, params: { user: { email: @user.email, token: @user.login_token } }
+        login_token = @user.login_token
+        get desktop_session_path, params: { user: { email: @user.email, token: login_token } }
 
         assert_response :redirect
         warden = controller.session["warden.user.user.key"]
         assert_equal(warden.first.first, @user.id)
         assert_nil flash[:alert]
+        assert_nil @user.reload.login_token
+
+        get desktop_session_path, params: { user: { email: @user.email, token: login_token } }
+        assert_response :ok
       end
 
       test "does not authenticates a user with invalid params" do

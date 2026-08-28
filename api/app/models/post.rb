@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Post < ApplicationRecord
+  OPEN_GRAPH_IMAGE_SIGNED_ID_PURPOSE = :post_note_open_graph_image
   POST_FILE_LIMIT = 10 # This can be removed once we have migrated to attachments
   FILE_LIMIT = 10 # This is for attachments
   POST_TAG_LIMIT = 10
@@ -531,7 +532,8 @@ class Post < ApplicationRecord
   def note_open_graph_image_url
     return unless description_html
 
-    path = "/v1/post_note_open_graph_images/#{public_id}/#{contents_hash}"
+    post_token = signed_id(purpose: OPEN_GRAPH_IMAGE_SIGNED_ID_PURPOSE)
+    path = "/v1/post_note_open_graph_images/#{post_token}/#{contents_hash}"
 
     if Rails.env.production? || ENV["CAMPSITE_NGROK"] == "true"
       build_media_folder_url(path)

@@ -20,7 +20,7 @@ class McpRequestContext
   end
 
   def user
-    @user ||= User.find(token.resource_owner_id)
+    @user ||= token.resource_owner
   end
 
   # True when the token was granted the given OAuth scope (e.g. `:write_post`).

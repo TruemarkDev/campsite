@@ -6,6 +6,8 @@ module Api
       class TimezonesController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: [:create]
 
+        before_action :authorize_current_user, only: :create
+
         extend Apigen::Controller
 
         response code: 200

@@ -5,6 +5,8 @@ module Api
     class ResourceMentionsController < BaseController
       rescue_from URI::InvalidURIError, with: :render_unprocessable_entity
 
+      before_action :authorize_current_organization_membership, only: :show
+
       extend Apigen::Controller
 
       response model: ResourceMentionSerializer, code: 200

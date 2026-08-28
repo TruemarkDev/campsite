@@ -5,6 +5,8 @@ module Api
     class PostNoteOpenGraphImagesController < BaseController
       skip_before_action :require_authenticated_user, only: :show
       skip_before_action :require_authenticated_organization_membership, only: :show
+      before_action :require_valid_contents_hash, only: :show
+      before_action :skip_authorization, only: :show
 
       WIDTH = 600
       HEIGHT = 315
@@ -38,7 +40,13 @@ module Api
       end
 
       def current_post
-        @current_post ||= Post.find_by!(public_id: params[:post_id])
+        @current_post ||= Post.find_signed(params[:post_id], purpose: Post::OPEN_GRAPH_IMAGE_SIGNED_ID_PURPOSE) || raise(ActiveRecord::RecordNotFound)
+      end
+
+      def require_valid_contents_hash
+        return if ActiveSupport::SecurityUtils.secure_compare(params[:hash].to_s, current_post.contents_hash)
+
+        raise ActiveRecord::RecordNotFound
       end
     end
   end

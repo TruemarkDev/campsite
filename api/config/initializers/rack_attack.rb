@@ -10,6 +10,9 @@ module Rack
     MCP_WRITE_REQUESTS_LIMIT = 30
     MCP_GENERAL_REQUESTS_LIMIT = 120
     MCP_REQUESTS_PERIOD = 1.minute
+    TWO_FACTOR_ATTEMPTS_LIMIT = 6
+    TWO_FACTOR_ATTEMPTS_PERIOD = 5.minutes
+    TWO_FACTOR_PATHS = ["/sign-in/otp", "/sign-in/recovery-code"].to_set.freeze
     MCP_WRITE_TOOL_NAMES = [
       "add_comment",
       "add_reaction",
@@ -36,8 +39,14 @@ module Rack
       if bearer_token.present?
         "token:#{Digest::SHA256.hexdigest(bearer_token)}"
       else
-        "ip:#{request.env["HTTP_FLY_CLIENT_IP"].presence || request.ip}"
+        "ip:#{CLIENT_IP.call(request)}"
       end
+    end
+
+    CLIENT_IP = lambda do |request|
+      request.get_header("HTTP_CF_CONNECTING_IP").presence ||
+        request.get_header("HTTP_FLY_CLIENT_IP").presence ||
+        request.ip
     end
   end
 end
@@ -63,11 +72,11 @@ HIGH_RATE_PATHS = [
 ].to_set.freeze
 
 Rack::Attack.throttle("requests by ip", limit: Rack::Attack::REQUESTS_BY_IP_LIMIT, period: Rack::Attack::REQUESTS_BY_IP_PERIOD) do |req|
-  "ip:#{req.env["HTTP_FLY_CLIENT_IP"]}" unless HIGH_RATE_PATHS.include?(req.path)
+  "ip:#{Rack::Attack::CLIENT_IP.call(req)}" unless HIGH_RATE_PATHS.include?(req.path)
 end
 
 Rack::Attack.throttle("integration requests by ip", limit: 10000, period: 30.seconds) do |req|
-  "ip:#{req.env["HTTP_FLY_CLIENT_IP"]}" if HIGH_RATE_PATHS.include?(req.path)
+  "ip:#{Rack::Attack::CLIENT_IP.call(req)}" if HIGH_RATE_PATHS.include?(req.path)
 end
 
 # Throttle login attempts for a given email parameter to 6 reqs/minute
@@ -93,14 +102,22 @@ end
 # Throttle sign up attempts for an ip to 6 reqs/minute
 Rack::Attack.throttle("limit sign ups per email", limit: 6, period: 60) do |req|
   if req.path == "/" && req.host&.split(".")&.first == "auth" && req.post?
-    "ip:#{req.env["HTTP_FLY_CLIENT_IP"]}"
+    "ip:#{Rack::Attack::CLIENT_IP.call(req)}"
   end
 end
 
 # Throttle MCP dynamic client registration to cap OauthApplication row spam from
 # anonymous clients (RFC 7591 registration is open by design — see Decision 6).
 Rack::Attack.throttle("limit mcp dynamic client registration per ip", limit: 5, period: 60) do |req|
-  "ip:#{req.env["HTTP_FLY_CLIENT_IP"]}" if req.path == "/oauth/register" && req.post?
+  "ip:#{Rack::Attack::CLIENT_IP.call(req)}" if req.path == "/oauth/register" && req.post?
+end
+
+Rack::Attack.throttle(
+  "limit two factor attempts per ip",
+  limit: Rack::Attack::TWO_FACTOR_ATTEMPTS_LIMIT,
+  period: Rack::Attack::TWO_FACTOR_ATTEMPTS_PERIOD,
+) do |req|
+  "ip:#{Rack::Attack::CLIENT_IP.call(req)}" if req.post? && Rack::Attack::TWO_FACTOR_PATHS.include?(req.path)
 end
 
 Rack::Attack.throttle(
@@ -128,7 +145,7 @@ ActiveSupport::Notifications.subscribe(/rack_attack/) do |_name, _start, _finish
 
   if [:throttle, :blocklist].include?(req.env["rack.attack.match_type"])
     Rails.logger.info("[Rack::Attack][Blocked] " \
-      "HTTP_FLY_CLIENT_IP: \"#{req.env["HTTP_FLY_CLIENT_IP"]}\", " \
+      "client_ip: \"#{Rack::Attack::CLIENT_IP.call(req)}\", " \
       "path: \"#{req.fullpath}\" " \
       "user: \"#{req.env["warden"].user&.username}\"")
   end

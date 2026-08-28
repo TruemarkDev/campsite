@@ -10,6 +10,8 @@ module Api
           before_action -> { doorkeeper_authorize!(:write_call_room) }, only: :create
           skip_before_action :require_authenticated_organization_membership, only: :create
 
+          before_action :authorize_current_user, only: :create
+
           response model: CallRoomSerializer, code: 201
           def create
             organization = current_user.cal_dot_com_organization

@@ -9,6 +9,8 @@ module Api
 
       skip_before_action :require_authenticated_organization_membership, only: [:show, :create]
 
+      before_action :authorize_current_user, only: [:show, :create]
+
       response model: OpenGraphLinkSerializer, code: 200
       request_params do
         {
