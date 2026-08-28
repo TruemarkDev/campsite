@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class ApplicationController < ActionController::Base
+  include MobileSessionDiagnostic
+
   before_action :store_devise_return_to
   before_action :set_sentry_info
 
