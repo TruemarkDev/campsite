@@ -12,6 +12,7 @@ module Api
       include RequestRescuable
       include RequestReturnable
       include DatabaseRoleSwitchable
+      include MobileSessionDiagnostic
 
       before_action :require_authenticated_user
       before_action :require_authenticated_organization_membership
