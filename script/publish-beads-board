@@ -50,7 +50,7 @@ module BeadsBoardPublisher
       raise Error, "Beads reported issues as both ready and blocked" if overlap.any?
 
       normalized = issues.map { |issue| normalize(issue, ready_ids:, blocked_ids:) }
-      payload = identity_data.merge(
+      payload = identity_data.slice("source_project_id", "beads_version", "beads_schema_version", "branch", "revision").merge(
         "schema_version" => 1,
         "source_id" => source_id,
         "collected_at" => Time.now.utc.iso8601(3),

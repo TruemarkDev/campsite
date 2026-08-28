@@ -40,7 +40,7 @@ class BeadsBoardPublisherTest < Minitest::Test
     snapshot = collector.snapshot(source_id: "source-1", expected_source_project_id: "campsite.board")
 
     assert_equal "Board", snapshot.fetch("issues").first.fetch("title")
-    assert_equal "campsite", snapshot.fetch("repository_display_name")
+    refute snapshot.key?("repository_display_name")
     assert_equal "1.2.2", snapshot.fetch("beads_version")
     refute snapshot.fetch("issues").first.key?("description")
     assert_equal 64, snapshot.fetch("digest").length
