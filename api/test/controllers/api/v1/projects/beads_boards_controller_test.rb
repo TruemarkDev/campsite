@@ -27,6 +27,36 @@ module Api
         end
 
         test "explicit member receives only the safe board and roster projection" do
+          snapshot = @source.snapshots.create!(
+            schema_version: 1,
+            beads_version: "1.2.2",
+            beads_schema_version: "1",
+            branch: "main",
+            revision: "abc123",
+            collected_at: Time.current,
+            ingested_at: Time.current,
+            digest: "a" * 64,
+            payload: [
+              {
+                "id" => "campsite-4cl.1",
+                "title" => "Read only board",
+                "status" => "open",
+                "board_state" => "Ready",
+                "priority" => 1,
+                "issue_type" => "feature",
+                "assignee" => nil,
+                "owner" => nil,
+                "labels" => ["api"],
+                "parent_id" => "campsite-4cl",
+                "dependencies" => [],
+                "created_at" => "2026-08-28T00:00:00.000Z",
+                "updated_at" => "2026-08-28T01:00:00.000Z",
+                "closed_at" => nil,
+              },
+            ],
+          )
+          @source.update!(current_snapshot: snapshot)
+
           sign_in @admin.user
           get @path
 
@@ -34,6 +64,8 @@ module Api
           assert_response_gen_schema
           assert_equal @source.public_id, json_response.fetch("source_id")
           assert_equal ["Agent", "Beads publisher"], json_response.fetch("agents").first.fetch("roles")
+          assert_equal "campsite-4cl.1", json_response.dig("current_snapshot", "cards", 0, "id")
+          assert_equal "Ready", json_response.dig("current_snapshot", "cards", 0, "board_state")
           forbidden = %w[client_id client_secret redirect_uri webhooks description notes comments path credentials]
           forbidden.each { |field| assert_not_includes response.body, field }
         end

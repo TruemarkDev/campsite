@@ -9,5 +9,7 @@ class ProjectBeadsSnapshotSerializer < ApiSerializer
   api_field :collected_at
   api_field :ingested_at
   api_field :digest
-  api_association :payload, name: :cards, blueprint: BeadsCardSerializer, is_array: true
+  api_association :payload, name: :cards, blueprint: BeadsCardSerializer, is_array: true do |snapshot|
+    snapshot.payload.map(&:with_indifferent_access)
+  end
 end

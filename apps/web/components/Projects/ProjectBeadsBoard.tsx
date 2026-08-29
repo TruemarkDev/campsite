@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 
 import { BeadsCard, Project, ProjectBeadsBoard } from '@campsite/types'
-import { Button, Checkbox, UIText } from '@campsite/ui'
+import { Button, Checkbox, RefreshIcon, RelativeTime, UIText } from '@campsite/ui'
 
 import { IndexPageEmptyState, IndexPageLoading } from '@/components/IndexPages/components'
 import { ProjectArchiveBanner } from '@/components/Projects/ProjectArchiveBanner'
@@ -88,7 +88,7 @@ function BoardContent({
 
   return (
     <div id={PROJECT_PAGE_SCROLL_CONTAINER_ID} className='flex min-h-0 flex-1 flex-col overflow-hidden'>
-      <div className='flex flex-col gap-3 border-b px-4 py-3'>
+      <div className='flex shrink-0 flex-col gap-3 border-b px-4 py-3'>
         <div className='flex flex-wrap items-center gap-2'>
           <label className='min-w-48 flex-1'>
             <span className='sr-only'>Filter by task id or title</span>
@@ -108,13 +108,30 @@ function BoardContent({
             <Checkbox checked={includeClosed} onChange={setIncludeClosed} />
             Include Closed
           </label>
+          <Button
+            size='sm'
+            variant='plain'
+            iconOnly={<RefreshIcon />}
+            accessibilityLabel='Refresh board'
+            tooltip='Refresh the latest snapshot from Campsite'
+            onClick={onRetry}
+          />
         </div>
 
-        <div className='text-secondary flex flex-wrap items-center gap-x-3 gap-y-1 text-xs'>
-          <span>{board.repository_display_name}</span>
-          <span>Revision {snapshot.revision}</span>
-          <span>Collected {longTimestamp(snapshot.collected_at)}</span>
-          <span>Ingested {longTimestamp(snapshot.ingested_at)}</span>
+        <div className='text-secondary flex min-w-0 items-center gap-2 overflow-x-auto overflow-y-hidden text-xs whitespace-nowrap'>
+          <span className='bg-secondary rounded-full border px-2 py-0.5'>{board.repository_display_name}</span>
+          <span
+            title={snapshot.revision}
+            className='max-w-44 truncate rounded bg-black/5 px-1.5 py-0.5 font-mono dark:bg-white/10'
+          >
+            {snapshot.revision}
+          </span>
+          <span title={`Collected ${longTimestamp(snapshot.collected_at)}`}>
+            Synced <RelativeTime time={snapshot.collected_at} />
+          </span>
+          <span title={`Ingested ${longTimestamp(snapshot.ingested_at)}`}>
+            received <RelativeTime time={snapshot.ingested_at} />
+          </span>
           {project.archived && <ProjectArchiveBanner />}
         </div>
 
@@ -131,44 +148,48 @@ function BoardContent({
         )}
       </div>
 
-      <div className='flex min-h-0 flex-1 snap-x gap-3 overflow-x-auto p-3' aria-label='Beads Board'>
-        {BOARD_STATES.map((state) => {
-          const cards = filteredCards.filter((card) => card.board_state === state)
-          const visibleCards = state === 'Closed' ? cards.slice(0, closedLimit) : cards
-          const isHidden = state === 'Closed' && !includeClosed
+      <div className='min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-3' aria-label='Beads Board'>
+        <div className='flex h-full w-max min-w-full snap-x gap-3'>
+          {BOARD_STATES.map((state) => {
+            const cards = filteredCards.filter((card) => card.board_state === state)
+            const visibleCards = state === 'Closed' ? cards.slice(0, closedLimit) : cards
+            const isHidden = state === 'Closed' && !includeClosed
 
-          if (isHidden) return null
+            if (isHidden) return null
 
-          return (
-            <section
-              key={state}
-              aria-labelledby={`beads-column-${state.replaceAll(' ', '-').toLocaleLowerCase()}`}
-              className='bg-secondary w-[min(85vw,20rem)] min-w-[min(85vw,20rem)] snap-start rounded-lg border p-2'
-            >
-              <div className='flex items-center justify-between px-1 pb-2'>
-                <UIText id={`beads-column-${state.replaceAll(' ', '-').toLocaleLowerCase()}`} weight='font-semibold'>
-                  {state}
-                </UIText>
-                <UIText tertiary>{cards.length}</UIText>
-              </div>
-              <div className='flex flex-col gap-2'>
-                {visibleCards.map((card) => (
-                  <BeadsBoardCard key={card.id} card={card} />
-                ))}
-                {cards.length === 0 && (
-                  <UIText tertiary className='px-1 py-3 text-center'>
-                    No matching tasks
+            return (
+              <section
+                key={state}
+                aria-labelledby={`beads-column-${state.replaceAll(' ', '-').toLocaleLowerCase()}`}
+                className='bg-secondary flex h-full w-[min(85vw,20rem)] shrink-0 snap-start flex-col rounded-lg border p-2'
+              >
+                <div className='flex shrink-0 items-center justify-between px-1 pb-2'>
+                  <UIText id={`beads-column-${state.replaceAll(' ', '-').toLocaleLowerCase()}`} weight='font-semibold'>
+                    {state}
                   </UIText>
-                )}
-                {state === 'Closed' && visibleCards.length < cards.length && (
-                  <Button fullWidth onClick={() => setClosedLimit((value) => value + CLOSED_PAGE_SIZE)}>
-                    Show more Closed
-                  </Button>
-                )}
-              </div>
-            </section>
-          )
-        })}
+                  <UIText tertiary>{cards.length}</UIText>
+                </div>
+                <div className='min-h-0 flex-1 overflow-y-auto'>
+                  <div className='flex flex-col gap-2'>
+                    {visibleCards.map((card) => (
+                      <BeadsBoardCard key={card.id} card={card} />
+                    ))}
+                    {cards.length === 0 && (
+                      <UIText tertiary className='px-1 py-3 text-center'>
+                        No matching tasks
+                      </UIText>
+                    )}
+                    {state === 'Closed' && visibleCards.length < cards.length && (
+                      <Button fullWidth onClick={() => setClosedLimit((value) => value + CLOSED_PAGE_SIZE)}>
+                        Show more Closed
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </section>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

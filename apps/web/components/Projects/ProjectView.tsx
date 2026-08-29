@@ -148,7 +148,7 @@ function ProjectIndexLayoutFilter({ project, fullWidth }: ProjectViewProps & { f
   const beadsBoard = useGetProjectBeadsBoard({ projectId: project.id, enabled: project.viewer_is_member })
 
   return (
-    <div className='ml-2 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto'>
+    <div className='ml-2 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto overflow-y-hidden'>
       <Button
         size='sm'
         fullWidth={fullWidth}
