@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { keepPreviousData, useQuery } from '@tanstack/react-query'
 import { useToken } from 'src/core/tokens'
 
-import { ALL_SLACK_SCOPES } from '@campsite/config/src/slack'
+import { ALL_SLACK_SCOPES } from '@campsite/config'
 
 import { client } from '../client'
 import { useAuthorizationUrl as useIntegrationAuthorizationUrl } from './integrations'
