@@ -110,5 +110,6 @@ class CampsiteConfigurationTest < Minitest::Test
   def reload_campsite
     Object.send(:remove_const, :Campsite) if Object.const_defined?(:Campsite)
     load File.expand_path("../../lib/campsite.rb", __dir__)
+    load File.expand_path("../../lib/campsite/smtp_settings.rb", __dir__)
   end
 end
