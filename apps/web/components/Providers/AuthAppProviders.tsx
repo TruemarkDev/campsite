@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { HMSRoomProvider } from '@100mslive/react-sdk'
 import { QueryClientProvider } from '@tanstack/react-query'
 import ConfirmEmailGuard from 'components/ConfirmEmailGuard'
 import { domMax, LazyMotion } from 'framer-motion'
@@ -21,7 +20,7 @@ import { BackgroundAppRefresh } from '@/components/Providers/BackgroundAppRefres
 import { DesktopProtocolUrlHandler } from '@/components/Providers/DesktopProtocolUrlHandler'
 import { DesktopRedirectProvider } from '@/components/Providers/DesktopRedirectProvider'
 import { DisableZoom } from '@/components/Providers/DisableZoom'
-import { HMSRoomStateSubscriber } from '@/components/Providers/HMSRoomStateSubscriber'
+import { LazyHMSRoomProvider } from '@/components/Providers/LazyHMSRoomProvider'
 import { MetaTags } from '@/components/Providers/MetaTags'
 import { ThemeProvider } from '@/components/Providers/ThemeProvider'
 import { StaffDevTools } from '@/components/StaffDevTools'
@@ -55,9 +54,8 @@ export const AuthAppProviders: PageWithProviders<any> = ({ children, allowLogged
               <ScopeProvider>
                 <ThemeProvider>
                   <MetaTags postSeoInfo={postSeoInfo} />
-                  <HMSRoomProvider>
-                    <HMSRoomStateSubscriber />
-                    <AuthProvider allowLoggedOut={allowLoggedOut}>
+                  <AuthProvider allowLoggedOut={allowLoggedOut}>
+                    <LazyHMSRoomProvider>
                       <WebPushProvider>
                         <NotificationSoundPlayer />
                         <PusherProvider>
@@ -84,8 +82,8 @@ export const AuthAppProviders: PageWithProviders<any> = ({ children, allowLogged
                           </DesktopRedirectProvider>
                         </PusherProvider>
                       </WebPushProvider>
-                    </AuthProvider>
-                  </HMSRoomProvider>
+                    </LazyHMSRoomProvider>
+                  </AuthProvider>
                 </ThemeProvider>
               </ScopeProvider>
             </QueryClientProvider>
