@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 
 import { getFromStorage } from '@/utils/getFromStorage'
+import { getWebStorage } from '@/utils/getWebStorage'
 import { setToStorageWithDefault } from '@/utils/setToStorageWithDefault'
 
 function getStorageKey(key: string | string[]) {
@@ -12,7 +13,7 @@ export const RESET: unique symbol = Symbol()
 export function useStoredState<T>(
   key: string | string[],
   initialValue: T,
-  storage: Storage | undefined = typeof window !== 'undefined' ? window.localStorage : undefined
+  storage: Storage | undefined = getWebStorage('localStorage')
 ): [T, (value: T | typeof RESET) => void] {
   const storageKey = getStorageKey(key)
   const [value, setValue] = useState(() => getFromStorage(storage, storageKey, initialValue))
