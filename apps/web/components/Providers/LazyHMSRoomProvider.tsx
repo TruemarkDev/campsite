@@ -1,6 +1,5 @@
-import { ComponentType } from 'react'
+import { ComponentType, useEffect, useState } from 'react'
 import * as Sentry from '@sentry/nextjs'
-import dynamic from 'next/dynamic'
 
 interface Props {
   children: React.ReactNode
@@ -27,4 +26,22 @@ export async function loadHMSRoomProvider(
   }
 }
 
-export const LazyHMSRoomProvider = dynamic<Props>(() => loadHMSRoomProvider(), { ssr: false })
+export function LazyHMSRoomProvider({ children }: Props) {
+  const [Provider, setProvider] = useState<ComponentType<Props> | null>(null)
+
+  useEffect(() => {
+    let mounted = true
+
+    loadHMSRoomProvider().then((LoadedProvider) => {
+      if (mounted) setProvider(() => LoadedProvider)
+    })
+
+    return () => {
+      mounted = false
+    }
+  }, [])
+
+  if (!Provider) return null
+
+  return <Provider>{children}</Provider>
+}
