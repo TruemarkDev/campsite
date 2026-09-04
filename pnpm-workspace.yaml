@@ -402,3 +402,6 @@ minimumReleaseAgeExclude:
   - next-sanity@13.3.2
   - sanity-plugin-markdown@9.0.11
   - sanity@6.9.2
+
+patchedDependencies:
+  webrtc-adapter@8.2.3: patches/webrtc-adapter@8.2.3.patch

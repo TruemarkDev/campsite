@@ -674,6 +674,9 @@ overrides:
   terser@>5.49.2: 5.49.2
   electron-to-chromium@>1.5.403: 1.5.403
 
+patchedDependencies:
+  webrtc-adapter@8.2.3: c1a6e5de0eeb0162cad6362bf671f5e38f41e3aa5d5ad578cd459f33050c0d04
+
 importers:
 
   .:
@@ -15250,7 +15253,7 @@ snapshots:
       sdp-transform: 2.14.1
       ua-parser-js: 2.0.10
       uuid: 11.1.1
-      webrtc-adapter: 8.2.3
+      webrtc-adapter: 8.2.3(patch_hash=c1a6e5de0eeb0162cad6362bf671f5e38f41e3aa5d5ad578cd459f33050c0d04)
       zustand: 3.5.7(react@19.2.8)
     transitivePeerDependencies:
       - react
@@ -30606,7 +30609,7 @@ snapshots:
       - postcss
       - uglify-js
 
-  webrtc-adapter@8.2.3:
+  webrtc-adapter@8.2.3(patch_hash=c1a6e5de0eeb0162cad6362bf671f5e38f41e3aa5d5ad578cd459f33050c0d04):
     dependencies:
       sdp: 3.2.0
 
