@@ -106,7 +106,7 @@ const ContentSecurityPolicy = Object.keys(cspResourcesByDirective).reduce((prevP
 
 /** @type {import('next').NextConfig} */
 const moduleExports = {
-  output: 'standalone',
+  output: process.env.VERCEL ? undefined : 'standalone',
   experimental: {
     externalDir: true,
     clientRouterFilter: false
