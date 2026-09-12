@@ -87,7 +87,7 @@ function BoardContent({
   )
 
   return (
-    <div id={PROJECT_PAGE_SCROLL_CONTAINER_ID} className='flex min-h-0 flex-1 flex-col overflow-hidden'>
+    <div id={PROJECT_PAGE_SCROLL_CONTAINER_ID} className='flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden'>
       <div className='flex shrink-0 flex-col gap-3 border-b px-4 py-3'>
         <div className='flex flex-wrap items-center gap-2'>
           <label className='min-w-48 flex-1'>
@@ -120,6 +120,7 @@ function BoardContent({
 
         <div className='text-secondary flex min-w-0 items-center gap-2 overflow-x-auto overflow-y-hidden text-xs whitespace-nowrap'>
           <span className='bg-secondary rounded-full border px-2 py-0.5'>{board.repository_display_name}</span>
+          <span>Source {board.source_project_id}</span>
           <span
             title={snapshot.revision}
             className='max-w-44 truncate rounded bg-black/5 px-1.5 py-0.5 font-mono dark:bg-white/10'
@@ -127,7 +128,7 @@ function BoardContent({
             {snapshot.revision}
           </span>
           <span title={`Collected ${longTimestamp(snapshot.collected_at)}`}>
-            Synced <RelativeTime time={snapshot.collected_at} />
+            Collected <RelativeTime time={snapshot.collected_at} />
           </span>
           <span title={`Ingested ${longTimestamp(snapshot.ingested_at)}`}>
             received <RelativeTime time={snapshot.ingested_at} />
@@ -148,7 +149,12 @@ function BoardContent({
         )}
       </div>
 
-      <div className='min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-3' aria-label='Beads Board'>
+      <div
+        className='min-h-0 min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-3'
+        role='region'
+        aria-label='Beads Board'
+        tabIndex={0}
+      >
         <div className='flex h-full w-max min-w-full snap-x gap-3'>
           {BOARD_STATES.map((state) => {
             const cards = filteredCards.filter((card) => card.board_state === state)
@@ -169,7 +175,12 @@ function BoardContent({
                   </UIText>
                   <UIText tertiary>{cards.length}</UIText>
                 </div>
-                <div className='min-h-0 flex-1 overflow-y-auto'>
+                <div
+                  className='min-h-0 flex-1 overflow-y-auto'
+                  role='region'
+                  aria-label={`${state} tasks`}
+                  tabIndex={0}
+                >
                   <div className='flex flex-col gap-2'>
                     {visibleCards.map((card) => (
                       <BeadsBoardCard key={card.id} card={card} />
@@ -211,7 +222,7 @@ function FilterSelect({
       <span className='sr-only'>{label}</span>
       <select
         aria-label={label}
-        className='bg-secondary max-w-40 rounded-md border px-2 py-1.5 text-sm'
+        className='bg-secondary max-w-40 rounded-md border py-1.5 pr-6 pl-2 text-sm'
         value={value}
         onChange={(event) => onChange(event.target.value)}
       >
@@ -240,7 +251,7 @@ export function BeadsBoardCard({ card }: { card: BeadsCard }) {
         <UIText className='min-w-0 break-words' weight='font-medium'>
           {card.title}
         </UIText>
-        <span className='text-tertiary shrink-0 font-mono text-xs'>{card.id}</span>
+        <span className='text-tertiary max-w-[45%] min-w-0 font-mono text-xs break-all'>{card.id}</span>
       </div>
       <div className='text-secondary flex flex-wrap gap-1 text-xs'>
         <span>{card.issue_type}</span>

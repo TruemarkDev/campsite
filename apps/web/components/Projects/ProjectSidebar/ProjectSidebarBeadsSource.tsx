@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/router'
 
@@ -6,7 +6,7 @@ import { Project, ProjectBeadsBoard, ProjectBeadsPairing } from '@campsite/types
 import { Button, UIText } from '@campsite/ui'
 
 import { useScope } from '@/contexts/scope'
-import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
+import { useCurrentOrganizationHasFeature } from '@/hooks/useCurrentOrganizationHasFeature'
 import { useGetProjectBeadsBoard } from '@/hooks/useGetProjectBeadsBoard'
 import { useGetProjectOauthApps } from '@/hooks/useGetProjectOauthApps'
 import { apiErrorToast } from '@/utils/apiErrorToast'
@@ -26,14 +26,21 @@ export function ProjectSidebarBeadsSource({ project }: { project: Project }) {
   const [pairing, setPairing] = useState<ProjectBeadsPairing>()
   const [managementMode, setManagementMode] = useState<'replace' | 'detach'>()
   const [replacementSourceVerifiedAt, setReplacementSourceVerifiedAt] = useState<string>()
-  const currentUser = useGetCurrentUser().data
-  const canManageSource =
-    project.viewer_is_member && project.viewer_can_update && currentUser?.unconfirmed_email === null
-  const boardQuery = useGetProjectBeadsBoard({ projectId: project.id, enabled: project.viewer_is_member })
+  const featureEnabled = useCurrentOrganizationHasFeature('channel_beads_board')
+  const canManageSource = project.viewer_can_manage_beads_source
+  const boardQuery = useGetProjectBeadsBoard({
+    projectId: project.id,
+    enabled: project.viewer_is_member,
+    refetchInterval: pairing ? 3000 : false
+  })
   const oauthAppsQuery = useGetProjectOauthApps({ projectId: project.id, enabled: canManageSource })
   const board = boardQuery.data
   const isReplacingCurrentSource =
     !!board && managementMode === 'replace' && replacementSourceVerifiedAt === board.verified_at
+
+  useEffect(() => {
+    if (pairing && board && !isReplacingCurrentSource) setPairing(undefined)
+  }, [board, isReplacingCurrentSource, pairing])
 
   const pairingMutation = useMutation({
     mutationFn: (oauthApplicationId: string) =>
@@ -57,7 +64,7 @@ export function ProjectSidebarBeadsSource({ project }: { project: Project }) {
     onError: apiErrorToast
   })
 
-  if (!project.viewer_is_member) return null
+  if (!featureEnabled || !project.viewer_is_member) return null
   if (!board && !canManageSource) return null
 
   return (
@@ -160,6 +167,8 @@ function ConnectedSource({ board }: { board: ProjectBeadsBoard }) {
         </UIText>
       </div>
       <dl className='grid grid-cols-[auto_1fr] gap-x-2 gap-y-1 text-xs'>
+        <dt className='text-tertiary'>Publisher source id</dt>
+        <dd className='break-all'>{board.source_id}</dd>
         <dt className='text-tertiary'>Status</dt>
         <dd>{board.current_snapshot ? 'Snapshot available' : 'Waiting for first snapshot'}</dd>
         <dt className='text-tertiary'>Verified</dt>

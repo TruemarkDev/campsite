@@ -21,6 +21,7 @@ class ProjectBeadsSnapshotSchema
 
   class << self
     def validate!(raw, source:)
+      invalid!("snapshot must be an object") unless raw.is_a?(Hash)
       payload = raw.to_h.deep_stringify_keys
       exact_fields!(payload, TOP_LEVEL_FIELDS, "snapshot")
       required!(payload, %w[schema_version source_id source_project_id beads_version branch revision collected_at digest issues])
@@ -60,6 +61,7 @@ class ProjectBeadsSnapshotSchema
     private
 
     def validate_issue!(raw, index)
+      invalid!("issue #{index} must be an object") unless raw.is_a?(Hash)
       issue = raw.to_h.deep_stringify_keys
       exact_fields!(issue, ISSUE_FIELDS, "issue #{index}")
       required!(issue, %w[id title status board_state priority issue_type labels dependencies created_at updated_at])
@@ -97,6 +99,7 @@ class ProjectBeadsSnapshotSchema
       invalid!("dependencies must be an array") unless dependencies.is_a?(Array)
       invalid!("too many dependencies") if dependencies.length > MAX_DEPENDENCIES
       dependencies.each do |dependency|
+        invalid!("dependency must be an object") unless dependency.is_a?(Hash)
         dependency = dependency.to_h.deep_stringify_keys
         exact_fields!(dependency, DEPENDENCY_FIELDS, "dependency")
         required!(dependency, DEPENDENCY_FIELDS)

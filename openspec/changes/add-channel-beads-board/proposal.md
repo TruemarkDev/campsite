@@ -6,9 +6,13 @@ separate Beads database. This proposal makes that work visible in its channel
 without moving task custody out of Beads or giving the web application access
 to repository files.
 
-❌ **Unbuilt:** `MAINTENANCE.md` currently forbids new product features. This
-change records the contract and implementation plan; product work SHALL NOT
-start unless stewardship policy is explicitly changed.
+**Implemented and verified locally:** On 2026-09-12, Prakash explicitly
+approved completing this feature as a stewardship exception and retaining it
+in `campsite-wt-beads-board` for review. API, persistence, publisher, and web
+implementation exist in that worktree. The requirements below remain
+authoritative; local tests, builds, migration checks, and browser trials passed.
+The [evidence index](../../../docs/deployment/beads-board-review/README.md)
+records remaining human screen-reader and deployed-service acceptance limits. This authorization does not include merging, pushing, or deployment.
 
 ## What Changes
 
@@ -24,7 +28,7 @@ start unless stewardship policy is explicitly changed.
   still-unverified channels do not advertise the route. On ordinary post
   channels Board is the fourth view beside Posts, Docs, and Calls; chat-format
   channels retain their existing reduced view set and append Board after Calls.
-- The Board presents Ready, In progress, Blocked, and Closed work using state
+- The Board presents Ready, In progress, Blocked, Deferred, and Closed work using state
   classifications reported by Beads, with filtering and explicit snapshot
   revision/freshness information.
 - The Board includes a safe roster of OAuth applications attached to the
@@ -75,8 +79,10 @@ start unless stewardship policy is explicitly changed.
   tests, API codegen verification, browser/mobile UAT, publisher contract tests,
   and a rollback that detaches or hides the Board without modifying Beads.
 - **Dependencies:** none. Beads 1.2.2 is currently installed from
-  Homebrew/core and is the latest stable Homebrew release as of 2026-08-26;
+  Homebrew/core and is the latest stable Homebrew release as of 2026-09-12;
   compatibility is through the normalized snapshot protocol, not a pinned
   internal database schema.
-- **Tracking:** Beads issue `campsite-4cl` remains open for this unbuilt feature;
-  child `campsite-4cl.1` tracks the separately gated AI/write follow-up.
+- **Tracking:** Beads issue `campsite-qrd` tracks the reauthorized implementation
+  and verification. Historical issue `campsite-4cl` was closed by earlier
+  product direction; child `campsite-4cl.1` tracks the separately gated AI/write
+  follow-up.

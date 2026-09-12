@@ -27,6 +27,7 @@ module BeadsBoardPublisher
     def identity
       context = json_command("context", "--json")
       status = json_command("vc", "status", "--json")
+      raise Error, "Beads identity output is invalid" unless context.is_a?(Hash) && status.is_a?(Hash)
       {
         "source_project_id" => fetch_any(context, "project_id", "project", "id"),
         "repository_display_name" => repository_display_name(context),
@@ -44,12 +45,13 @@ module BeadsBoardPublisher
       end
 
       issues = parse_export(command("export"))
-      ready_ids = ids(json_command("ready", "--json"))
+      ready_ids = ids(json_command("ready", "--json", "--limit", "0"))
       blocked_ids = ids(json_command("blocked", "--json"))
       overlap = ready_ids & blocked_ids
       raise Error, "Beads reported issues as both ready and blocked" if overlap.any?
 
       normalized = issues.map { |issue| normalize(issue, ready_ids:, blocked_ids:) }
+      raise Error, "Beads changed during collection; retry publication" unless identity == identity_data
       payload = identity_data.slice("source_project_id", "beads_version", "beads_schema_version", "branch", "revision").merge(
         "schema_version" => 1,
         "source_id" => source_id,
@@ -85,19 +87,22 @@ module BeadsBoardPublisher
       parsed = JSON.parse(stripped)
       parsed.is_a?(Array) ? parsed : [parsed]
     rescue JSON::ParserError
-      output.lines.reject { |line| line.strip.empty? }.map { |line| JSON.parse(line) }
-    rescue JSON::ParserError
-      raise Error, "Beads export returned invalid JSON"
+      begin
+        output.lines.reject { |line| line.strip.empty? }.map { |line| JSON.parse(line) }
+      rescue JSON::ParserError
+        raise Error, "Beads export returned invalid JSON"
+      end
     end
 
     def ids(value)
-      records = value.is_a?(Hash) ? value.fetch("issues", value.fetch("data", [])) : value
+      records = value.is_a?(Hash) ? value.fetch("issues", value["data"]) : value
       raise Error, "Beads classification output is invalid" unless records.is_a?(Array)
 
       records.map { |record| record.is_a?(Hash) ? fetch_any(record, "id", "issue_id") : record.to_s }.to_set
     end
 
     def normalize(raw, ready_ids:, blocked_ids:)
+      raise Error, "Beads issue must be an object" unless raw.is_a?(Hash)
       issue = raw.to_h.transform_keys(&:to_s)
       id = clean(issue.fetch("id"))
       status = clean(issue.fetch("status"))
@@ -121,12 +126,13 @@ module BeadsBoardPublisher
         "updated_at" => timestamp(issue.fetch("updated_at")),
         "closed_at" => issue["closed_at"] && timestamp(issue["closed_at"]),
       }
-    rescue KeyError, ArgumentError, TypeError => error
-      raise Error, "Beads issue cannot be normalized: #{error.message}"
+    rescue KeyError, ArgumentError, TypeError
+      raise Error, "Beads issue cannot be normalized"
     end
 
     def safe_dependencies(value)
       Array(value).filter_map do |dependency|
+        raise Error, "Beads dependency must be an object" unless dependency.is_a?(Hash)
         dependency = dependency.to_h.transform_keys(&:to_s)
         id = dependency["id"] || dependency["depends_on_id"]
         type = dependency["type"] || dependency["dependency_type"]
@@ -150,10 +156,12 @@ module BeadsBoardPublisher
         raise Error, "In-progress issue classification is incoherent" if ready
 
         blocked ? "Blocked" : "In progress"
-      else
+      when "open"
         raise Error, "Open issue classification is incoherent" if ready == blocked
 
         blocked ? "Blocked" : "Ready"
+      else
+        raise Error, "Unsupported Beads issue status"
       end
     end
 
@@ -181,7 +189,7 @@ module BeadsBoardPublisher
     end
 
     def clean(value)
-      value.to_s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "").gsub(ANSI_PATTERN, "").gsub(CONTROL_PATTERN, "").strip[0, 500]
+      value.to_s.encode("UTF-8", invalid: :replace, undef: :replace, replace: "").gsub(ANSI_PATTERN, "").gsub(CONTROL_PATTERN, "").strip.byteslice(0, 500).scrub("")
     end
 
     def canonical_json(value)

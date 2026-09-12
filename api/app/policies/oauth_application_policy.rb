@@ -19,6 +19,10 @@ class OauthApplicationPolicy < ApplicationPolicy
     confirmed_user? && org_member? && organization_membership.role_has_permission?(resource: Role::OAUTH_APPLICATION_RESOURCE, permission: Role::DESTROY_ANY_ACTION)
   end
 
+  def classify_agent?
+    confirmed_user? && org_member? && organization_membership.admin?
+  end
+
   def renew_secret?
     update?
   end

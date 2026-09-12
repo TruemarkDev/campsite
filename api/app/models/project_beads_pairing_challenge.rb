@@ -28,9 +28,17 @@ class ProjectBeadsPairingChallenge < ApplicationRecord
       [challenge, token]
     end
 
-    def consume!(token:, oauth_application:, source_project_id:, repository_display_name:)
+    def consume!(token:, oauth_application:, source_project_id:, repository_display_name:, project:, beads_version:, branch:, revision:)
+      unless source_project_id.is_a?(String) && source_project_id.match?(ProjectBeadsSnapshotSchema::ID_PATTERN) &&
+          [beads_version, branch, revision].all? { |value| value.is_a?(String) && value.present? && value.bytesize <= 500 && !value.match?(ProjectBeadsSnapshotSchema::CONTROL_PATTERN) }
+        raise ProjectBeadsSnapshotSchema::Invalid, "Invalid Beads workspace identity"
+      end
+
       transaction do
+        project.lock!
         challenge = lock.find_by!(token_digest: digest(token))
+        raise ActiveRecord::RecordNotFound unless challenge.project == project
+        raise ActiveRecord::RecordNotFound if project.archived?
         raise ActiveRecord::RecordNotFound if challenge.consumed_at? || challenge.expires_at <= Time.current
         raise ActiveRecord::RecordNotFound unless challenge.oauth_application == oauth_application
 
@@ -39,6 +47,7 @@ class ProjectBeadsPairingChallenge < ApplicationRecord
         raise ActiveRecord::RecordInvalid, challenge unless challenge.project.kept_project_memberships.exists?(oauth_application: oauth_application)
 
         source = challenge.project.project_beads_source || challenge.project.build_project_beads_source
+        source.lock! if source.persisted?
         source.assign_attributes(
           oauth_application: oauth_application,
           source_project_id: source_project_id,

@@ -23,7 +23,8 @@ class BeadsBoardPublisherTest < Minitest::Test
       @commands << command
       @working_directories << chdir
       key = command.drop(2).join(" ")
-      [@outputs.fetch(key), "", Status.new(true)]
+      value = @outputs.fetch(key)
+      [value.is_a?(Array) ? value.shift : value, "", Status.new(true)]
     end
   end
 
@@ -32,7 +33,7 @@ class BeadsBoardPublisherTest < Minitest::Test
       "context --json" => JSON.generate(project_id: "campsite.board", repo_root: "/private/repo/campsite", bd_version: "1.2.2", schema_version: "1"),
       "vc status --json" => JSON.generate(branch: "main", revision: "abc123"),
       "export" => JSON.generate([{ id: "campsite-4cl.1", title: "\e[31mBoard\e[0m", description: "secret", status: "open", priority: 1, issue_type: "feature", labels: ["api"], created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }]),
-      "ready --json" => JSON.generate([{ id: "campsite-4cl.1" }]),
+      "ready --json --limit 0" => JSON.generate([{ id: "campsite-4cl.1" }]),
       "blocked --json" => "[]",
     )
     collector = BeadsBoardPublisher::Collector.new(beads_bin: "/usr/bin/bd", repository: "/private/repo", runner: runner)
@@ -48,10 +49,12 @@ class BeadsBoardPublisherTest < Minitest::Test
       ["/usr/bin/bd", "--readonly", "context", "--json"],
       ["/usr/bin/bd", "--readonly", "vc", "status", "--json"],
       ["/usr/bin/bd", "--readonly", "export"],
-      ["/usr/bin/bd", "--readonly", "ready", "--json"],
+      ["/usr/bin/bd", "--readonly", "ready", "--json", "--limit", "0"],
       ["/usr/bin/bd", "--readonly", "blocked", "--json"],
+      ["/usr/bin/bd", "--readonly", "context", "--json"],
+      ["/usr/bin/bd", "--readonly", "vc", "status", "--json"],
     ], runner.commands
-    assert_equal ["/private/repo"] * 5, runner.working_directories
+    assert_equal ["/private/repo"] * 7, runner.working_directories
   end
 
   def test_fails_closed_on_conflicting_native_classification
@@ -59,7 +62,7 @@ class BeadsBoardPublisherTest < Minitest::Test
       "context --json" => JSON.generate(project_id: "campsite.board", repo_root: "/repo", bd_version: "1.2.2"),
       "vc status --json" => JSON.generate(branch: "main", revision: "abc123"),
       "export" => JSON.generate([{ id: "x.1", title: "X", status: "open", priority: 1, issue_type: "task", created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }]),
-      "ready --json" => JSON.generate([{ id: "x.1" }]),
+      "ready --json --limit 0" => JSON.generate([{ id: "x.1" }]),
       "blocked --json" => JSON.generate([{ id: "x.1" }]),
     )
 
@@ -73,7 +76,7 @@ class BeadsBoardPublisherTest < Minitest::Test
       "context --json" => JSON.generate(project_id: "campsite.board", repo_root: "/repo", bd_version: "1.2.2"),
       "vc status --json" => JSON.generate(branch: "main", commit: "abc123"),
       "export" => JSON.generate([{ id: "x.1", title: "Working", status: "in_progress", priority: 1, issue_type: "task", created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }]),
-      "ready --json" => "[]",
+      "ready --json --limit 0" => "[]",
       "blocked --json" => "[]",
     )
 
@@ -87,7 +90,7 @@ class BeadsBoardPublisherTest < Minitest::Test
       "context --json" => JSON.generate(project_id: "campsite.board", repo_root: "/repo", bd_version: "1.2.2"),
       "vc status --json" => JSON.generate(branch: "main", commit: "abc123"),
       "export" => JSON.generate([{ id: "x.1", title: "Later", status: "deferred", priority: 1, issue_type: "task", created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }]),
-      "ready --json" => "[]",
+      "ready --json --limit 0" => "[]",
       "blocked --json" => "[]",
     )
 
@@ -110,7 +113,7 @@ class BeadsBoardPublisherTest < Minitest::Test
           ["context", "--json"] => { project_id: "campsite.board", repo_root: #{directory.inspect}, bd_version: "1.2.2", schema_version: "1" },
           ["vc", "status", "--json"] => { branch: "main", revision: "abc123" },
           ["export"] => [{ id: "campsite-4cl.1", title: "Board", status: "open", priority: 1, issue_type: "feature", labels: ["api"], created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }],
-          ["ready", "--json"] => [{ id: "campsite-4cl.1" }],
+          ["ready", "--json", "--limit", "0"] => [{ id: "campsite-4cl.1" }],
           ["blocked", "--json"] => [],
         }
         expected_directory = File.realpath(#{directory.inspect})
@@ -159,5 +162,77 @@ class BeadsBoardPublisherTest < Minitest::Test
       assert_equal "source-1", JSON.parse(request_body).fetch("source_id")
       refute_includes request_body, directory
     end
+  end
+
+  def test_malformed_native_records_fail_with_safe_diagnostics
+    invalid_outputs = [
+      { "context --json" => "[]" },
+      { "export" => "{broken}\n{also broken}" },
+      { "export" => "[42]" },
+      { "ready --json --limit 0" => "{}" },
+      { "export" => JSON.generate([fixture_issue.merge(dependencies: [42])]) },
+      { "export" => JSON.generate([fixture_issue.merge(status: "unsupported")]) },
+    ]
+    invalid_outputs.each do |overrides|
+      error = assert_raises(BeadsBoardPublisher::Error) { collect(fixture_outputs.merge(overrides)) }
+      refute_includes error.message, "/private/repo"
+    end
+  end
+
+  def test_rejects_source_revision_change_during_collection
+    error = assert_raises(BeadsBoardPublisher::Error) do
+      collect(fixture_outputs.merge("vc status --json" => [JSON.generate(branch: "main", revision: "one"), JSON.generate(branch: "main", revision: "two")]))
+    end
+    assert_equal "Beads changed during collection; retry publication", error.message
+  end
+
+  def test_unicode_metadata_fits_the_api_byte_limit
+    snapshot = collect(fixture_outputs.merge("export" => JSON.generate([fixture_issue.merge(title: "界" * 500)])))
+    title = snapshot.fetch("issues").first.fetch("title")
+    assert_operator title.bytesize, :<=, 500
+    assert title.valid_encoding?
+  end
+
+  def test_http_responses_are_bounded_and_fail_closed
+    [200, 401, 404, 422, 500].each do |code|
+      server = TCPServer.new("127.0.0.1", 0)
+      server_thread = Thread.new do
+        socket = server.accept
+        headers = +""
+        headers << socket.readpartial(1024) until headers.include?("\r\n\r\n")
+        socket.write("HTTP/1.1 #{code} Result\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{}")
+        socket.close
+      end
+      client = BeadsBoardPublisher::Client.new(api_base_url: "http://127.0.0.1:#{server.addr[1]}", org_slug: "fixture", project_id: "fixture", token: "fixture-token")
+      if code == 200
+        assert_equal({}, client.publish({}))
+      else
+        error = assert_raises(BeadsBoardPublisher::Error) { client.publish({}) }
+        assert_equal "Campsite rejected the request (HTTP #{code})", error.message
+      end
+    ensure
+      server_thread&.join(2)
+      server&.close
+    end
+  end
+
+  private
+
+  def fixture_issue
+    { id: "x.1", title: "Fixture", status: "open", priority: 1, issue_type: "task", created_at: "2026-08-28T00:00:00Z", updated_at: "2026-08-28T01:00:00Z" }
+  end
+
+  def fixture_outputs
+    {
+      "context --json" => JSON.generate(project_id: "fixture", project_name: "Fixture", bd_version: "1.2.2"),
+      "vc status --json" => JSON.generate(branch: "main", revision: "one"),
+      "export" => JSON.generate([fixture_issue]),
+      "ready --json --limit 0" => JSON.generate([{ id: "x.1" }]),
+      "blocked --json" => "[]",
+    }
+  end
+
+  def collect(outputs)
+    BeadsBoardPublisher::Collector.new(beads_bin: "bd", repository: "/private/repo", runner: Runner.new(outputs)).snapshot(source_id: "source", expected_source_project_id: "fixture")
   end
 end

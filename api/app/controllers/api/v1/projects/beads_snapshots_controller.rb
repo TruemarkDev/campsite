@@ -8,6 +8,15 @@ module Api
 
         rescue_from ProjectBeadsSnapshotSchema::Invalid, with: :render_invalid_snapshot
 
+        response model: ProjectBeadsBoardSerializer, code: 200
+        def show
+          authorize(current_project, :read_beads_board?)
+          source = current_project.project_beads_source
+          raise ActiveRecord::RecordNotFound unless source&.verified?
+
+          render(json: ProjectBeadsBoardSerializer.render_as_hash(source))
+        end
+
         response model: ProjectBeadsSnapshotSerializer, code: 200
         def create
           source = current_project.project_beads_source
@@ -15,7 +24,7 @@ module Api
           raise Pundit::NotAuthorizedError unless source.oauth_application == current_oauth_application && source.connector_attached?
 
           authorize(current_project, :read_beads_board?)
-          snapshot = ProjectBeadsSnapshot.ingest!(source: source, attributes: request.request_parameters.except("beads_snapshot"))
+          snapshot = ProjectBeadsSnapshot.ingest!(source: source, attributes: request.request_parameters.except("beads_snapshot"), oauth_application: current_oauth_application)
           render(json: ProjectBeadsSnapshotSerializer.render_as_hash(snapshot))
         end
 

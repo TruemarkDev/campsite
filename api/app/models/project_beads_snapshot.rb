@@ -7,14 +7,22 @@ class ProjectBeadsSnapshot < ApplicationRecord
   validates :beads_version, :branch, :revision, :digest, presence: true
   validates :digest, uniqueness: { scope: :project_beads_source_id }, format: { with: /\A[0-9a-f]{64}\z/ }
   validates :collected_at, :ingested_at, presence: true
+  validate :immutable_snapshot, on: :update
+
+  def immutable_snapshot
+    errors.add(:base, "accepted snapshots are immutable") if changed?
+  end
 
   class << self
-    def ingest!(source:, attributes:)
-      normalized = ProjectBeadsSnapshotSchema.validate!(attributes, source: source)
+    def ingest!(source:, attributes:, oauth_application: nil)
       advanced = false
 
       snapshot = transaction do
         source.lock!
+        raise ActiveRecord::RecordNotFound if source.project.archived?
+        raise Pundit::NotAuthorizedError unless source.connector_attached?
+        raise Pundit::NotAuthorizedError if oauth_application && source.oauth_application != oauth_application
+        normalized = ProjectBeadsSnapshotSchema.validate!(attributes, source: source)
         existing = source.snapshots.find_by(digest: normalized.fetch("digest"))
         next existing if existing
 
@@ -43,11 +51,13 @@ class ProjectBeadsSnapshot < ApplicationRecord
       end
 
       if advanced
-        PusherTriggerJob.perform_async(
-          source.project.organization.channel_name,
-          "project-beads-board-stale",
-          { project_id: source.project.public_id }.to_json,
-        )
+        source.project.members.kept.includes(:user).each do |member|
+          PusherTriggerJob.perform_async(
+            member.user.channel_name,
+            "project-beads-board-stale",
+            { organization_slug: source.project.organization.slug, project_id: source.project.public_id }.to_json,
+          )
+        end
       end
 
       snapshot

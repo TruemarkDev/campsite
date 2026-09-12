@@ -104,7 +104,7 @@ module Api
           assert_equal "https://new-example.com", json_response["redirect_uri"]
         end
 
-        test "organization integration manager classifies an application as agent-capable" do
+        test "organization admin classifies an application as agent-capable" do
           sign_in @admin.user
 
           put(
@@ -116,6 +116,17 @@ module Api
           assert_response :ok
           assert_predicate @oauth_app.reload, :agent_capable?
           assert_equal true, json_response["agent_capable"]
+        end
+
+        test "ordinary members cannot classify an application as agent-capable" do
+          member = create(:organization_membership, :member, organization: @org)
+          sign_in member.user
+
+          put organization_oauth_application_path(@org.slug, @oauth_app.public_id),
+            params: { agent_capable: true }, as: :json
+
+          assert_response :forbidden
+          assert_not @oauth_app.reload.agent_capable?
         end
 
         test "updates webhooks" do

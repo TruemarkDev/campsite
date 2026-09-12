@@ -20,8 +20,11 @@ const ProjectBoardPage: PageWithLayout<any> = () => {
   const { scope } = useScope()
   const projectId = useGetProjectId()
   const getProject = useGetProject({ id: projectId })
-  const getBoard = useGetProjectBeadsBoard({ projectId: `${projectId}`, enabled: !!projectId })
-  const boardIsUnavailable = getBoard.error instanceof ApiError && [403, 404].includes(getBoard.error.status)
+  const getBoard = useGetProjectBeadsBoard({ projectId: `${projectId}`, enabled: !!getProject.data?.viewer_is_member })
+  const boardIsUnavailable =
+    getBoard.isUnavailable ||
+    (!!getProject.data && !getProject.data.viewer_is_member) ||
+    (getBoard.error instanceof ApiError && [403, 404].includes(getBoard.error.status))
 
   useEffect(() => {
     if (projectId && boardIsUnavailable) router.replace(`/${scope}/projects/${projectId}`)

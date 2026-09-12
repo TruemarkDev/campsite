@@ -1,0 +1,16 @@
+{
+  "unchanged": true,
+  "columns": {
+    "Closed": 1,
+    "Deferred": 1,
+    "Blocked": 1,
+    "Ready": 1,
+    "In progress": 1
+  },
+  "hashes": {
+    "status": "3647f2597fd12a60f29820b7f8592743603ee36226f34dbf8f893df260a918fc",
+    "export": "2617a27ee2a93cc575b0ac43afb870abd38703532550a0a3d649957916d2afa0",
+    "git": "189472e09d53d9d8f188a98b2b6b78bb029c2d14027e384e47893507e0df719d"
+  },
+  "file_count": 79
+}

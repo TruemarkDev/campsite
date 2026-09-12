@@ -28,7 +28,7 @@ module Api
         private
 
         def feature_enabled?
-          Flipper.enabled?(:channel_beads_board, current_user) || Flipper.enabled?(:channel_beads_board, current_organization)
+          Flipper.enabled?(:channel_beads_board, current_organization)
         end
       end
     end

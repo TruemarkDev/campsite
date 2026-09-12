@@ -68,6 +68,15 @@ function renderBoard(
 }
 
 describe('ProjectBeadsBoardView', () => {
+  it('shows source identity and collection metadata for a populated snapshot', () => {
+    renderBoard(board([card()]))
+
+    expect(screen.getByText('Source beads-project-1')).not.toBeNull()
+    expect(screen.getByTitle('abc123')).not.toBeNull()
+    expect(screen.getByTitle(/^Collected /)).not.toBeNull()
+    expect(screen.getByTitle(/^Ingested /)).not.toBeNull()
+  })
+
   it('renders untrusted task metadata as plain text and safe blocker ids', () => {
     const title = '<img src=x onerror=alert(1)> **plain**'
 

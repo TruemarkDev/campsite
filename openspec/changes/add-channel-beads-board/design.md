@@ -300,7 +300,7 @@ explicit warning and authorization review.
 ## Risks / Trade-offs
 
 - **RISK-1 — A channel can have a broader audience than the repository's Beads
-  database.** → Source setup shows the exact channel visibility and the
+  database.** → Source setup states that channel members receive the
   allowlisted fields before confirmation; only a member with integration
   management permission can attach it, and Board reads require explicit kept
   project membership rather than public-channel `view-any` access.
@@ -314,8 +314,10 @@ explicit warning and authorization review.
   snapshot locally, fail closed on missing/invalid fields, and keep the previous
   snapshot. Never bind Rails to Beads' Dolt schema.
 - **RISK-5 — Large closed histories increase storage and client work.** → Bound
-  accepted payloads, page/progressively reveal Closed cards, and prune old
-  immutable snapshots while retaining the current one.
+  accepted payloads to 5,000 issues and progressively reveal Closed cards.
+  ❌ Automatic historical-snapshot pruning is unbuilt; accepted audit snapshots
+  remain until source detach or channel deletion. Operators must account for
+  this retention when choosing publication frequency.
 - **RISK-6 — `agent_capable` is manually misclassified.** → Default false,
   restrict changes to organization integration managers, and describe the value
   as classification rather than verified runtime behavior.

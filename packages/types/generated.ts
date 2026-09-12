@@ -274,6 +274,7 @@ export type Project = {
   viewer_can_destroy: boolean
   viewer_can_unarchive: boolean
   viewer_can_update: boolean
+  viewer_can_manage_beads_source: boolean
   viewer_has_subscribed: boolean
   viewer_subscription: 'posts_and_comments' | 'new_posts' | 'none'
   viewer_is_member: boolean
@@ -1970,6 +1971,7 @@ export type OrganizationFeaturesGetResponse = {
     | 'api_endpoint_list_members'
     | 'api_endpoint_list_posts'
     | 'multi_org_apps'
+    | 'channel_beads_board'
     | 'smart_digests'
     | 'sync_members'
     | 'true_up_annual_subscriptions'
@@ -2032,6 +2034,7 @@ export type Organization = {
     | 'api_endpoint_list_members'
     | 'api_endpoint_list_posts'
     | 'multi_org_apps'
+    | 'channel_beads_board'
     | 'smart_digests'
     | 'sync_members'
     | 'true_up_annual_subscriptions'
@@ -2456,6 +2459,9 @@ export type OrganizationProjectBeadsSourcePairingCompletionPostRequest = {
   challenge: string
   source_project_id: string
   repository_display_name: string
+  beads_version: string
+  branch: string
+  revision: string
 }
 
 export type ProjectBeadsPairing = {
@@ -4953,6 +4959,13 @@ export type PostProjectsBeadsSourcePairingsParams = {
 }
 
 export type PostProjectsBeadsSourcePairingsData = ProjectBeadsPairing
+
+export type GetProjectsBeadsSourceSnapshotParams = {
+  orgSlug: string
+  projectId: string
+}
+
+export type GetProjectsBeadsSourceSnapshotData = ProjectBeadsBoard
 
 export type PostProjectsBeadsSourceSnapshotsParams = {
   orgSlug: string
@@ -11656,6 +11669,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
             method: 'POST',
             body: data,
             type: ContentType.Json,
+            format: 'json',
+            ...params
+          })
+      }
+    },
+
+    /**
+     * No description
+     *
+     * @name GetProjectsBeadsSourceSnapshot
+     * @request GET:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/snapshot
+     */
+    getProjectsBeadsSourceSnapshot: () => {
+      const base = 'GET:/v1/organizations/{org_slug}/projects/{project_id}/beads_source/snapshot' as const
+
+      return {
+        baseKey: dataTaggedQueryKey<GetProjectsBeadsSourceSnapshotData>([base]),
+        requestKey: (orgSlug: string, projectId: string) =>
+          dataTaggedQueryKey<GetProjectsBeadsSourceSnapshotData>([base, orgSlug, projectId]),
+        request: (orgSlug: string, projectId: string, params: RequestParams = {}) =>
+          this.request<GetProjectsBeadsSourceSnapshotData>({
+            path: `/v1/organizations/${orgSlug}/projects/${projectId}/beads_source/snapshot`,
+            method: 'GET',
             format: 'json',
             ...params
           })

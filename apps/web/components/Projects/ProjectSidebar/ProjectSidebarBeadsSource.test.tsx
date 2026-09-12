@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   createPairing: vi.fn(),
   deleteSource: vi.fn(),
   replaceRoute: vi.fn(),
-  useGetCurrentUser: vi.fn(),
+  useCurrentOrganizationHasFeature: vi.fn(),
   useGetProjectBeadsBoard: vi.fn(),
   useGetProjectOauthApps: vi.fn()
 }))
@@ -20,7 +20,9 @@ vi.mock('next/router', () => ({
 }))
 
 vi.mock('@/contexts/scope', () => ({ useScope: () => ({ scope: 'acme' }) }))
-vi.mock('@/hooks/useGetCurrentUser', () => ({ useGetCurrentUser: mocks.useGetCurrentUser }))
+vi.mock('@/hooks/useCurrentOrganizationHasFeature', () => ({
+  useCurrentOrganizationHasFeature: mocks.useCurrentOrganizationHasFeature
+}))
 vi.mock('@/hooks/useGetProjectBeadsBoard', () => ({ useGetProjectBeadsBoard: mocks.useGetProjectBeadsBoard }))
 vi.mock('@/hooks/useGetProjectOauthApps', () => ({ useGetProjectOauthApps: mocks.useGetProjectOauthApps }))
 vi.mock('@/utils/apiErrorToast', () => ({ apiErrorToast: vi.fn() }))
@@ -40,7 +42,8 @@ const project = {
   archived: false,
   personal: false,
   viewer_is_member: true,
-  viewer_can_update: true
+  viewer_can_update: true,
+  viewer_can_manage_beads_source: true
 } as Project
 
 const currentBoard: ProjectBeadsBoard = {
@@ -85,10 +88,18 @@ function expectCurrentBoardVisible() {
 }
 
 describe('ProjectSidebarBeadsSource', () => {
+  it('hides setup and cached source metadata when the feature is disabled', () => {
+    mocks.useCurrentOrganizationHasFeature.mockReturnValue(false)
+    renderSource()
+
+    expect(screen.queryByText('Current repository')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Replace source' })).toBeNull()
+  })
+
   beforeEach(() => {
     vi.clearAllMocks()
     vi.useRealTimers()
-    mocks.useGetCurrentUser.mockReturnValue({ data: { unconfirmed_email: null } })
+    mocks.useCurrentOrganizationHasFeature.mockReturnValue(true)
     mocks.useGetProjectBeadsBoard.mockReturnValue({ data: currentBoard })
     mocks.useGetProjectOauthApps.mockReturnValue({
       data: [{ id: 'connector-2', name: 'Replacement publisher' }],
@@ -182,7 +193,7 @@ describe('ProjectSidebarBeadsSource', () => {
   })
 
   it('does not expose source controls without membership and management permission', () => {
-    const { rerender } = renderSource({ ...project, viewer_can_update: false } as Project)
+    const { rerender } = renderSource({ ...project, viewer_can_manage_beads_source: false } as Project)
 
     expectCurrentBoardVisible()
     expect(screen.queryByRole('button', { name: 'Replace source' })).toBeNull()

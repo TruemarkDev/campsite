@@ -29,6 +29,44 @@ class ProjectBeadsSnapshotTest < ActiveSupport::TestCase
     assert_includes @source.errors[:oauth_application], "must have a kept project attachment"
   end
 
+  test "source rejects another organization duplicate binding and discarded connector" do
+    other_application = create(:oauth_application)
+    @source.oauth_application = other_application
+    assert_not @source.valid?
+    assert_includes @source.errors[:oauth_application], "must belong to the project organization"
+
+    duplicate = @source.reload.dup
+    assert_not duplicate.valid?
+    assert_includes duplicate.errors[:project_id], "has already been taken"
+
+    @application.discard!
+    assert_not @source.reload.valid?
+  end
+
+  test "roster follows classification and attachment without inferring presence" do
+    generic = create(:oauth_application, owner: @admin.organization, creator: @admin)
+    @project.add_oauth_application!(generic)
+    assert_equal [@application.id], @source.roster_entries.map { |entry| entry[:application].id }
+    assert_equal ["Beads publisher"], @source.roster_entries.first[:roles]
+
+    generic.update!(agent_capable: true)
+    assert_includes @source.roster_entries.map { |entry| entry[:application].id }, generic.id
+    generic.update!(agent_capable: false)
+    assert_not_includes @source.roster_entries.map { |entry| entry[:application].id }, generic.id
+
+    snapshot = ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
+    @project.remove_oauth_application!(@application)
+    assert_empty @source.roster_entries
+    assert_equal snapshot.id, @source.reload.current_snapshot_id
+  end
+
+  test "deleting a project removes cached source and snapshots" do
+    snapshot = ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
+    @project.destroy!
+    assert_not ProjectBeadsSource.exists?(@source.id)
+    assert_not ProjectBeadsSnapshot.exists?(snapshot.id)
+  end
+
   test "validates, persists, and idempotently reuses a safe snapshot" do
     payload = snapshot_payload
 
@@ -67,6 +105,28 @@ class ProjectBeadsSnapshotTest < ActiveSupport::TestCase
     assert_equal "Deferred", snapshot.payload.first.fetch("board_state")
   end
 
+  test "rejects non-object snapshots issues and dependencies without persisting" do
+    [nil, "invalid", 42, [], true].each do |value|
+      assert_no_difference -> { ProjectBeadsSnapshot.count } do
+        assert_raises(ProjectBeadsSnapshotSchema::Invalid) do
+          ProjectBeadsSnapshot.ingest!(source: @source, attributes: value)
+        end
+
+        payload = snapshot_payload
+        payload["issues"] = [value]
+        assert_raises(ProjectBeadsSnapshotSchema::Invalid) do
+          ProjectBeadsSnapshot.ingest!(source: @source, attributes: payload)
+        end
+
+        payload = snapshot_payload
+        payload["issues"].first["dependencies"] = [value]
+        assert_raises(ProjectBeadsSnapshotSchema::Invalid) do
+          ProjectBeadsSnapshot.ingest!(source: @source, attributes: payload)
+        end
+      end
+    end
+  end
+
   test "retains an older accepted snapshot for audit without replacing the current snapshot" do
     current = ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
     older_payload = snapshot_payload(collected_at: 1.hour.ago, revision: "older")
@@ -74,6 +134,21 @@ class ProjectBeadsSnapshotTest < ActiveSupport::TestCase
 
     assert_not_equal current, older
     assert_equal current, @source.reload.current_snapshot
+  end
+
+  test "invalidation reaches only attached members and only when the pointer advances" do
+    outsider = create(:organization_membership, organization: @admin.organization)
+    PusherTriggerJob.clear
+    payload = snapshot_payload
+    ProjectBeadsSnapshot.ingest!(source: @source, attributes: payload)
+    events = PusherTriggerJob.jobs.select { |job| job["args"][1] == "project-beads-board-stale" }
+    assert_equal [@admin.user.channel_name], events.map { |job| job["args"][0] }
+    assert_not_includes events.map { |job| job["args"][0] }, outsider.user.channel_name
+
+    assert_no_difference -> { PusherTriggerJob.jobs.size } do
+      ProjectBeadsSnapshot.ingest!(source: @source, attributes: payload)
+      ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload(collected_at: 1.hour.ago))
+    end
   end
 
   test "database rejects a current snapshot owned by another source" do
@@ -106,6 +181,55 @@ class ProjectBeadsSnapshotTest < ActiveSupport::TestCase
       end
     end
     assert_not ProjectBeadsSnapshot.exists?(snapshot.id)
+  end
+
+  test "channel export excludes the attached source snapshot and agent roster" do
+    ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
+    @application.update!(agent_capable: true)
+    export = create(:data_export, subject: @project, member: @admin)
+    resource = create(:data_export_resource, data_export: export, resource_type: :project, resource_id: @project.id)
+    resource.expects(:write_to_s3).with do |path, body|
+      assert_equal "#{@project.export_root_path}/channel.json", path
+      assert_equal %w[accessory archived created_at description id members name private], JSON.parse(body).keys.sort
+      assert_not_includes body, @source.source_project_id
+      assert_not_includes body, "Read only board"
+      assert_not_includes body, @application.public_id
+      true
+    end
+
+    resource.export_project
+  end
+
+  test "invalid snapshot primitives and forbidden fields preserve the last good snapshot" do
+    current = ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
+    mutations = [
+      ->(payload) { payload["schema_version"] = 2 },
+      ->(payload) { payload["source_project_id"] = "other" },
+      ->(payload) { payload["issues"] *= 2 },
+      ->(payload) { payload["issues"] = Array.new(5_001) { payload["issues"].first } },
+      ->(payload) { payload["issues"].first["title"] = "x" * 501 },
+      ->(payload) { payload["issues"].first["title"] = "hidden\e[31m" },
+      ->(payload) { payload["issues"].first["priority"] = "high" },
+      ->(payload) { payload["issues"].first["board_state"] = "Closed" },
+      ->(payload) { payload["issues"].first["updated_at"] = "not a timestamp" },
+      ->(payload) { payload["issues"].first["notes"] = "private" },
+      ->(payload) { payload["issues"].first["dependencies"] = [{ "id" => "other", "type" => "blocks", "description" => "private" }] },
+    ]
+    mutations.each do |mutate|
+      payload = snapshot_payload
+      mutate.call(payload)
+      payload["digest"] = digest(payload.except("digest"))
+      assert_no_difference -> { ProjectBeadsSnapshot.count } do
+        assert_raises(ProjectBeadsSnapshotSchema::Invalid) { ProjectBeadsSnapshot.ingest!(source: @source, attributes: payload) }
+      end
+      assert_equal current, @source.reload.current_snapshot
+    end
+  end
+
+  test "accepted snapshot metadata cannot be edited" do
+    snapshot = ProjectBeadsSnapshot.ingest!(source: @source, attributes: snapshot_payload)
+    assert_raises(ActiveRecord::RecordInvalid) { snapshot.update!(revision: "edited") }
+    assert_equal "abc123", snapshot.reload.revision
   end
 
   private

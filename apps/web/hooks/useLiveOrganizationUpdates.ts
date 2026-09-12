@@ -10,6 +10,7 @@ import { apiClient, setTypedQueryData } from '@/utils/queryClient'
 import { setNormalizedData } from '@/utils/queryNormalization'
 
 import { useBindChannelEvent } from './useBindChannelEvent'
+import { useCurrentUserChannel } from './useCurrentUserChannel'
 import { useOrganizationChannel } from './useOrganizationChannel'
 
 interface NewPostEvent {
@@ -20,6 +21,7 @@ interface NewPostEvent {
 }
 
 interface ProjectBeadsBoardStaleEvent {
+  organization_slug: string
   project_id: string
 }
 
@@ -29,6 +31,7 @@ const getSyncMembers = apiClient.organizations.getSyncMembers()
 export function useLiveOrganizationUpdates(organization?: Organization) {
   const queryClient = useQueryClient()
   const organizationChannel = useOrganizationChannel(organization)
+  const { channel: userChannel } = useCurrentUserChannel()
   const { scope } = useScope()
   const queryNormalizer = useQueryNormalizer()
   const { data: currentUser } = useGetCurrentUser()
@@ -94,13 +97,11 @@ export function useLiveOrganizationUpdates(organization?: Organization) {
   )
 
   const invalidateProjectBeadsBoard = useCallback(
-    ({ project_id }: ProjectBeadsBoardStaleEvent) => {
-      if (!organization) return
+    ({ organization_slug, project_id }: ProjectBeadsBoardStaleEvent) => {
+      if (!organization || organization.slug !== organization_slug) return
 
       queryClient.invalidateQueries({
-        queryKey: apiClient.organizations
-          .getProjectsBeadsBoard()
-          .requestKey(organization.slug, project_id)
+        queryKey: apiClient.organizations.getProjectsBeadsBoard().requestKey(organization.slug, project_id)
       })
     },
     [organization, queryClient]
@@ -108,5 +109,5 @@ export function useLiveOrganizationUpdates(organization?: Organization) {
 
   useBindChannelEvent(organizationChannel, 'posts-stale', invalidateFeedQueries)
   useBindChannelEvent(organizationChannel, 'user-stale', updateUser)
-  useBindChannelEvent(organizationChannel, 'project-beads-board-stale', invalidateProjectBeadsBoard)
+  useBindChannelEvent(userChannel, 'project-beads-board-stale', invalidateProjectBeadsBoard)
 }

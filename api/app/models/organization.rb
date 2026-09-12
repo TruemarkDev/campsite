@@ -18,6 +18,7 @@ class Organization < ApplicationRecord
     :api_endpoint_list_members, # deprecated on 10/21/24
     :api_endpoint_list_posts, # deprecated on 10/14/24
     :multi_org_apps,
+    :channel_beads_board,
   ]
   ACTIVE_SUBSCRIPTION_STATUSES = ["active", "past_due", "trialing", "unpaid"].freeze
 

@@ -414,6 +414,7 @@ Rails.application.routes.draw do
           resource :data_exports, only: [:create]
           resource :beads_board, only: [:show], controller: "beads_boards"
           resource :beads_source, only: [:show, :destroy], controller: "beads_sources" do
+            resource :snapshot, only: [:show], controller: "beads_snapshots"
             resources :pairings, only: [:create], controller: "beads_pairings"
             resource :pairing_completion, only: [:create], controller: "beads_pairing_completions"
             resources :snapshots, only: [:create], controller: "beads_snapshots"

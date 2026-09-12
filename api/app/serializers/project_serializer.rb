@@ -61,6 +61,14 @@ class ProjectSerializer < ApiSerializer
     options[:member].role_has_permission?(resource: Role::PROJECT_RESOURCE, permission: Role::UPDATE_ANY_ACTION)
   end
 
+  api_field :viewer_can_manage_beads_source, type: :boolean do |project, options|
+    member = options[:member]
+    next false unless member
+
+    !!preloads(options, :viewer_is_member, project.id) && member.user.confirmed? &&
+      member.role_has_permission?(resource: Role::PROJECT_RESOURCE, permission: Role::UPDATE_ANY_ACTION)
+  end
+
   api_field :viewer_has_subscribed, type: :boolean do |project, options|
     !!preloads(options, :viewer_subscription, project.id)
   end

@@ -68,6 +68,7 @@ module Api
       end
       def update
         authorize(current_oauth_application, :update?)
+        authorize(current_oauth_application, :classify_agent?) if params.key?(:agent_capable)
 
         current_oauth_application.assign_attributes(params.permit(:name, :redirect_uri, :avatar_path, :agent_capable))
 

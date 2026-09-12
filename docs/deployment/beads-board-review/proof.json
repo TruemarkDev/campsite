@@ -1,0 +1,17 @@
+{
+  "evidence": [
+    "Post channel: UI pairing, native publisher, waiting state, keyboard navigation, columns, Closed filter, title filter, attached roster passed",
+    "Chat channel: UI pairing, native publisher, waiting state, keyboard navigation, columns, Closed filter, title filter, attached roster passed",
+    "Mobile Board renders at 390x844 with reduced motion",
+    "Explicit guest read and nonmember denial passed via authenticated API",
+    "Archive rejects publication and retains the snapshot; unarchive restores publication",
+    "A browser refresh failure keeps the last good cards and displays the failure state",
+    "Public-channel nonmembers can read the channel but cannot read its Board",
+    "UI detach removes source data and returns the viewer to the channel root",
+    "Disabling the feature hides the route and blocks reads while Beads revision and export remain unchanged"
+  ],
+  "projects": [
+    "hsh6pwm4pl4b",
+    "7ftl4ubom1s5"
+  ]
+}

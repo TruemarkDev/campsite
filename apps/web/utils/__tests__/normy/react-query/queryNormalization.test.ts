@@ -37,6 +37,7 @@ const createSampleProject = (partial: Partial<Project> = {}): Project => ({
   viewer_can_destroy: false,
   viewer_can_unarchive: true,
   viewer_can_update: true,
+  viewer_can_manage_beads_source: true,
   viewer_has_subscribed: false,
   viewer_is_member: true,
   unread_for_viewer: false,

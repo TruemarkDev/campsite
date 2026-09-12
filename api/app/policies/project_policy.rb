@@ -94,7 +94,7 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def read_beads_board?
-    project_member? || project_integration?
+    project_member? || (!!@actor.application&.kept? && project_integration?)
   end
 
   def list_pins?
