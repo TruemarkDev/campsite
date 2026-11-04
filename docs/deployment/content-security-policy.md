@@ -96,6 +96,9 @@ It builds with a restricted environment, starts an owned loopback Next.js server
 uses an isolated headless browser with external requests blocked, and removes its
 own temporary build directory. It needs no Rails database or authenticated session.
 
+Published implementation: GitHub `TruemarkDev/campsite` commit `d0a08d1`;
+the remote main revision was independently verified after a normal push.
+
 🟡 No live deployment was performed. Authenticated calls/desktop compatibility and
 enforcement remain unverified, tracked as `campsite-ajx2`.
 
