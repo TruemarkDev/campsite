@@ -2,6 +2,8 @@
 
 Implementation follow-up: [PostgreSQL history, API generation and failure coverage](reliability-follow-up-2026-11-04.md) records the subsequent changes, passing checks and live acceptance limits. This report remains the dated assessment.
 
+CSP follow-up: [report-only script policy and validation](../deployment/content-security-policy.md). Enforcement remains gated on compatibility observations.
+
 Date: 2026-11-02. Checkout: `main`, baseline `2f0416b`, with pre-existing local changes. Scope: this repository only. Tracking: `campsite-b6h`.
 
 ## Assessment

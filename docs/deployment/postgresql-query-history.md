@@ -51,6 +51,37 @@ means. These aggregates do not provide request percentiles or rendering latency.
 python3 -B -m unittest discover -s script/tests -p 'test_postgresql_metrics.py'
 ```
 
+## Representative measurement plan
+
+The first comparison covered only about 28 minutes and 561 application statements.
+It is not enough evidence for broad database tuning. Use the existing collector
+over roughly a week of ordinary activity, including a busy period, search/feed
+navigation, note edits, uploads and any normally scheduled jobs/exports. If that
+week is idle, extend the window instead of treating synthetic probes as normal load.
+
+Take an initial snapshot, then another after a busy session and approximately once
+per day. Store the redacted JSON in a private operator directory outside Git;
+choose distinct filenames because the collector never overwrites existing ones.
+Compare the final snapshot with the start of the same uninterrupted interval.
+Use a fresh baseline if the collector rejects a reset, restart, failover or eviction;
+retain the earlier files as separate intervals rather than subtracting incompatible
+counters. Do not reset `pg_stat_statements` or run maintenance just to get a sample.
+
+Rank query shapes by interval total execution time, calls, mean execution time,
+temp I/O and WAL, alongside table growth/dead-tuple and maintenance trends.
+Application-role statement totals do not measure request latency or user experience.
+Investigate a small number of the highest-impact shapes; inspect exact SQL only
+inside an authorized database session, keeping SQL text and bind/customer values
+out of the exported report. Reproduce their plans on representative disposable
+data, then validate one bounded index/query change at a time against the same
+workload. A low-frequency slow statement and a cheap high-frequency statement
+need different remedies.
+
+No new collector daemon is needed: PostgreSQL already accumulates statistics.
+Manual snapshots are sufficient for this first window. Any later scheduling can
+use the existing operational scheduler after its target and retention are chosen;
+this plan installs no scheduler or system service.
+
 ## Rollout evidence and rollback
 
 Backup checkpoint `20261031-194502F_20261104-125119I` and WAL archive check passed.

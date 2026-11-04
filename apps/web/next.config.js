@@ -9,16 +9,18 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 const { deploymentImageDomains, deploymentOrigins, deploymentUrls } = require('./config/deployment')
 const { browserApiRewrites } = require('./config/browser-api')
+const { contentSecurityHeaders } = require('./config/content-security-policy')
 
 const cspResourcesByDirective = {
   'script-src': [
     "'self'",
-    // unsafe-inline required in all environments for Next.js hydration
-    // https://github.com/vercel/next.js/discussions/13418
+    // Retained during the report-only rollout: statically rendered documents
+    // contain inline Next.js hydration scripts. See docs/deployment/content-security-policy.md.
     "'unsafe-inline'",
     'todesktop-internal:',
     'blob:',
-    // unsafe-eval required in development for hot module reloading and in production for 100ms noise cancellation
+    // Development needs eval for HMR. Production necessity (including 100ms)
+    // is measured by the stricter report-only policy before enforcement changes.
     "'unsafe-eval'"
   ],
   'style-src': [
@@ -98,12 +100,6 @@ const cspResourcesByDirective = {
   ],
   'worker-src': ["'self'", 'blob:']
 }
-
-const ContentSecurityPolicy = Object.keys(cspResourcesByDirective).reduce((prevPolicyString, directive) => {
-  const resourcesString = cspResourcesByDirective[directive].filter(Boolean).join(' ')
-
-  return prevPolicyString + `${directive} ${resourcesString}; `
-}, '')
 
 /** @type {import('next').NextConfig} */
 const moduleExports = {
@@ -185,10 +181,7 @@ const moduleExports = {
         // Apply these headers to all routes in your application.
         source: '/:path*',
         headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim()
-          },
+          ...contentSecurityHeaders(cspResourcesByDirective, process.env.NODE_ENV, deploymentUrls.web),
           {
             key: 'X-Frame-Options',
             value: 'SAMEORIGIN'
