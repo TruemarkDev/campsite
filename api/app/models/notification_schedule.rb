@@ -9,34 +9,60 @@ class NotificationSchedule < ApplicationRecord
     4 => :thursday?,
     5 => :friday?,
     6 => :saturday?,
-  }
+  }.freeze
 
   belongs_to :user
 
   scope :needs_applying, -> {
     user_tz_sql = "COALESCE(users.preferred_timezone, 'UTC')"
+    if connection.adapter_name == "PostgreSQL"
+      local_now_sql = "(CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE #{user_tz_sql}"
+      local_end_sql = "CAST(CAST(#{local_now_sql} AS DATE) + end_time AS TIMESTAMP)"
+      local_date_sql = "CAST(#{local_now_sql} AS DATE)"
+      last_applied_date_sql = "CAST((last_applied_at AT TIME ZONE 'UTC') AT TIME ZONE #{user_tz_sql} AS DATE)"
+      weekday_index_sql = "EXTRACT(DOW FROM #{local_now_sql})"
+      day_predicate_sql = <<~SQL.squish
+        CASE #{weekday_index_sql}
+          WHEN 0 THEN sunday
+          WHEN 1 THEN monday
+          WHEN 2 THEN tuesday
+          WHEN 3 THEN wednesday
+          WHEN 4 THEN thursday
+          WHEN 5 THEN friday
+          WHEN 6 THEN saturday
+        END
+      SQL
+    else
+      local_now_sql = "CONVERT_TZ(:now, '+00:00', #{user_tz_sql})"
+      local_end_sql = "CAST(CONCAT(DATE(#{local_now_sql}), ' ', end_time) AS DATETIME)"
+      local_date_sql = "DATE(#{local_now_sql})"
+      last_applied_date_sql = "DATE(CONVERT_TZ(last_applied_at, '+00:00', #{user_tz_sql}))"
+      day_predicate_sql = <<~SQL.squish
+        CASE DAYOFWEEK(#{local_now_sql})
+          WHEN 1 THEN sunday
+          WHEN 2 THEN monday
+          WHEN 3 THEN tuesday
+          WHEN 4 THEN wednesday
+          WHEN 5 THEN thursday
+          WHEN 6 THEN friday
+          WHEN 7 THEN saturday
+        END
+      SQL
+    end
 
     joins(:user)
       .where(
         <<~SQL.squish, { now: Time.current }
           /* It's currently end_time or later in user's timezone */
-          CONVERT_TZ(:now, 'UTC', #{user_tz_sql}) >= CONCAT(DATE(CONVERT_TZ(:now, 'UTC', #{user_tz_sql})), ' ', end_time)
+          #{local_now_sql} >= #{local_end_sql}
           /* It's a day when this schedule should be applied */
           AND (
-            CASE DAYOFWEEK(CONVERT_TZ(:now, 'UTC', #{user_tz_sql}))
-              WHEN 1 THEN sunday = 1
-              WHEN 2 THEN monday = 1
-              WHEN 3 THEN tuesday = 1
-              WHEN 4 THEN wednesday = 1
-              WHEN 5 THEN thursday = 1
-              WHEN 6 THEN friday = 1
-              WHEN 7 THEN saturday = 1
-            END
+          #{day_predicate_sql} = TRUE
           )
           /* Schedule not already applied today in user's timezone */
           AND (
             last_applied_at IS NULL
-            OR DATE(CONVERT_TZ(last_applied_at, 'UTC', #{user_tz_sql})) < DATE(CONVERT_TZ(:now, 'UTC', #{user_tz_sql}))
+            OR #{last_applied_date_sql} < #{local_date_sql}
           )
         SQL
       )

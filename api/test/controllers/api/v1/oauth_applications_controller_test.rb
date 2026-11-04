@@ -104,6 +104,20 @@ module Api
           assert_equal "https://new-example.com", json_response["redirect_uri"]
         end
 
+        test "organization integration manager classifies an application as agent-capable" do
+          sign_in @admin.user
+
+          put(
+            organization_oauth_application_path(@org.slug, @oauth_app.public_id),
+            params: { agent_capable: true },
+            as: :json,
+          )
+
+          assert_response :ok
+          assert_predicate @oauth_app.reload, :agent_capable?
+          assert_equal true, json_response["agent_capable"]
+        end
+
         test "updates webhooks" do
           sign_in @admin.user
 
@@ -125,11 +139,12 @@ module Api
           assert_response_gen_schema
           assert w1.reload.kept?
           assert_not w2.reload.kept?
-          assert_equal ["https://example.com/different-url", "https://new-example.com/webhook2"], json_response["webhooks"].pluck("url")
+          assert_equal ["https://example.com/different-url", "https://new-example.com/webhook2"], json_response["webhooks"].pluck("url").sort
           assert_equal "https://example.com/different-url", w1.reload.url
-          assert_equal "https://new-example.com/webhook2", @oauth_app.reload.active_webhooks.last.url
-          assert @oauth_app.active_webhooks.last.includes_event_type?("post.created")
-          assert @oauth_app.active_webhooks.first.includes_event_type?("comment.created")
+          assert_equal 2, @oauth_app.reload.active_webhooks.count
+          new_webhook = @oauth_app.active_webhooks.find_by!(url: "https://new-example.com/webhook2")
+          assert new_webhook.includes_event_type?("post.created")
+          assert w1.includes_event_type?("comment.created")
         end
 
         test "does not work for guests" do

@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-28
+goal: Data exports complete entirely within the homelab, use private
+  S3-compatible storage, and require no AWS provider credentials.

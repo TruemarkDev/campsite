@@ -26,7 +26,12 @@ module Api
 
           render_json(
             NotePageSerializer,
-            { results: policy_scope(Note.in_order_of(:id, ids).serializer_preload) },
+            RankedPagination.new(
+              scope: policy_scope(Note.in_order_of(:id, ids)),
+              hydration_scope: Note.serializer_preload,
+              after: params[:after],
+              limit: params[:limit],
+            ).run,
           )
         else
           scope = case params[:filter]

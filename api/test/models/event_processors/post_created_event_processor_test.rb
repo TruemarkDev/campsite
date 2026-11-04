@@ -18,7 +18,7 @@ module EventProcessors
         iteration = create(:post, parent: parent, member: parent.member, organization: @org)
         event = iteration.events.created_action.first!
 
-        assert_query_count 34 do
+        assert_query_count 33 do
           event.process!
         end
 
@@ -142,7 +142,7 @@ module EventProcessors
 
         event = post.events.created_action.first!
 
-        assert_query_count 30 do
+        assert_query_count 29 do
           event.process!
         end
 
@@ -200,7 +200,7 @@ module EventProcessors
         post = create(:post, organization: @org, project: project)
         event = post.events.created_action.first!
 
-        assert_query_count 24 do
+        assert_query_count 23 do
           event.process!
         end
 
@@ -218,7 +218,7 @@ module EventProcessors
         post = create(:post, organization: @org, project: project)
         event = post.events.created_action.first!
 
-        assert_query_count 29 do
+        assert_query_count 28 do
           event.process!
         end
 

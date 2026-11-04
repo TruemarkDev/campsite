@@ -13,6 +13,16 @@ module Admin
       end
 
       context "#show" do
+        test "matches slug prefixes without regard to case" do
+          organization = create(:organization, slug: "example-org")
+          sign_in(@staff)
+
+          get feature_organization_search_path("my_cool_feature", params: { q: "EXAMPLE" }, xhr: true)
+
+          assert_response :ok
+          assert_includes response.body, organization.slug
+        end
+
         it "returns organizations with matching slugs" do
           create(:organization, slug: "acme-inc")
           create(:organization, slug: "bluth-company")

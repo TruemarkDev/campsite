@@ -21,7 +21,7 @@ export function useCreateDesktopOrBrowserNotification() {
       sound.play().catch(() => {
         // Silently fail if autoplay is blocked
       })
-    } catch (error) {
+    } catch {
       // Silently fail
     }
 

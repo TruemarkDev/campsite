@@ -12,6 +12,7 @@ module Api
       include RequestRescuable
       include RequestReturnable
       include DatabaseRoleSwitchable
+      include MobileSessionDiagnostic
 
       before_action :require_authenticated_user
       before_action :require_authenticated_organization_membership
@@ -25,6 +26,7 @@ module Api
       before_action :ensure_cal_dot_com_token_access_restricted
       before_action :authorize_rack_mini_profiler
       before_action :set_user_preferred_timezone, if: proc { user_signed_in? && current_user.preferred_timezone.blank? }
+      after_action :verify_authorized
 
       def render_unauthorized_error(_error = nil)
         render_error(status: :unauthorized, code: "unauthorized", message: "Sign in or sign up before continuing")
@@ -111,14 +113,7 @@ module Api
       end
 
       def safe_current_organization_membership
-        if params[:org_slug]
-          begin
-            current_organization_membership
-          rescue
-            # rescue any error that might happen here,
-            # since we don't want to break the whole request
-          end
-        end
+        current_organization_membership if params[:org_slug]
       end
 
       def analytics
@@ -226,6 +221,14 @@ module Api
 
       private
 
+      def authorize_current_user
+        authorize(current_user, :manage_self?)
+      end
+
+      def authorize_current_organization_membership
+        authorize(current_organization_membership, :manage_self?)
+      end
+
       def authorize_rack_mini_profiler
         return unless current_user&.staff?
 
@@ -239,7 +242,7 @@ module Api
       end
 
       def client_ip
-        request.env["HTTP_FLY_CLIENT_IP"] || request.remote_ip
+        request.env["HTTP_CF_CONNECTING_IP"] || request.remote_ip
       end
 
       def set_user_preferred_timezone

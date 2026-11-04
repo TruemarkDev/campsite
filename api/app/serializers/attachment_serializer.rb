@@ -27,6 +27,8 @@ class AttachmentSerializer < ApiSerializer
   api_field :remote_figma_url, nullable: true
   api_field :no_video_track?, name: :no_video_track, type: :boolean, default: false
   api_field :gallery_id, nullable: true
+  api_field :transcript, nullable: true
+  api_field :transcription_job_status, nullable: true
 
   api_normalize "attachment"
 

@@ -22,7 +22,7 @@ class Project < ApplicationRecord
 
   MEMBERS_LIMIT = 2
   CAMPSITE_INSIDERS_PROD_PUBLIC_ID = "potztg2sr8pv"
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:name, :last_activity_at, :created_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:name, :last_activity_at, :created_at].freeze
 
   belongs_to :organization
   belongs_to :creator, class_name: "OrganizationMembership"
@@ -53,11 +53,13 @@ class Project < ApplicationRecord
   has_many :completed_recorded_calls, -> { completed.recorded }, class_name: "Call"
   has_one :call_room, as: :subject, dependent: :destroy_async
   has_many :display_preferences, class_name: "ProjectDisplayPreference", dependent: :destroy_async
+  has_one :project_beads_source, dependent: :destroy
+  has_many :project_beads_pairing_challenges, dependent: :destroy
 
   accepts_nested_attributes_for :bookmarks
 
   before_create :set_last_activity_at
-  after_commit :reindex_posts, if: -> { Searchkick.callbacks? && saved_change_to_name? }, on: [:update]
+  after_update :refresh_related_search_documents, if: -> { saved_change_to_name? }
   before_validation :set_tokenable
 
   scope :not_private, -> { where(private: false) }
@@ -99,13 +101,14 @@ class Project < ApplicationRecord
     )
   }
 
-  SERIALIZER_INCLUDES = [:organization, :slack_channel, :message_thread, call_room: :organization]
+  SERIALIZER_INCLUDES = [:organization, :slack_channel, :message_thread, call_room: :organization].freeze
   scope :serializer_includes, -> do
     eager_load(SERIALIZER_INCLUDES)
   end
 
   scope :search_by, ->(query_string) do
-    where("projects.name LIKE ?", "%#{query_string}%")
+    operator = connection.adapter_name == "PostgreSQL" ? "ILIKE" : "LIKE"
+    where("projects.name #{operator} ?", "%#{query_string}%")
   end
 
   validates :name,
@@ -143,13 +146,19 @@ class Project < ApplicationRecord
   def self.viewer_recent_posts_count_async(project_ids, organization_membership)
     return AsyncPreloader.value({}) unless organization_membership
 
+    age_in_days = if connection.adapter_name == "PostgreSQL"
+      "(CURRENT_DATE - posts.created_at::date)::numeric"
+    else
+      "DATEDIFF(NOW(), posts.created_at)"
+    end
+
     scope = Post.where(
       project_id: project_ids,
       member: organization_membership,
       discarded_at: nil,
       created_at: 1.month.ago..Time.current,
     )
-      .select(:project_id, "SUM(EXP(-DATEDIFF(NOW(), posts.created_at)/30)) AS _score")
+      .select(:project_id, "SUM(EXP(-(#{age_in_days})/30)) AS _score")
       .group(:project_id)
       .load_async
 
@@ -208,7 +217,6 @@ class Project < ApplicationRecord
     scope = UserSubscription.where(subscribable_type: Project.to_s)
       .where(subscribable_id: project_ids)
       .where(user_id: membership.user_id)
-      .group(:subscribable_id)
       .load_async
 
     AsyncPreloader.new(scope) { scope.index_by(&:subscribable_id) }
@@ -239,7 +247,7 @@ class Project < ApplicationRecord
       .or(
         # Has unread posts
         scope.where(views: { organization_membership: membership })
-          .where.not("posts.organization_membership_id <=> ?", membership.id)
+          .where("#{connection.adapter_name == "PostgreSQL" ? "posts.organization_membership_id IS DISTINCT FROM ?" : "NOT posts.organization_membership_id <=> ?"}", membership.id)
           .where("posts.created_at > views.last_viewed_at")
           .where(
             <<~SQL.squish, membership.id
@@ -452,8 +460,8 @@ class Project < ApplicationRecord
 
   private
 
-  def reindex_posts
-    posts.reindex(mode: :async)
+  def refresh_related_search_documents
+    posts.find_each(&:refresh_search_document)
   end
 
   def slack_client

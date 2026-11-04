@@ -51,7 +51,7 @@ export function RecentlyViewedPopover() {
           {open && (
             <PopoverPortal>
               <PopoverContent
-                className='animate-scale-fade shadow-popover dark:border-primary-opaque bg-primary relative flex w-[420px] flex-1 origin-[--radix-hover-card-content-transform-origin] flex-col overflow-hidden rounded-lg border border-transparent dark:shadow-[0px_2px_16px_rgba(0,0,0,1)]'
+                className='animate-scale-fade shadow-popover dark:border-primary-opaque bg-primary relative flex w-[420px] flex-1 origin-[var(--radix-hover-card-content-transform-origin)] flex-col overflow-hidden rounded-lg border border-transparent dark:shadow-[0px_2px_16px_rgba(0,0,0,1)]'
                 asChild
                 forceMount
                 side='bottom'
@@ -91,7 +91,7 @@ function RecentlyViewedPopoverContent({ onClose }: { onClose: () => void }) {
 
       <Command
         autoFocus
-        className='flex flex-1 flex-col ring-0 focus-visible:border-0 focus-visible:outline-none focus-visible:ring-0'
+        className='flex flex-1 flex-col ring-0 focus-visible:border-0 focus-visible:ring-0 focus-visible:outline-none'
         loop
         tabIndex={0}
       >

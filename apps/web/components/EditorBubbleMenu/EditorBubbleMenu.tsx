@@ -1,5 +1,7 @@
+/* eslint-disable max-lines */
 import { memo, MouseEvent, useCallback, useEffect, useRef, useState } from 'react'
-import { BubbleMenu, Editor, findParentNode, isList, isTextSelection } from '@tiptap/react'
+import { Editor, findParentNode, isList, isTextSelection, useEditorState } from '@tiptap/react'
+import { BubbleMenu } from '@tiptap/react/menus'
 import { isMobile } from 'react-device-detect'
 
 import {
@@ -18,6 +20,7 @@ import {
   OrderedListIcon,
   PencilIcon,
   QuoteIcon,
+  SparklesIcon,
   SpeechBubblePlusIcon,
   StrikeIcon,
   TextCapitalizeIcon,
@@ -29,21 +32,35 @@ import { DropdownMenu } from '@campsite/ui/DropdownMenu'
 import { buildMenuItems } from '@campsite/ui/Menu'
 
 import { BubbleMenuSeparator } from '@/components/EditorBubbleMenu/BubbleMenuSeparator'
-import { useForceUpdate } from '@/hooks/useForceUpdate'
 
 import { BubbleMenuButton } from './BubbleMenuButton'
+import { EditorTableMenu } from './EditorTableMenu'
 import { AnyEvent, LinkEditor } from './LinkEditor'
 
-function paragraphIcon(editor: Editor) {
-  if (editor.isActive('heading', { level: 1 })) return <Heading1Icon size={20} />
-  if (editor.isActive('heading', { level: 2 })) return <Heading2Icon />
-  if (editor.isActive('heading', { level: 3 })) return <Heading3Icon />
+interface BubbleMenuState {
+  headingLevel: 1 | 2 | 3 | null
+  isBlockquote: boolean
+  isBold: boolean
+  isCode: boolean
+  isCodeBlock: boolean
+  isItalic: boolean
+  isLink: boolean
+  isOrderedList: boolean
+  isStrike: boolean
+  isTaskList: boolean
+  isUnderline: boolean
+}
+
+function paragraphIcon(state: BubbleMenuState | null) {
+  if (state?.headingLevel === 1) return <Heading1Icon size={20} />
+  if (state?.headingLevel === 2) return <Heading2Icon />
+  if (state?.headingLevel === 3) return <Heading3Icon />
   return <TextCapitalizeIcon />
 }
 
-function listIcon(editor: Editor) {
-  if (editor.isActive('orderedList')) return <OrderedListIcon />
-  if (editor.isActive('taskList')) return <ChecklistIcon />
+function listIcon(state: BubbleMenuState | null) {
+  if (state?.isOrderedList) return <OrderedListIcon />
+  if (state?.isTaskList) return <ChecklistIcon />
   return <UnorderedListIcon />
 }
 
@@ -55,8 +72,9 @@ interface Props {
   enableBlockquote?: boolean
   enableUnderline?: boolean
   enableCodeBlock?: boolean
-  // BubbleMenu uses Tippy under the hood. Use this to append to a different element other than the editor's parent
-  tippyAppendTo?: () => HTMLElement | null
+  // Use this to append the menu to a different element other than the editor's parent
+  appendBubbleMenuTo?: () => HTMLElement | null
+  onAiEdit?: (range: { from: number; to: number }) => void
 }
 
 export const EditorBubbleMenu = memo(function EditorBubbleMemo({
@@ -67,13 +85,38 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
   enableBlockquote = true,
   enableUnderline = true,
   enableCodeBlock = true,
-  tippyAppendTo
+  appendBubbleMenuTo,
+  onAiEdit
 }: Props) {
   const [linkEditorOpen, setLinkEditorOpen] = useState(false)
   const [url, setUrl] = useState(editor?.getAttributes('link').href ?? '')
 
-  // force rerender when the menu is opened/closed to respond to TipTap and tippy.js changes
-  const forceUpdate = useForceUpdate()
+  const editorState = useEditorState<BubbleMenuState | null>({
+    editor,
+    selector: ({ editor }) => {
+      if (!editor) return null
+
+      return {
+        headingLevel: editor.isActive('heading', { level: 1 })
+          ? 1
+          : editor.isActive('heading', { level: 2 })
+            ? 2
+            : editor.isActive('heading', { level: 3 })
+              ? 3
+              : null,
+        isBlockquote: editor.isActive('blockquote'),
+        isBold: editor.isActive('bold'),
+        isCode: editor.isActive('code'),
+        isCodeBlock: editor.isActive('codeBlock'),
+        isItalic: editor.isActive('italic'),
+        isLink: editor.isActive('link'),
+        isOrderedList: editor.isActive('orderedList'),
+        isStrike: editor.isActive('strike'),
+        isTaskList: editor.isActive('taskList'),
+        isUnderline: editor.isActive('underline')
+      }
+    }
+  })
 
   const openLinkEditor = useCallback(
     (e?: MouseEvent) => {
@@ -115,13 +158,12 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
   }
   // Show LinkEditor when text highlighted on cmd+k
   useEffect(() => {
-    const container = editor?.view.dom
-
-    if (!container) return
+    if (!editor) return
+    let container: HTMLElement | null = null
 
     const keydown = (e: KeyboardEvent) => {
       if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
-        if (!editor?.isFocused || editor.view.state.selection.from === editor.view.state.selection.to) return
+        if (editor.isDestroyed || !editor.isFocused || editor.state.selection.empty) return
         e.stopPropagation()
         if (linkEditorOpen) {
           closeLinkEditor()
@@ -134,16 +176,29 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
     // update the URL anytime the selection changes
     const updateUrl = () => setUrl(editor?.getAttributes('link').href ?? '')
 
-    container.addEventListener('keydown', keydown, { capture: true })
-    editor.on('transaction', forceUpdate)
+    const detach = () => {
+      container?.removeEventListener('keydown', keydown, { capture: true })
+      container = null
+    }
+    const attach = () => {
+      detach()
+      if (editor.isDestroyed) return
+      container = editor.view.dom
+      container.addEventListener('keydown', keydown, { capture: true })
+    }
+
+    editor.on('mount', attach)
+    editor.on('unmount', detach)
     editor.on('selectionUpdate', updateUrl)
+    attach()
 
     return () => {
-      container.removeEventListener('keydown', keydown, { capture: true })
-      editor.off('transaction', forceUpdate)
+      detach()
+      editor.off('mount', attach)
+      editor.off('unmount', detach)
       editor.off('selectionUpdate', updateUrl)
     }
-  }, [closeLinkEditor, editor, linkEditorOpen, openLinkEditor, forceUpdate])
+  }, [closeLinkEditor, editor, linkEditorOpen, openLinkEditor])
 
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -225,7 +280,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
     }
   ])
 
-  const parentContainer = tippyAppendTo?.() ?? undefined
+  const parentContainer = appendBubbleMenuTo?.() ?? undefined
 
   return (
     <div
@@ -239,23 +294,15 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
       <BubbleMenu
         pluginKey='bubbleMenuText'
         editor={editor}
-        tippyOptions={{
-          onHidden: closeLinkEditor,
-          maxWidth: 'auto',
-          appendTo: parentContainer,
-          popperOptions: {
-            // prefer top; allow flipping to the bottom to avoid getting clipped.
-            // if the popover is completely off-screen it will be hidden by CSS in editor.css.
-            placement: 'top',
-            modifiers: [
-              {
-                name: 'flip',
-                options: {
-                  fallbackPlacements: ['top', 'bottom'],
-                  boundary: parentContainer
-                }
-              }
-            ]
+        appendTo={parentContainer}
+        options={{
+          onHide: closeLinkEditor,
+          // prefer top; allow flipping to the bottom to avoid getting clipped.
+          // if the popover is completely off-screen it will be hidden by CSS in editor.css.
+          placement: 'top',
+          flip: {
+            fallbackPlacements: ['top', 'bottom'],
+            ...(parentContainer ? { boundary: parentContainer } : {})
           }
         }}
         updateDelay={50}
@@ -295,7 +342,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                       trigger={
                         <BubbleMenuButton
                           onClick={blurEditor}
-                          icon={paragraphIcon(editor)}
+                          icon={paragraphIcon(editorState)}
                           tooltip='Paragraph'
                           dropdown
                         />
@@ -308,7 +355,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                       e.stopPropagation()
                       editor.chain().toggleBold().focus().run()
                     }}
-                    isActive={editor.isActive('bold')}
+                    isActive={editorState?.isBold}
                     icon={<BoldIcon />}
                     tooltip='Bold'
                     shortcut='mod+b'
@@ -318,7 +365,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                       e.stopPropagation()
                       editor.chain().toggleItalic().focus().run()
                     }}
-                    isActive={editor.isActive('italic')}
+                    isActive={editorState?.isItalic}
                     icon={<ItalicIcon />}
                     tooltip='Italic'
                     shortcut='mod+i'
@@ -329,7 +376,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                         e.stopPropagation()
                         editor.chain().toggleUnderline().focus().run()
                       }}
-                      isActive={editor.isActive('underline')}
+                      isActive={editorState?.isUnderline}
                       icon={<UnderlineIcon />}
                       tooltip='Underline'
                       shortcut='mod+u'
@@ -340,7 +387,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                       e.stopPropagation()
                       editor.chain().toggleStrike().focus().run()
                     }}
-                    isActive={editor.isActive('strike')}
+                    isActive={editorState?.isStrike}
                     icon={<StrikeIcon />}
                     tooltip='Strikethrough'
                     shortcut='mod+shift+s'
@@ -367,7 +414,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
 
                         chain.toggleBlockquote().focus().run()
                       }}
-                      isActive={editor.isActive('blockquote')}
+                      isActive={editorState?.isBlockquote}
                       icon={<QuoteIcon />}
                       tooltip='Quote'
                       shortcut='mod+shift+b'
@@ -378,7 +425,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                       align='start'
                       items={listItems}
                       trigger={
-                        <BubbleMenuButton onClick={blurEditor} icon={listIcon(editor)} tooltip='List' dropdown />
+                        <BubbleMenuButton onClick={blurEditor} icon={listIcon(editorState)} tooltip='List' dropdown />
                       }
                       desktop={{ container: containerRef.current, width: 'w-50' }}
                     />
@@ -388,7 +435,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                       e.stopPropagation()
                       editor.chain().toggleCode().focus().run()
                     }}
-                    isActive={editor.isActive('code')}
+                    isActive={editorState?.isCode}
                     icon={<CodeIcon />}
                     tooltip='Code'
                     shortcut='mod+e'
@@ -400,7 +447,7 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
                         e.stopPropagation()
                         editor.chain().toggleCodeBlock().focus().run()
                       }}
-                      isActive={editor.isActive('codeBlock')}
+                      isActive={editorState?.isCodeBlock}
                       icon={<CodeBlockIcon />}
                       tooltip='Code block'
                       shortcut='mod+alt+c'
@@ -409,9 +456,27 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
 
                   <BubbleMenuSeparator />
 
+                  {onAiEdit && (
+                    <>
+                      <BubbleMenuButton
+                        onClick={(event) => {
+                          event.stopPropagation()
+                          onAiEdit({
+                            from: editor.state.selection.from,
+                            to: editor.state.selection.to
+                          })
+                        }}
+                        icon={<SparklesIcon />}
+                        aria-label='Edit with AI'
+                        tooltip='Edit with AI'
+                      />
+                      <BubbleMenuSeparator />
+                    </>
+                  )}
+
                   <BubbleMenuButton
                     onClick={openLinkEditor}
-                    isActive={editor.isActive('link')}
+                    isActive={editorState?.isLink}
                     icon={<LinkIcon />}
                     tooltip='Link'
                     shortcut='mod+k'
@@ -437,7 +502,8 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
       <BubbleMenu
         pluginKey='bubbleMenuLink'
         editor={editor}
-        tippyOptions={{ onHidden: closeLinkEditor, maxWidth: 'auto', appendTo: parentContainer }}
+        appendTo={parentContainer}
+        options={{ onHide: closeLinkEditor }}
         shouldShow={({ editor, from, to }) => {
           // only show the bubble menu for links.
           return from === to && editor.isActive('link')
@@ -472,6 +538,8 @@ export const EditorBubbleMenu = memo(function EditorBubbleMemo({
           )}
         </div>
       </BubbleMenu>
+
+      <EditorTableMenu editor={editor} appendTo={parentContainer} />
     </div>
   )
 })

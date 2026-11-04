@@ -29,12 +29,21 @@ module Api
 
           render_json(
             PostPageSerializer,
-            { results: policy_scope(Post.in_order_of(:id, ids).feed_includes) },
+            RankedPagination.new(
+              scope: policy_scope(Post.in_order_of(:id, ids)),
+              hydration_scope: Post.feed_includes,
+              after: params[:after],
+              limit: params[:limit],
+            ).run,
           )
         else
+          scope = policy_scope(current_organization.kept_published_posts.leaves)
+
           render_page(
             PostPageSerializer,
-            policy_scope(current_organization.kept_published_posts.leaves.feed_includes),
+            scope.feed_includes,
+            pagination_scope: scope,
+            hydration_scope: scope.feed_includes,
             order: order_params(default: { last_activity_at: :desc, id: :desc }),
           )
         end
@@ -105,7 +114,7 @@ module Api
         end
 
         post = Post.create_post(
-          params: params.permit!,
+          params: create_params,
           parent: parent,
           project: project,
           organization: current_organization,
@@ -183,6 +192,29 @@ module Api
       end
 
       private
+
+      def create_params
+        params.permit(
+          :description,
+          :description_html,
+          :project_id,
+          :unfurled_link,
+          :parent_id,
+          :note,
+          :note_id,
+          :from_message_id,
+          :onboarding_step,
+          :status,
+          :title,
+          :draft,
+          attachment_ids: [],
+          feedback_request_member_ids: [],
+          tags: [],
+          links: [:name, :url],
+          poll: [:description, { options: [:description] }],
+          attachments: Api::V1::AttachmentsController::CREATE_PARAMS.keys,
+        )
+      end
 
       def current_post
         raise ActiveRecord::RecordNotFound unless current_organization

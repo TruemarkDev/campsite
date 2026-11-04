@@ -6,7 +6,7 @@ class CallRecording < ApplicationRecord
     IN_PROGRESS_TRANSCRIPTION_STATUS = "IN_PROGRESS",
     COMPLETED_TRANSCRIPTION_STATUS = "COMPLETED",
     FAILED_TRANSCRIPTION_STATUS = "FAILED",
-  ]
+  ].freeze
 
   include PublicIdGenerator
   include MediaUrlBuilder
@@ -16,9 +16,12 @@ class CallRecording < ApplicationRecord
   has_many :summary_sections, class_name: "CallRecordingSummarySection", dependent: :destroy_async
   has_many :chat_links, class_name: "CallRecordingChatLink", dependent: :destroy_async
 
-  after_commit :call_reindex, if: -> { call && Searchkick.callbacks? }
+  after_save :refresh_call_search_document, if: -> { saved_changes.keys.intersect?(%w[id call_id transcription_vtt]) }
+  after_destroy :refresh_call_search_document
 
-  delegate :reindex, to: :call, prefix: true
+  def refresh_call_search_document
+    call.refresh_search_document if call && !call.destroyed?
+  end
 
   def url
     return unless file_path

@@ -3,7 +3,7 @@
 module Plain
   module Components
     class Text < BaseComponent
-      TEXT_COLORS = ["NORMAL", "MUTED", "SUCCESS", "WARNING", "ERROR"]
+      TEXT_COLORS = ["NORMAL", "MUTED", "SUCCESS", "WARNING", "ERROR"].freeze
 
       def initialize(text:, text_color: "NORMAL")
         raise ArgumentError, "text_color must be one of #{TEXT_COLORS.join(", ")}" unless TEXT_COLORS.include?(text_color)

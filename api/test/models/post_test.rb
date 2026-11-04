@@ -743,7 +743,7 @@ class PostTest < ActiveSupport::TestCase
 
     test "truncates the description when it would exceed the Slack message block limit" do
       post = create(:post)
-      blocks = Array.new((Post::BuildSlackBlocks::MAX_DESCRIPTION_BLOCKS + 1)) { { type: "section", text: { type: "mrkdwn", text: "a" } }.dup }
+      blocks = Array.new(Post::BuildSlackBlocks::MAX_DESCRIPTION_BLOCKS + 1) { { type: "section", text: { type: "mrkdwn", text: "a" } }.dup }
       StyledText.any_instance.expects(:html_to_slack_blocks).returns(blocks)
 
       expected = {
@@ -990,14 +990,14 @@ class PostTest < ActiveSupport::TestCase
       post = create(:post)
       attachment = create(:attachment, :video, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
     end
 
     test "for a post with a Figma file with a preview_file_path" do
       post = create(:post)
       attachment = create(:attachment, :figma_link, subject: post, preview_file_path: "/o/foo/bar")
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.preview_file_path}?auto=compress&dpr=2&w=48", post.thumbnail_url
     end
 
     test "for a post with a Figma file without a preview_file_path" do
@@ -1011,21 +1011,21 @@ class PostTest < ActiveSupport::TestCase
       post = create(:post)
       attachment = create(:attachment, :gif, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.file_path}?auto=compress&dpr=2&frame=1&h=48&w=48", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.file_path}?auto=compress&dpr=2&frame=1&h=48&w=48", post.thumbnail_url
     end
 
     test "for a post with a png" do
       post = create(:post)
       attachment = create(:attachment, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
     end
 
     test "for a post with an svg" do
       post = create(:post)
       attachment = create(:attachment, :svg, subject: post)
 
-      assert_equal "http://campsite-test.imgix.net#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
+      assert_equal "https://camp-cdn.polo-apps.test/cdn#{attachment.file_path}?auto=compress%2Cformat&dpr=2&q=60&w=112", post.thumbnail_url
     end
   end
 
@@ -1297,6 +1297,11 @@ class PostTest < ActiveSupport::TestCase
   end
 
   context "#grouped_reactions" do
+    test "handles an already-decoded JSON array" do
+      assert_equal ["Harry Potter"], Post.parse_reaction_users(["Harry Potter"])
+      assert_equal ["Harry Potter"], Post.parse_reaction_users('["Harry Potter"]')
+    end
+
     test "returns reactions grouped by post id" do
       member = create(:organization_membership, user: create(:user, name: "Albus Dumbledore"))
       post_a = create(:post, organization: member.organization)
@@ -1590,31 +1595,27 @@ class PostTest < ActiveSupport::TestCase
 
   context "#search" do
     def setup
-      Searchkick.enable_callbacks
       @member = create(:organization_membership)
       @user = @member.user
       @org = @member.organization
     end
 
-    def teardown
-      Searchkick.disable_callbacks
-    end
 
     test "does not match other orgs" do
       other_org = create(:organization)
-      create(:post, :reindex, title: "Foo bar", organization: other_org)
+      create(:post, :search_document, title: "Foo bar", organization: other_org)
       results = Post.scoped_search(query: "foo", organization: @org)
       assert_equal 0, results.count
     end
 
     test "does not match discarded posts" do
-      create(:post, :reindex, :discarded, title: "Foo bar", organization: @org)
+      create(:post, :search_document, :discarded, title: "Foo bar", organization: @org)
       results = Post.scoped_search(query: "foo", organization: @org)
       assert_equal 0, results.count
     end
 
     test "search title" do
-      post = create(:post, :reindex, title: "Foo bar", organization: @org)
+      post = create(:post, :search_document, title: "Foo bar", organization: @org)
       results = Post.scoped_search(query: "foo", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
@@ -1622,7 +1623,7 @@ class PostTest < ActiveSupport::TestCase
     end
 
     test "search description" do
-      post = create(:post, :reindex, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>", organization: @org)
+      post = create(:post, :search_document, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>", organization: @org)
       results = Post.scoped_search(query: "dog", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
@@ -1631,7 +1632,7 @@ class PostTest < ActiveSupport::TestCase
 
     test "search username prefix" do
       other_member = create(:organization_membership, organization: @org, user: create(:user, username: "foo_bar"))
-      post = create(:post, :reindex, title: "title", description_html: "<p>description</p>", member: other_member, organization: @org)
+      post = create(:post, :search_document, title: "title", description_html: "<p>description</p>", member: other_member, organization: @org)
       results = Post.scoped_search(query: "foo", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
@@ -1640,7 +1641,7 @@ class PostTest < ActiveSupport::TestCase
 
     test "search user name" do
       other_member = create(:organization_membership, organization: @org, user: create(:user, name: "Foo bar"))
-      post = create(:post, :reindex, title: "title", description_html: "<p>description</p>", member: other_member, organization: @org)
+      post = create(:post, :search_document, title: "title", description_html: "<p>description</p>", member: other_member, organization: @org)
       results = Post.scoped_search(query: "bar", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
@@ -1649,16 +1650,23 @@ class PostTest < ActiveSupport::TestCase
 
     test "search project" do
       project = create(:project, name: "Foo bar", organization: @org)
-      post = create(:post, :reindex, title: "title", description_html: "<p>description</p>", project: project, organization: @org)
+      post = create(:post, :search_document, title: "title", description_html: "<p>description</p>", project: project, organization: @org)
       results = Post.scoped_search(query: "foo", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
       assert_equal post.id, posts.first.id
     end
 
+    test "search matches title text" do
+      post = create(:post, :search_document, title: "Release Notes", organization: @org)
+
+      assert_includes Post.search_title("Release"), post
+      assert_empty Post.search_title("Missing")
+    end
+
     test "does not return posts in private projects without permissions" do
       project = create(:project, private: true, name: "Foo bar", organization: @org)
-      create(:post, :reindex, title: "title", description_html: "<p>description</p>", project: project, organization: @org)
+      create(:post, :search_document, title: "title", description_html: "<p>description</p>", project: project, organization: @org)
       results = Post.scoped_search(query: "foo", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
@@ -1668,7 +1676,7 @@ class PostTest < ActiveSupport::TestCase
     test "includes posts in private projects with permissions" do
       project = create(:project, private: true, name: "Foo bar", organization: @org)
       create(:project_membership, organization_membership: @member, project: project)
-      post = create(:post, :reindex, title: "title", description_html: "<p>description</p>", project: project, organization: @org)
+      post = create(:post, :search_document, title: "title", description_html: "<p>description</p>", project: project, organization: @org)
       results = Post.scoped_search(query: "foo", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, results.count
@@ -1676,9 +1684,9 @@ class PostTest < ActiveSupport::TestCase
     end
 
     test "search comments" do
-      post = create(:post, :reindex, title: nil, description_html: "<p>cat</p> <p>dog</p>", organization: @org)
+      post = create(:post, :search_document, title: nil, description_html: "<p>cat</p> <p>dog</p>", organization: @org)
       create(:comment, body_html: "<p>needle</p>", subject: post, member: @member)
-      post.reload.reindex(refresh: true)
+      post.reload.refresh_search_document
       results = Post.scoped_search(query: "needle", organization: @org)
       posts = Pundit.policy_scope(@user, Post.where(id: results.pluck(:id)))
       assert_equal 1, posts.count
@@ -1689,10 +1697,10 @@ class PostTest < ActiveSupport::TestCase
       description_html = <<~HTML.squish
         <p>It is not the critic who counts; not the man who points out how the strong man stumbles, or where the doer of deeds could have done them better. The credit belongs to the man who is actually in the arena, whose face is marred by dust and sweat and blood; who strives valiantly; who errs, who comes short again and again, because there is no effort without error and shortcoming; but who does actually strive to do the deeds; who knows great enthusiasms, the great devotions; who spends himself in a worthy cause; who at the best knows in the end the triumph of high achievement, and who at the worst, if he fails, at least fails while daring greatly, so that his place shall never be with those cold and timid souls who neither know victory nor defeat.</p>
       HTML
-      post1 = create(:post, :reindex, title: nil, description_html: description_html, organization: @org, created_at: 1.month.ago)
-      post2 = create(:post, :reindex, title: nil, description_html: description_html, organization: @org, created_at: 1.day.ago)
-      post3 = create(:post, :reindex, title: nil, description_html: description_html, organization: @org, created_at: 4.days.ago)
-      post4 = create(:post, :reindex, title: nil, description_html: description_html, organization: @org, created_at: 2.weeks.ago)
+      post1 = create(:post, :search_document, title: nil, description_html: description_html, organization: @org, created_at: 1.month.ago)
+      post2 = create(:post, :search_document, title: nil, description_html: description_html, organization: @org, created_at: 1.day.ago)
+      post3 = create(:post, :search_document, title: nil, description_html: description_html, organization: @org, created_at: 4.days.ago)
+      post4 = create(:post, :search_document, title: nil, description_html: description_html, organization: @org, created_at: 2.weeks.ago)
       results = Post.scoped_search(query: "critic triumph blood", organization: @org)
       ids = results.pluck(:id)
       assert_equal 4, ids.count
@@ -1702,7 +1710,7 @@ class PostTest < ActiveSupport::TestCase
     test "search ranks by more hits in older posts" do
       post1 = create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>It is not the critic who counts; not the man who points out how the strong man stumbles.</p>",
         organization: @org,
@@ -1710,7 +1718,7 @@ class PostTest < ActiveSupport::TestCase
       )
       post2 = create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>Or where the doer of deeds could have done them better.</p>",
         organization: @org,
@@ -1718,7 +1726,7 @@ class PostTest < ActiveSupport::TestCase
       )
       post3 = create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>The credit belongs to the man who is actually in the arena.</p>",
         organization: @org,
@@ -1726,7 +1734,7 @@ class PostTest < ActiveSupport::TestCase
       )
       create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>Whose face is marred by dust and sweat and blood.</p>",
         organization: @org,
@@ -1741,7 +1749,7 @@ class PostTest < ActiveSupport::TestCase
     test "search ranks exact phrase" do
       create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>It is not the critic who points</p>",
         organization: @org,
@@ -1749,7 +1757,7 @@ class PostTest < ActiveSupport::TestCase
       )
       exact = create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>It is not the critic who counts; not the man who points out how the strong man stumbles.</p>",
         organization: @org,
@@ -1757,7 +1765,7 @@ class PostTest < ActiveSupport::TestCase
       )
       create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>Man, It is not the point who is the critic</p>",
         organization: @org,
@@ -1765,7 +1773,7 @@ class PostTest < ActiveSupport::TestCase
       )
       create(
         :post,
-        :reindex,
+        :search_document,
         title: nil,
         description_html: "<p>I'm the man</p>",
         organization: @org,
@@ -1779,7 +1787,6 @@ class PostTest < ActiveSupport::TestCase
 
     test "works when there are no posts" do
       Post.destroy_all
-      Post.reindex
 
       results = Post.scoped_search(query: "foo", organization: @org)
 
@@ -1990,10 +1997,11 @@ class PostTest < ActiveSupport::TestCase
       poll2 = create(:poll, :with_options, post: posts[1])
       member = create(:organization_membership, organization: org)
       create(:poll_vote, poll_option: poll1.options[0], member: member)
+      create(:poll_vote, poll_option: poll2.options[0], member: member)
 
       result = Post.viewer_voted_option_ids_by_poll_id_async(posts.map(&:id), member).value
       assert_equal [poll1.options[0].id], result[poll1.id]
-      assert_nil result[poll2.id]
+      assert_equal [poll2.options[0].id], result[poll2.id]
     end
 
     test "unseen comment counts" do

@@ -6,13 +6,15 @@ module Api
       class OrganizationInvitationsController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: :index
 
+        before_action :authorize_current_user, only: :index
+
         extend Apigen::Controller
 
         response model: OrganizationInvitationSerializer, is_array: true, code: 200
         def index
           render_json(
             OrganizationInvitationSerializer,
-            OrganizationInvitation.where(email: current_user.email).limit(25),
+            OrganizationInvitation.where(email: current_user.email.to_s.downcase).limit(25),
             { view: :owner },
           )
         end

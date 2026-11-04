@@ -42,7 +42,7 @@ Rails.application.configure do
   # config.action_dispatch.x_sendfile_header = "X-Sendfile" # for Apache
   # config.action_dispatch.x_sendfile_header = "X-Accel-Redirect" # for NGINX
 
-  # Disable IP spoofing check since Fly.io's load balancer changes headers
+  # Trust the reverse proxy's forwarded client IP headers.
   config.action_dispatch.ip_spoofing_check = false
 
   # Store uploaded files on the local file system (see config/storage.yml for options).
@@ -50,6 +50,11 @@ Rails.application.configure do
 
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
+  config.ssl_options = {
+    redirect: {
+      exclude: ->(request) { request.path == "/up" || request.host.end_with?(".home") },
+    },
+  }
 
   # Include generic and useful information about system operation, but avoid logging too much
   # information to avoid inadvertent exposure of personally identifiable information (PII).
@@ -66,18 +71,22 @@ Rails.application.configure do
   # config.active_job.queue_name_prefix = "campsite_api_production"
 
   config.action_mailer.perform_caching = false
-  config.action_mailer.default_url_options = { host: "polo-apps.com" }
+  config.action_mailer.default_url_options = {
+    host: ENV.fetch("MAILER_HOST", "polo-apps.com"),
+    protocol: ENV.fetch("MAILER_PROTOCOL", "https"),
+  }
   config.action_mailer.delivery_method = :smtp
 
-  config.action_mailer.smtp_settings = {
-    address: "smtp.gmail.com",
-    port: "587",
-    domain: "google.com",
-    user_name: Rails.application.credentials.smtp.user,
-    password: Rails.application.credentials.smtp.password,
-    authentication: "plain",
-    enable_starttls_auto: true
-  }
+  # Environment files are evaluated before the Zeitwerk autoloaders are set up,
+  # so both files are required explicitly. lib/campsite.rb must come first:
+  # defining Campsite from the nested file alone would shadow its autoload and
+  # leave Campsite::DEV_APP_URL (used by config/initializers/cors.rb) missing.
+  require Rails.root.join("lib/campsite")
+  require Rails.root.join("lib/campsite/smtp_settings")
+
+  config.action_mailer.smtp_settings = Campsite::SmtpSettings.build(
+    credentials: Rails.application.credentials,
+  )
 
   # Ignore bad email addresses and do not raise email delivery errors.
   # Set this to true and configure the email server for immediate delivery to raise delivery errors.
@@ -107,10 +116,16 @@ Rails.application.configure do
   config.active_record.dump_schema_after_migration = false
 
   config.active_record.async_query_executor = :global_thread_pool
+  config.active_record.global_executor_concurrency = Integer(ENV.fetch("RAILS_MAX_ASYNC_QUERIES", 4))
 
   if ENV["ALLOWED_HOSTS"].present?
     ENV["ALLOWED_HOSTS"].split(",").each do |host|
       config.hosts << host.strip
     end
   end
+
+  # Kamal Proxy addresses the container directly while deciding whether to
+  # route production traffic. Keep the dependency-free health endpoint
+  # reachable without weakening host authorization for application routes.
+  config.host_authorization = { exclude: ->(request) { request.path == "/up" } }
 end

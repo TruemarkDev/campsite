@@ -14,7 +14,7 @@ export function useUpdateThreadOtherMembers({ threadId }: { threadId: string }) 
   return useMutation({
     mutationFn: (member_ids: string[]) => putThreadsOtherMembershipsList.request(`${scope}`, threadId, { member_ids }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: getThreads.requestKey(`${scope}`) })
+      queryClient.invalidateQueries({ queryKey: getThreads.requestKey({ orgSlug: `${scope}` }) })
       queryClient.invalidateQueries({ queryKey: getThreadById.requestKey(`${scope}`, threadId) })
     }
   })

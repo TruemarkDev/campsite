@@ -41,8 +41,7 @@ const getColor = ({ position, connectionScore }: { position: 1 | 2 | 3 | 4; conn
 
 export const ConnectionIndicator = ({ peerId }: { peerId: string }) => {
   const downlinkQuality = useHMSStore(selectConnectionQualityByPeerID(peerId))?.downlinkQuality as
-    | ConnectionScore
-    | undefined
+    ConnectionScore | undefined
   // avoid thrashing the connection quality indicator by debouncing for 3 seconds
   const [debouncedDownlinkQuality] = useDebounce(downlinkQuality, 3000)
 

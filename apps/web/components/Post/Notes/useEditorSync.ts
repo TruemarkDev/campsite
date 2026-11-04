@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react'
-import { HocuspocusProvider } from '@hocuspocus/provider'
-import { toUint8Array } from 'js-base64'
-import * as Y from 'yjs'
+import { HocuspocusProvider, type HocuspocusProviderConfiguration } from '@hocuspocus/provider'
 
 import { SYNC_URL } from '@campsite/config'
 import { NOTE_SCHEMA_VERSION } from '@campsite/editor'
@@ -18,31 +16,27 @@ type EditorSyncError = 'error' | 'invalid-schema'
 interface Props {
   resourceId: string
   resourceType: 'Post' | 'Note'
-  initialState: string | null | undefined
 }
 
-export function useEditorSync({ resourceId, resourceType, initialState }: Props) {
+export function useEditorSync({ resourceId, resourceType }: Props) {
   const { scope } = useScope()
   const isLoggedIn = useCurrentUserIsLoggedIn()
 
   const [syncError, setSyncError] = useState<EditorSyncError | null>(null)
   const [syncState, setSyncState] = useState<EditorSyncState>('connecting')
+  const [hasSynced, setHasSynced] = useState(false)
 
   const [provider] = useState(() => {
-    let document: Y.Doc | undefined
+    // v3 removed the `parameters` config option; pass them via the URL instead
+    const parameters = new URLSearchParams({
+      schemaVersion: String(NOTE_SCHEMA_VERSION),
+      organization: String(scope),
+      type: resourceType
+    })
 
-    if (initialState) {
-      const ydoc = new Y.Doc()
-      const update = toUint8Array(initialState)
-
-      Y.applyUpdate(ydoc, update)
-
-      document = ydoc
-    }
-
-    return new HocuspocusProvider({
-      document,
-      url: SYNC_URL,
+    const configuration: HocuspocusProviderConfiguration & { autoConnect: boolean } = {
+      autoConnect: false,
+      url: `${SYNC_URL}?${parameters}`,
       name: resourceId,
       token: () =>
         apiClient.users
@@ -53,12 +47,6 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
             apiErrorToast(error)
             return ''
           }),
-      connect: isLoggedIn,
-      parameters: {
-        schemaVersion: NOTE_SCHEMA_VERSION,
-        organization: scope,
-        type: resourceType
-      },
       onStateless: (data) => {
         const message = JSON.parse(data.payload)
 
@@ -77,21 +65,37 @@ export function useEditorSync({ resourceId, resourceType, initialState }: Props)
       },
       onStatus(data) {
         setSyncState(data.status)
+      },
+      onSynced({ state }) {
+        if (state) setHasSynced(true)
       }
-    })
+    }
+
+    return new HocuspocusProvider(configuration)
   })
 
   useEffect(() => {
-    if (!provider.isConnected) {
+    let renewal: ReturnType<typeof setInterval> | undefined
+
+    if (isLoggedIn) {
       provider.connect()
+      // EditorSyncTokensController issues one-hour OAuth tokens. Renew while
+      // connected so persistence continues to use a valid credential.
+      renewal = setInterval(
+        () => {
+          void provider.sendToken().catch(() => undefined)
+        },
+        30 * 60 * 1000
+      )
     }
 
     return () => {
-      if (provider.isConnected) {
-        provider.disconnect()
-      }
+      clearInterval(renewal)
+      // This also cancels a socket that is still connecting. Checking only for
+      // Connected leaks providers during React Strict Mode's effect cleanup.
+      provider.disconnect()
     }
-  }, [provider])
+  }, [isLoggedIn, provider])
 
-  return [provider, syncState, syncError] as const
+  return [provider, syncState, syncError, hasSynced] as const
 }

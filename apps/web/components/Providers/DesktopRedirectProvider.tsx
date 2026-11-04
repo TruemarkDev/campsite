@@ -26,6 +26,8 @@ export function DesktopRedirectProvider({ children }: { children: React.ReactNod
     if (preferenceEnabled && !isMobile && !isDesktop && router.query.browser !== 'true') {
       setInterstitialState('shown')
 
+      // The desktop app uses a custom protocol, not a Next.js route.
+      // eslint-disable-next-line @next/next/no-location-assign-relative-destination
       window.location.href = `${DESKTOP_APP_PROTOCOL}/${router.asPath}`
     } else {
       setInterstitialState('not-shown')

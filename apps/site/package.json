@@ -3,10 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "clean": "rm -rf .next .turbo .vercel node_modules",
-    "dev": "next dev --port 3003",
-    "lint": "next lint",
+    "build": "next build --webpack",
+    "clean": "rm -rf .next .turbo node_modules",
+    "dev": "next dev --webpack --port 3003",
+    "lint": "eslint .",
     "start": "next start"
   },
   "dependencies": {
@@ -52,13 +52,20 @@
   "devDependencies": {
     "@campsite/eslint-config": "workspace:*",
     "@campsite/tsconfig": "workspace:*",
+    "@eslint/eslintrc": "3.3.6",
+    "@eslint/js": "10.0.1",
+    "@tailwindcss/postcss": "catalog:",
     "@types/mdx": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "autoprefixer": "catalog:",
+    "eslint": "catalog:",
+    "eslint-config-next": "catalog:",
     "postcss": "catalog:",
+    "tailwind-scrollbar-hide": "catalog:",
     "tailwindcss": "catalog:",
+    "tailwindcss-safe-area": "catalog:",
     "typescript": "catalog:"
   }
 }

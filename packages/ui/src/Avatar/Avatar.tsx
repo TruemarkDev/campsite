@@ -147,7 +147,7 @@ const DND_SIZE = {
     alt?: string;
     href?: string;
   ``` */
-function _Avatar(props: Props) {
+function AvatarComponent(props: Props) {
   const {
     online = false,
     notificationsPaused = false,
@@ -222,7 +222,7 @@ function _Avatar(props: Props) {
               transform: clipId ? 'translateZ(0)' : undefined
             }}
             className={cn(
-              'relative flex shrink-0 select-none items-center justify-center font-semibold',
+              'relative flex shrink-0 items-center justify-center font-semibold select-none',
               !showImage && accentBackgroundColor,
               textSize,
               fade && 'opacity-50 saturate-[10%]',
@@ -246,7 +246,7 @@ function _Avatar(props: Props) {
             )}
 
             {!showImage && (
-              <span className='text-dark flex text-opacity-60'>
+              <span className='text-dark/60 flex'>
                 <UIText inherit className='mix-blend-color-burn saturate-150' weight='font-medium' size={textSize}>
                   {name?.slice(0, 1).toUpperCase()}
                 </UIText>
@@ -288,4 +288,4 @@ function ClipComponent({ size = 'base', ...props }: Props) {
   return undefined
 }
 
-export const Avatar = memo(_Avatar)
+export const Avatar = memo(AvatarComponent)

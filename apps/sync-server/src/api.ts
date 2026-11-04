@@ -1,6 +1,8 @@
 import { Api } from '@campsite/types'
 
-let baseUrl = 'http://api.campsite.test:3001'
+import type { Context } from './types'
+
+let baseUrl = process.env.API_BASE_URL || 'http://api.campsite.test:3001'
 
 if (process.env.NODE_ENV === 'production') {
   const prodBaseUrl = process.env.API_BASE_URL
@@ -19,3 +21,22 @@ export const api = new Api({
     format: 'json'
   }
 })
+
+export async function verifyConnectionAccess(context: Context, noteId: string) {
+  if (context.actorType === 'agent') {
+    await api.agentSyncGrants
+      .postAgentSyncGrantsVerify()
+      .request(
+        { note_id: noteId },
+        { headers: { Authorization: `Bearer ${context.token}` }, signal: AbortSignal.timeout(10_000) }
+      )
+    return
+  }
+  await api.request({
+    path: `/v1/organizations/${encodeURIComponent(context.organization)}/notes/${encodeURIComponent(noteId)}/sync_state`,
+    method: 'HEAD',
+    format: 'text',
+    headers: { Authorization: `Bearer ${context.token}` },
+    signal: AbortSignal.timeout(10_000)
+  })
+}

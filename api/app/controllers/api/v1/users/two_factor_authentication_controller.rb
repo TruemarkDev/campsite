@@ -6,6 +6,8 @@ module Api
       class TwoFactorAuthenticationController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: [:create, :update, :destroy]
 
+        before_action :authorize_current_user
+
         extend Apigen::Controller
 
         response code: 201 do

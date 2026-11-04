@@ -1,0 +1,98 @@
+#!/usr/bin/env ruby
+
+# Recreate every Campsite container on Quill at the version it last ran.
+#
+# A hard reset of knowhere (power loss, thermal crash) can leave Quill's
+# containers unstartable. The containers hold no state, so recovery is a
+# redeploy of the exact running versions from the builder registry. The
+# version comes from Kamal's audit log on Quill (~/.kamal, outside Docker),
+# never from the local checkout.
+#
+# Usage: mise -E deploy exec -- script/campsite-recover [--dry-run] [SERVICE=VERSION ...]
+#
+# Services already running at their version are skipped. The API goes first
+# because its deploy recreates kamal-proxy. etcd-c is a pg accessory: its
+# config and ETCD_CLUSTER_TOKEN live in the pg-ha-cluster worktree
+# (PG_WORKTREE), and every accessory command needs --hosts.
+
+require "open3"
+require "pathname"
+require "shellwords"
+
+ROOT = Pathname.new(__dir__).join("..").expand_path
+QUILL = ENV.fetch("CAMPSITE_SSH", "prakash@192.168.10.32")
+QUILL_HOST = QUILL.split("@").last
+PG_WORKTREE = Pathname.new(ENV.fetch("PG_WORKTREE", ROOT.join("../campsite-wt-pg-ha-cluster").to_s)).expand_path
+
+# config basename => Kamal service; order matters (api boots the proxy).
+SERVICES = {
+  "api" => "campsite-api-staging",
+  "web-home" => "campsite-web-home-staging",
+  "styled-text" => "campsite-styled-text-staging",
+  "sync" => "campsite-sync-staging",
+  "html-to-image" => "campsite-html-to-image-staging",
+  "web" => "campsite-web-public-staging",
+  "worker" => "campsite-worker-staging",
+}.freeze
+
+def quill(command)
+  out, status = Open3.capture2e("ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=15", QUILL, command)
+  [out.strip, status.success?]
+end
+
+def last_version(service)
+  log, ok = quill("tail -n 200 ~/.kamal/#{service}-audit.log")
+  abort("cannot read the #{service} audit log on #{QUILL}") unless ok
+
+  version = log.scan(/(?:Started|Booted) app version (\S+)/).flatten.last
+  version || abort("no started version in the #{service} audit log; pass #{service}=VERSION")
+end
+
+def running?(name)
+  out, = quill("docker ps --filter status=running --filter name=^#{name}$ --format '{{.Names}}'")
+  out == name
+end
+
+def run(*command, chdir: ROOT)
+  puts "+ #{command.shelljoin}"
+  return true if DRY_RUN
+
+  system(*command, chdir: chdir.to_s)
+end
+
+DRY_RUN = ARGV.delete("--dry-run")
+overrides = ARGV.to_h { |arg| arg.split("=", 2) }
+
+failed = []
+SERVICES.each do |config, service|
+  version = overrides[config] || overrides[service] || last_version(service)
+  roles = config == "worker" ? %w[worker export] : %w[web]
+  if roles.all? { |role| running?("#{service}-#{role}-#{version}") }
+    puts "#{config}: running #{version}, skipped"
+    next
+  end
+
+  ok = run("script/campsite-deploy", "script/check-campsite-kamal-secrets", "config/deploy.campsite-#{config}.yml") &&
+    run("script/campsite-deploy", "kamal", "deploy", "-c", "config/deploy.campsite-#{config}.yml",
+        "--skip-push", "--version=#{version}")
+  abort("api failed; later services need its kamal-proxy") if !ok && config == "api"
+  failed << config unless ok
+end
+
+pg_config = PG_WORKTREE.join("config/deploy.campsite-pg.yml")
+if !pg_config.file?
+  warn("etcd-c: #{pg_config} not found; set PG_WORKTREE to the pg-ha-cluster worktree")
+  failed << "etcd-c"
+elsif running?("campsite-etcd-c")
+  puts "etcd-c: running, skipped"
+else
+  # A container left by a hard reset is unstartable; boot needs the name free.
+  puts "+ ssh #{QUILL} docker rm -f campsite-etcd-c"
+  quill("docker rm -f campsite-etcd-c") unless DRY_RUN
+  ok = run("kamal", "accessory", "boot", "etcd-c", "-c", "config/deploy.campsite-pg.yml", "--hosts", QUILL_HOST,
+           chdir: PG_WORKTREE)
+  failed << "etcd-c" unless ok
+end
+
+abort("recovery incomplete: #{failed.join(", ")}") if failed.any?
+puts DRY_RUN ? "dry run complete" : "all Campsite services on #{QUILL_HOST} recovered"

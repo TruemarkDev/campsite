@@ -14,13 +14,19 @@ class MessageThreadMembership < ApplicationRecord
   counter_culture :message_thread, column_name: "members_count"
 
   scope :unread, ->(message_thread_memberships_table_alias: :message_thread_memberships) do
+    sender_inequality = if connection.adapter_name == "PostgreSQL"
+      "messages.sender_id IS DISTINCT FROM #{message_thread_memberships_table_alias}.organization_membership_id"
+    else
+      "NOT messages.sender_id <=> #{message_thread_memberships_table_alias}.organization_membership_id"
+    end
+
     where(
       <<~SQL.squish,
         EXISTS(
           SELECT 1 from messages
           WHERE messages.message_thread_id = #{message_thread_memberships_table_alias}.message_thread_id
             AND (#{message_thread_memberships_table_alias}.last_read_at IS NULL OR messages.created_at > #{message_thread_memberships_table_alias}.last_read_at)
-            AND NOT messages.sender_id <=> #{message_thread_memberships_table_alias}.organization_membership_id
+            AND #{sender_inequality}
             AND messages.discarded_at IS NULL
           LIMIT 1
         )

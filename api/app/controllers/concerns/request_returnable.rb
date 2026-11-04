@@ -16,13 +16,18 @@ module RequestReturnable
   end
 
   def render_page(serializer, resources, opts = {})
+    pagination_scope = opts.delete(:pagination_scope) || resources
+    hydration_scope = opts.delete(:hydration_scope)
+
     pagination = CursorPagination.new(
-      scope: resources,
+      scope: pagination_scope,
       before: params[:before],
       after: params[:after],
       limit: params[:limit],
       order: opts[:order],
     ).run
+
+    pagination.hydrate!(hydration_scope) if hydration_scope
 
     render_json(serializer, pagination, opts)
   end

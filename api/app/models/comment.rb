@@ -15,7 +15,7 @@ class Comment < ApplicationRecord
   include ResourceMentionable
 
   FILE_LIMIT = 10
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at].freeze
 
   belongs_to :subject, polymorphic: true
   belongs_to :attachment, optional: true
@@ -42,7 +42,8 @@ class Comment < ApplicationRecord
 
   after_create_commit :subscribe_user, if: -> { user.present? }
   after_commit :broadcast_post_comments_stale
-  after_save :reindex_comments, if: -> { Searchkick.callbacks? && (saved_change_to_discarded_at? || saved_change_to_body_html?) }
+  after_destroy :refresh_subject_search_document
+  after_save :refresh_subject_search_document, if: -> { (saved_change_to_discarded_at? || saved_change_to_body_html?) }
 
   scope :root, -> { where(parent_id: nil) }
   scope :canvas_comments, -> { where.not(x: nil).where.not(y: nil) }
@@ -62,6 +63,9 @@ class Comment < ApplicationRecord
     ]
     root_includes = comment_includes + [kept_replies: comment_includes]
     eager_load(root_includes).preload(timeline_events: TimelineEvent::SERIALIZER_PRELOADS)
+  }
+  scope :latest_comment_preloads, -> {
+    eager_load(:attachments, :integration, :oauth_application, member: OrganizationMembership::SERIALIZER_EAGER_LOAD)
   }
   scope :eager_load_user, -> {
     eager_load(member: :user)
@@ -483,7 +487,7 @@ class Comment < ApplicationRecord
 
     if kept_replies.any?
       template += "\nREPLIES:\n"
-      template += kept_replies.map do |reply|
+      template += kept_replies.sort_by { |reply| [reply.created_at, reply.id] }.map do |reply|
         <<~CONTENT.strip
           - REPLY BY: #{reply.author&.user&.display_name || "Unknown"}
             REPLY CONTENT:
@@ -553,9 +557,9 @@ class Comment < ApplicationRecord
     )
   end
 
-  def reindex_comments
+  def refresh_subject_search_document
     return unless subject.is_a?(Post) || subject.is_a?(Note)
 
-    subject.reindex(mode: :async)
+    subject.refresh_search_document
   end
 end

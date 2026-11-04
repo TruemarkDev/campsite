@@ -12,6 +12,7 @@ import { FloatingNewDocButton } from '@/components/FloatingButtons/NewDoc'
 import { FloatingNewPostButton } from '@/components/FloatingButtons/NewPost'
 import { IndexPageContainer } from '@/components/IndexPages/components'
 import { ProjectArchiveBanner } from '@/components/Projects/ProjectArchiveBanner'
+import { ProjectBeadsBoardView } from '@/components/Projects/ProjectBeadsBoard'
 import { BreadcrumbProjectCallButton } from '@/components/Projects/ProjectCallButton'
 import { ProjectCalls } from '@/components/Projects/ProjectCalls'
 import { ProjectChat } from '@/components/Projects/ProjectChat'
@@ -28,6 +29,7 @@ import { useIsSplitViewVisible } from '@/components/SplitView/hooks'
 import { ProjectAccessoryBreadcrumbIcon } from '@/components/Titlebar/BreadcrumbPageIcons'
 import { BreadcrumbLabel, BreadcrumbTitlebar } from '@/components/Titlebar/BreadcrumbTitlebar'
 import { useScope } from '@/contexts/scope'
+import { useGetProjectBeadsBoard } from '@/hooks/useGetProjectBeadsBoard'
 
 interface ProjectViewProps {
   project: Project
@@ -38,6 +40,7 @@ export function ProjectView({ project }: ProjectViewProps) {
   const { scope } = useScope()
   const { isSplitViewVisible } = useIsSplitViewVisible()
   const setIsDesktopProjectSidebarOpen = useSetAtom(isDesktopProjectSidebarOpenAtom)
+  const beadsBoard = useGetProjectBeadsBoard({ projectId: project.id, enabled: project.viewer_is_member })
 
   const isChatProject = !!project.message_thread_id
   const isIndex = router.pathname === '/[org]/projects/[projectId]'
@@ -45,6 +48,8 @@ export function ProjectView({ project }: ProjectViewProps) {
   const isChat = isIndex && isChatProject
   const isDocs = router.pathname === '/[org]/projects/[projectId]/docs'
   const isCalls = router.pathname === '/[org]/projects/[projectId]/calls'
+  const isBoard = router.pathname === '/[org]/projects/[projectId]/board'
+  const hasBoard = !!beadsBoard.data
 
   function toggleProjectDetailsSidebar() {
     setIsDesktopProjectSidebarOpen((prev) => !prev)
@@ -52,16 +57,34 @@ export function ProjectView({ project }: ProjectViewProps) {
 
   return (
     <>
-      <LayeredHotkeys keys='BracketRight' callback={toggleProjectDetailsSidebar} />
-      <LayeredHotkeys keys='1' callback={() => router.push(`/${scope}/projects/${project.id}`)} />
+      <LayeredHotkeys
+        keys='BracketRight'
+        callback={toggleProjectDetailsSidebar}
+        options={{ description: 'Toggle channel details', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys='1'
+        callback={() => router.push(`/${scope}/projects/${project.id}`)}
+        options={{ description: 'Show channel posts', metadata: { category: 'View' } }}
+      />
       <LayeredHotkeys
         keys='2'
         callback={() => router.push(`/${scope}/projects/${project.id}/docs`)}
-        options={{ enabled: !isChatProject }}
+        options={{
+          description: 'Show channel docs',
+          enabled: !isChatProject,
+          metadata: { category: 'View' }
+        }}
       />
       <LayeredHotkeys
         keys={isChatProject ? '2' : '3'}
         callback={() => router.push(`/${scope}/projects/${project.id}/calls`)}
+        options={{ description: 'Show channel calls', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys={isChatProject ? '3' : '4'}
+        callback={() => router.push(`/${scope}/projects/${project.id}/board`)}
+        options={{ description: 'Show channel Board', enabled: hasBoard, metadata: { category: 'View' } }}
       />
 
       {isPosts && <FloatingNewPostButton />}
@@ -94,6 +117,15 @@ export function ProjectView({ project }: ProjectViewProps) {
               {isDocs && <ProjectNotes project={project} />}
               {isCalls && <ProjectCalls project={project} />}
               {isChat && <ProjectChat project={project} />}
+              {isBoard && (
+                <ProjectBeadsBoardView
+                  project={project}
+                  board={beadsBoard.data}
+                  isLoading={beadsBoard.isLoading}
+                  isError={beadsBoard.isError}
+                  onRetry={() => beadsBoard.refetch()}
+                />
+              )}
             </div>
           </div>
         </IndexPageContainer>
@@ -112,9 +144,11 @@ function ProjectIndexLayoutFilter({ project, fullWidth }: ProjectViewProps & { f
   const isRoot = router.pathname === '/[org]/projects/[projectId]'
   const isDocs = router.pathname === '/[org]/projects/[projectId]/docs'
   const isCalls = router.pathname === '/[org]/projects/[projectId]/calls'
+  const isBoard = router.pathname === '/[org]/projects/[projectId]/board'
+  const beadsBoard = useGetProjectBeadsBoard({ projectId: project.id, enabled: project.viewer_is_member })
 
   return (
-    <div className='ml-2 flex flex-1 items-center gap-0.5'>
+    <div className='ml-2 flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto'>
       <Button
         size='sm'
         fullWidth={fullWidth}
@@ -147,6 +181,18 @@ function ProjectIndexLayoutFilter({ project, fullWidth }: ProjectViewProps & { f
       >
         Calls
       </Button>
+      {beadsBoard.data && (
+        <Button
+          size='sm'
+          fullWidth={fullWidth}
+          tooltip='Board'
+          tooltipShortcut={isChatProject ? '3' : '4'}
+          href={`/${scope}/projects/${project.id}/board`}
+          variant={isBoard ? 'flat' : 'plain'}
+        >
+          Board
+        </Button>
+      )}
     </div>
   )
 }

@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       'Cache-Control': `public, immutable, no-transform, s-maxage=2592000, max-age=2592000`
     })
     res.end(buffer)
-  } catch (err) {
+  } catch {
     res.status(401).json({ error: `Unable to get information about "${targetUrl}".` })
   }
 }

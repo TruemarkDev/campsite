@@ -7,26 +7,6 @@ module.exports = {
     './lib/rich_text.rb'
   ],
   darkMode: 'class',
-  safelist: [
-    {
-      pattern: /^my-/
-    },
-    {
-      pattern: /^py-/
-    },
-    {
-      pattern: /^mx-/
-    },
-    {
-      pattern: /^px-/
-    },
-    {
-      pattern: /^m-/
-    },
-    {
-      pattern: /^p-/
-    }
-  ],
   theme: {
     extend: {
       colors: {

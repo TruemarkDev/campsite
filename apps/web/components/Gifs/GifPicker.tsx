@@ -128,7 +128,7 @@ export function GifPicker({
                 'bg-elevated relative h-[424px] overflow-hidden border bg-clip-border dark:shadow-[0_0_0_1px_black]'
               ],
               !isPopover &&
-                'bg-elevated fixed inset-x-0 bottom-0 h-[424px] rounded-t-xl focus:outline-none focus:ring-0'
+                'bg-elevated fixed inset-x-0 bottom-0 h-[424px] rounded-t-xl focus:ring-0 focus:outline-none'
             )}
             style={
               isPopover
@@ -138,7 +138,7 @@ export function GifPicker({
           >
             <div className='relative isolate flex h-full flex-col overflow-hidden focus:outline-0'>
               {!isPopover && (
-                <div className='mx-auto mt-2 h-1 w-8 shrink-0 rounded-full bg-[--text-primary] opacity-20' />
+                <div className='mx-auto mt-2 h-1 w-8 shrink-0 rounded-full bg-[var(--text-primary)] opacity-20' />
               )}
               <div className='bg-elevated z-20 px-2 py-2'>
                 <TextField

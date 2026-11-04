@@ -22,7 +22,7 @@
     "@radix-ui/react-toggle-group": "catalog:",
     "@radix-ui/react-tooltip": "catalog:",
     "@radix-ui/react-visually-hidden": "catalog:",
-    "@shopify/react-shortcuts": "catalog:",
+    "@sentry/react": "catalog:",
     "@todesktop/client-core": "catalog:",
     "class-variance-authority": "catalog:",
     "clsx": "catalog:",
@@ -44,11 +44,13 @@
     "@storybook/react": "catalog:",
     "@tailwindcss/container-queries": "catalog:",
     "@tailwindcss/forms": "catalog:",
+    "@tailwindcss/postcss": "catalog:",
     "@tailwindcss/typography": "catalog:",
     "@types/react": "catalog:",
-    "@types/react-timeago": "catalog:",
+    "eslint": "catalog:",
     "postcss": "catalog:",
     "postcss-import": "catalog:",
+    "storybook": "catalog:",
     "tailwind-scrollbar-hide": "catalog:",
     "tailwindcss": "catalog:",
     "tailwindcss-animate": "catalog:",
@@ -56,12 +58,11 @@
     "typescript": "catalog:"
   },
   "peerDependencies": {
-    "@sentry/nextjs": "^8.17.0",
     "jotai": "^2.0.3",
     "jotai-scope": "^0.4.1",
-    "next": "^14.2.5",
-    "next-themes": "^0.2.1",
-    "react": "^18.2.0",
-    "react-hot-toast": "^2.4.0"
+    "next": "^16.3.0",
+    "next-themes": "^0.4.6",
+    "react": "^19.2.8",
+    "react-hot-toast": "catalog:"
   }
 }

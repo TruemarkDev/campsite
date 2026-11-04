@@ -17,7 +17,7 @@ module Api
         test "org member can see invitation URL" do
           sign_in @user
 
-          assert_query_count 3 do
+          assert_query_count 2 do
             get organization_invitation_url_path(@organization.slug)
           end
 

@@ -1,0 +1,35 @@
+#!/usr/bin/env python3
+
+"""Run a deployment command with mise.deploy.toml as authoritative env."""
+
+import os
+import sys
+import tomllib
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parent.parent
+PROFILE = ROOT / "mise.deploy.toml"
+
+
+def main() -> None:
+    if len(sys.argv) < 2:
+        raise SystemExit("Usage: script/campsite-deploy COMMAND [ARG ...]")
+    if not PROFILE.is_file():
+        raise SystemExit("Missing ignored deployment profile: mise.deploy.toml")
+
+    profile = tomllib.loads(PROFILE.read_text())
+    deploy_env = profile.get("env")
+    if not isinstance(deploy_env, dict) or not all(
+        isinstance(key, str) and isinstance(value, str)
+        for key, value in deploy_env.items()
+    ):
+        raise SystemExit("mise.deploy.toml must contain string values under [env]")
+
+    os.environ.update(deploy_env)
+    os.chdir(ROOT)
+    os.execvp(sys.argv[1], sys.argv[1:])
+
+
+if __name__ == "__main__":
+    main()

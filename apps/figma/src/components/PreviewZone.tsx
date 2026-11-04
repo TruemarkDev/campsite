@@ -26,7 +26,7 @@ export function PreviewZone() {
       name='previews'
       render={({ field, fieldState }) => (
         <m.div
-          className='h-55 isolate flex w-full items-center justify-center text-center'
+          className='isolate flex h-55 w-full items-center justify-center text-center'
           layout='position'
           transition={LAYOUT_TRANSITION}
         >
@@ -52,12 +52,12 @@ export function PreviewZone() {
                   className='flex w-full flex-col items-center gap-6'
                   transition={transition}
                 >
-                  <motion.div className='h-45 relative mt-4 w-[90%]'>
+                  <motion.div className='relative mt-4 h-45 w-[90%]'>
                     <AnimatePresence>
                       {field.value.map((preview, index) => (
                         <motion.div
                           key={preview.id}
-                          className='absolute left-1/2 top-1/2 flex items-center justify-center'
+                          className='absolute top-1/2 left-1/2 flex items-center justify-center'
                           style={{
                             width: `min(${preview.width}px, 100%)`,
                             height: `min(${preview.height}px, 100%)`,

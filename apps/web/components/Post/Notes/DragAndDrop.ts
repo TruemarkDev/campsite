@@ -1,7 +1,6 @@
 import { Extension } from '@tiptap/core'
 import { NodeSelection, Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
-// @ts-ignore
-import { __serializeForClipboard, EditorView } from '@tiptap/pm/view'
+import { EditorView } from '@tiptap/pm/view'
 
 interface DragHandleOptions {
   dragHandleWidth: number
@@ -26,6 +25,10 @@ function nodeDOMAtCoords(coords: { x: number; y: number }) {
         // disable drag handles on elements inside tiptap-draggable containers or restricted elements
         !elem.closest('[data-drag-handle], blockquote'))
   )
+}
+
+function dragMoves(event: DragEvent) {
+  return !(navigator.platform.includes('Mac') ? event.altKey : event.ctrlKey)
 }
 
 function nodePosAtDOM(node: Element, view: EditorView) {
@@ -71,10 +74,13 @@ function DragHandle(options: DragHandleOptions) {
 
     if (nodePos == null || nodePos < 0) return
 
-    view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, nodePos)))
+    const nodeSelection = NodeSelection.create(view.state.doc, nodePos)
+
+    view.dispatch(view.state.tr.setSelection(nodeSelection))
 
     const slice = view.state.selection.content()
-    const { dom, text } = __serializeForClipboard(view, slice)
+    // prosemirror-view removed the private __serializeForClipboard export in favor of this public method
+    const { dom, text } = view.serializeForClipboard(slice)
 
     event.dataTransfer.clearData()
     event.dataTransfer.setData('text/html', dom.innerHTML)
@@ -82,7 +88,11 @@ function DragHandle(options: DragHandleOptions) {
     event.dataTransfer.effectAllowed = 'copyMove'
     event.dataTransfer.setDragImage(createDragImageNode(node), 0, 0)
 
-    view.dragging = { slice, move: event.ctrlKey }
+    // Preserve the source node just like ProseMirror's native drag handler so
+    // the drop removes that exact node even if the DOM selection changes.
+    view.dragging = { slice, move: dragMoves(event), node: nodeSelection } as NonNullable<typeof view.dragging> & {
+      node: NodeSelection
+    }
   }
 
   function handleClick(event: MouseEvent, view: EditorView) {
@@ -180,7 +190,9 @@ function DragHandle(options: DragHandleOptions) {
 
           const rect = absoluteRect(node)
 
-          if (node.hasAttribute('data-hr-wrapper')) {
+          if (node.matches('.tableWrapper')) {
+            rect.top += 8
+          } else if (node.hasAttribute('data-hr-wrapper')) {
             const hrElement = node.querySelector('hr')
 
             if (!hrElement) return

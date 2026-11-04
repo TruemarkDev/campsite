@@ -132,8 +132,20 @@ function PostNavigationButtonsImpl({
 
   return (
     <div className='flex items-center gap-1'>
-      <LayeredHotkeys keys='k' callback={handleNavigateUp()} options={{ enabled: hasPreviousPost }} />
-      <LayeredHotkeys keys='j' callback={handleNavigateDown()} options={{ enabled: hasNextPost }} />
+      <LayeredHotkeys
+        keys='k'
+        callback={handleNavigateUp()}
+        options={{
+          description: 'Go to previous post',
+          enabled: hasPreviousPost,
+          metadata: { category: 'Navigation' }
+        }}
+      />
+      <LayeredHotkeys
+        keys='j'
+        callback={handleNavigateDown()}
+        options={{ description: 'Go to next post', enabled: hasNextPost, metadata: { category: 'Navigation' } }}
+      />
 
       <Button
         variant='plain'

@@ -9,8 +9,6 @@ module Api
         include Devise::Test::IntegrationHelpers
 
         setup do
-          Searchkick.enable_callbacks
-
           @user = create(:user, username: "foo_bar", name: "Foo Bar")
           @member = create(:organization_membership, :member, user: @user)
           @org = @member.organization
@@ -26,31 +24,29 @@ module Api
           @match_member2 = create(:organization_membership, organization: @org, user: create(:user, username: "something_else", name: "Match Member2"))
           create(:organization_membership, organization: @org, user: create(:user, username: "other_member"))
 
-          @match_post1 = create(:post, :reindex, organization: @org, title: "match-post")
-          @match_post2 = create(:post, :reindex, organization: @org, title: "matching-post")
-          create(:post, :reindex, organization: @org, title: "other-post")
+          @match_post1 = create(:post, :search_document, organization: @org, title: "match-post")
+          @match_post2 = create(:post, :search_document, organization: @org, title: "matching-post")
+          create(:post, :search_document, organization: @org, title: "other-post")
 
           call_room = create(:call_room, organization: @org)
-          @match_call = create(:call, :reindex, room: call_room, title: "match-call", peers: [create(:call_peer, organization_membership: @member)], recordings: [create(:call_recording)])
-          create(:call, :reindex, room: call_room, title: "other-call", peers: [create(:call_peer, organization_membership: @member)], recordings: [create(:call_recording)])
+          @match_call = create(:call, :search_document, room: call_room, title: "match-call", peers: [create(:call_peer, organization_membership: @member)], recordings: [create(:call_recording)])
+          create(:call, :search_document, room: call_room, title: "other-call", peers: [create(:call_peer, organization_membership: @member)], recordings: [create(:call_recording)])
 
           @match_notes = [
-            create(:note, :reindex, member: create(:organization_membership, organization: @org), project: @project, project_permission: :view, title: "match note"),
-            create(:note, :reindex, member: create(:organization_membership, organization: @org), project: @project, project_permission: :edit, title: "other note", description_html: "<p>match-note</p>"),
+            create(:note, :search_document, member: create(:organization_membership, organization: @org), project: @project, project_permission: :view, title: "match note"),
+            create(:note, :search_document, member: create(:organization_membership, organization: @org), project: @project, project_permission: :edit, title: "other note", description_html: "<p>match-note</p>"),
           ]
-          create(:note, :reindex, member: create(:organization_membership, organization: @org), project_permission: :none, title: "match-note")
-          create(:note, :reindex, member: create(:organization_membership, organization: @org), project_permission: :none, title: "other note", description_html: "<p>match-note</p>")
+          create(:note, :search_document, member: create(:organization_membership, organization: @org), project_permission: :none, title: "match-note")
+          create(:note, :search_document, member: create(:organization_membership, organization: @org), project_permission: :none, title: "other note", description_html: "<p>match-note</p>")
         end
 
-        def teardown
-          Searchkick.disable_callbacks
-        end
 
         context "#index mixed" do
           test "matches all results" do
             sign_in @user
 
-            assert_query_count 21 do
+            # Includes PostgreSQL candidate, count, and ranked search queries.
+            assert_query_count 28 do
               get organization_search_groups_path(@org.slug, params: { q: "match" })
             end
 
@@ -82,6 +78,26 @@ module Api
         end
 
         context "#index focused" do
+          test "never returns a higher-ranked hidden note and caps notes at the search limit" do
+            visible_notes = Array.new(10) do |index|
+              create(:note, :search_document, member: @member, project: @project, project_permission: :view, title: "r2regression visible #{index}")
+            end
+            hidden_note = create(:note, :search_document, member: create(:organization_membership, organization: @org), project_permission: :none, title: "r2regression")
+
+            assert_equal hidden_note.id, Note.scoped_search(organization: @org, query: "r2regression").pluck(:id).fetch(0)
+
+            sign_in @user
+            get organization_search_groups_path(@org.slug, params: { q: "r2regression", focus: "notes" })
+
+            assert_response :ok
+            returned_ids = json_response["notes"].pluck("id")
+            # Groups search asks the index for 10 hits and then applies the policy
+            # scope (behaviour on main), so a hidden top hit is dropped, never shown.
+            assert_not_includes returned_ids, hidden_note.public_id
+            assert_operator returned_ids.size, :<=, 10
+            assert_empty returned_ids - visible_notes.map(&:public_id)
+          end
+
           test "focuses tags" do
             sign_in @user
             get organization_search_groups_path(@org.slug, params: { q: "match", focus: "tags" })

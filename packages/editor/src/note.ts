@@ -16,7 +16,7 @@ import { SoftbreakMarkdownParser } from './extensions/SoftbreakMarkdownParser'
  * - Do NOT remove any extensions. If you want to, we should deprecate its use instead
  * - If you reorder the extensions, you do not need to bump the version number
  */
-export const NOTE_SCHEMA_VERSION = 6
+export const NOTE_SCHEMA_VERSION = 10
 
 export interface GetNoteExtensionsOptions {
   link?: Partial<E.LinkOptions>
@@ -61,9 +61,19 @@ export interface GetNoteExtensionsOptions {
     disabled?: boolean
     addNodeView?(): NodeViewRenderer
   }
+
+  tableOfContents?: Partial<E.TableOfContentsOptions> & { enabled?: boolean; updateDocument?: boolean }
+
+  table?: Partial<E.TableOptions>
 }
 
 export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
+  const {
+    enabled: tableOfContentsEnabled = true,
+    updateDocument = true,
+    ...tableOfContentsOptions
+  } = options?.tableOfContents || {}
+
   return [
     E.BlockDocument,
 
@@ -78,6 +88,8 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
     E.Blockquote,
     E.Italic,
     E.Strike,
+    E.SuggestionInsert,
+    E.SuggestionDelete,
     E.OrderedList,
     E.BulletList,
     E.Dropcursor.configure(options?.dropcursor),
@@ -117,6 +129,12 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
 
     E.TaskItem.configure(options?.taskItem),
     E.TaskList,
+    E.Selection.configure({ className: 'note-selection' }),
+    E.Table.configure({ resizable: true, ...options?.table }),
+    E.TableRow,
+    E.TableHeader,
+    E.TableCell,
+    E.TrailingParagraphAfterTable,
     E.Mention.configure(options?.mention),
     E.Reaction,
 
@@ -139,6 +157,10 @@ export function getNoteExtensions(options?: GetNoteExtensionsOptions) {
     E.ResourceMention.extend({
       addNodeView: options?.resourceMention?.addNodeView
     }).configure(options?.resourceMention),
+
+    ...(tableOfContentsEnabled
+      ? [(updateDocument ? E.TableOfContents : E.ReadOnlyTableOfContents).configure(tableOfContentsOptions)]
+      : []),
 
     ...(options?.comment?.enabled !== false ? [E.Comment.configure(options?.comment)] : [])
   ]

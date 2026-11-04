@@ -18,6 +18,6 @@ class FollowUpPolicy < ApplicationPolicy
   private
 
   def owner?
-    user.organization_memberships.include?(@record.organization_membership)
+    user&.organization_memberships&.exists?(id: @record.organization_membership_id) || false
   end
 end

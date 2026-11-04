@@ -69,7 +69,7 @@ module Api
 
             it "returns 200 with an unsupported type" do
               params = add_webhook_timestamp(JSON.parse(file_fixture("linear/issue_payload.json").read))
-              params.merge!(type: "not_a_real_event_type")
+              params.merge!("type" => "not_a_real_event_type")
 
               post linear_integration_webhooks_path,
                 params: add_webhook_timestamp(params),
@@ -110,7 +110,7 @@ module Api
 
             it "returns 403 with a timestamp older than a minute" do
               params = JSON.parse(file_fixture("linear/issue_payload.json").read)
-              params.merge!(webhookTimestamp: 2.minutes.ago.to_i)
+              params.merge!("webhookTimestamp" => 2.minutes.ago.to_i)
 
               post linear_integration_webhooks_path,
                 params: params,

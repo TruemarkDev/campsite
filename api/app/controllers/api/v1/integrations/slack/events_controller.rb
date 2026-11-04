@@ -8,6 +8,7 @@ module Api
           skip_before_action :require_authenticated_user, only: :create
           skip_before_action :require_authenticated_organization_membership, only: :create
           before_action :validate_request, only: :create
+          before_action :skip_authorization, only: :create
           rescue_from SlackEvent::UnrecognizedTypeError, with: :render_unprocessable_entity
 
           include SlackEventRequestValidatable

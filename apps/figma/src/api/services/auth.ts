@@ -57,7 +57,9 @@ export function useSignInMutation() {
     },
 
     onSuccess: () => {
-      queryClient.prefetchQuery({})
+      // Intentionally unfiltered: everything cached before sign-in belongs to
+      // the previous (or no) session, so refetch the entire cache.
+      queryClient.invalidateQueries()
     }
   })
 }

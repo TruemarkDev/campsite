@@ -14,7 +14,8 @@ import { usePusherSocketIdHeader } from '@/contexts/pusher'
 import { useScope } from '@/contexts/scope'
 import { apiErrorToast } from '@/utils/apiErrorToast'
 import { useQueryNormalizer } from '@/utils/normy/QueryNormalizerProvider'
-import { apiClient, setTypedInfiniteQueriesData, setTypedQueriesData } from '@/utils/queryClient'
+import { updateThreadInInbox } from '@/utils/prependThreadToInbox'
+import { apiClient, setTypedInfiniteQueriesData } from '@/utils/queryClient'
 import { createNormalizedOptimisticUpdate, setNormalizedData } from '@/utils/queryNormalization'
 import { createRetryAtoms } from '@/utils/retryAtoms'
 import { stripHtml } from '@/utils/stripHtml'
@@ -84,22 +85,7 @@ function useCreateMessageCallbacks() {
         })
       }
 
-      setTypedQueriesData(queryClient, getThreads.requestKey(`${scope}`), (old) => {
-        if (!old) return old
-        const existingThread = old.threads.find((thread) => thread.id === threadId)
-
-        // optimistically place the thread at the top of the list
-        if (existingThread) {
-          // remove the existing thread from the list
-          const filtered = old.threads.filter((thread) => thread.id !== threadId)
-
-          // add the new one to the top
-          return {
-            ...old,
-            threads: [existingThread, ...filtered]
-          }
-        }
-      })
+      updateThreadInInbox(queryClient, getThreads.requestKey({ orgSlug: `${scope}` }), data.message_thread)
 
       setTypedInfiniteQueriesData(queryClient, getMessages.requestKey({ orgSlug: `${scope}`, threadId }), (old) => {
         if (!old) return
@@ -162,7 +148,7 @@ export function useCreateMessage() {
       setMutation({ optimisticId, state: { status: 'pending', data: props } })
 
       const messagesQueryKey = getMessages.requestKey({ orgSlug: `${scope}`, threadId: props.threadId })
-      const threadsQueryKey = getThreads.requestKey(`${scope}`)
+      const threadsQueryKey = getThreads.requestKey({ orgSlug: `${scope}` })
       const threadQueryKey = getThreadsById.requestKey(`${scope}`, props.threadId)
 
       await Promise.all([
@@ -220,19 +206,6 @@ export function useCreateMessage() {
             },
             ...old.pages.slice(1)
           ]
-        }
-      })
-
-      setTypedQueriesData(queryClient, threadsQueryKey, (old) => {
-        if (!old) return old
-        return {
-          ...old,
-          threads: old.threads.sort((a, b) => {
-            if (a.last_message_at && b.last_message_at) {
-              return new Date(b.last_message_at).getTime() - new Date(a.last_message_at).getTime()
-            }
-            return 0
-          })
         }
       })
 

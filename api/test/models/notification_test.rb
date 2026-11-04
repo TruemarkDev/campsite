@@ -132,6 +132,16 @@ class NotificationTest < ActiveSupport::TestCase
 
       assert_not_equal notification_a.inbox_key, notification_b.inbox_key
     end
+
+    test "most recent scope treats two NULL target scopes as equal" do
+      post = create(:post)
+      member = create(:organization_membership, organization: post.organization)
+      older = create(:notification, target: post, organization_membership: member, target_scope: nil, created_at: 2.minutes.ago)
+      newer = create(:notification, target: post, organization_membership: member, target_scope: nil, created_at: 1.minute.ago)
+
+      assert_not_includes Notification.most_recent_per_target_and_member, older
+      assert_includes Notification.most_recent_per_target_and_member, newer
+    end
   end
 
   context "#inbox?" do

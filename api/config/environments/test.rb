@@ -30,6 +30,11 @@ Rails.application.configure do
   # Do not fallback to assets pipeline if a precompiled asset is missed.
   config.assets.compile = false
 
+  if ENV["CAMPSITE_BROWSER_TEST"] == "1"
+    config.logger = ActiveSupport::Logger.new(File.join(ENV.fetch("BROWSER_TEST_OUTPUT"), "rails.log"))
+    config.log_level = :warn
+  end
+
   # Show full error reports and disable caching.
   config.consider_all_requests_local       = true
   config.action_controller.perform_caching = false

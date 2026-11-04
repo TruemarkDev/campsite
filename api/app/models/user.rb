@@ -37,6 +37,7 @@ class User < ApplicationRecord
     :channel_split_view, # deprecated from client on 11/8/24
     :no_emoji_accessories,
     :export,
+    :ai_note_editing,
   ].freeze
 
   FRONTEND_FEATURES = SHARED_FEATURE_FLAGS + [
@@ -70,6 +71,7 @@ class User < ApplicationRecord
 
   attr_accessor :initial_time_zone
   attr_writer :unauthenticated_message
+  attr_reader :consumed_login_token_sso_id
 
   has_many :access_tokens,
     class_name: "Doorkeeper::AccessToken",
@@ -112,7 +114,7 @@ class User < ApplicationRecord
   before_validation :set_initial_username, on: :create
   after_create_commit :create_default_schedule
   after_commit :join_verified_domain_organizations, if: -> { saved_change_to_confirmed_at? }, on: [:create, :update]
-  after_commit :reindex_posts, if: -> { Searchkick.callbacks? && (saved_change_to_name? || saved_change_to_username?) }, on: [:update]
+  after_update :refresh_related_search_documents, if: -> { (saved_change_to_name? || saved_change_to_username?) }
   after_commit :update_mentions, if: -> { saved_change_to_name? || saved_change_to_username? }, on: [:update]
 
   # Include default devise modules. Others available are:
@@ -123,6 +125,7 @@ class User < ApplicationRecord
     :registerable,
     :recoverable,
     :rememberable,
+    :timeoutable,
     :two_factor_authenticatable,
     :validatable,
     omniauth_providers: [:google_oauth2, :desktop]
@@ -134,11 +137,21 @@ class User < ApplicationRecord
 
   alias_attribute :otp_required_for_login, :otp_enabled
 
+  # Devise delivers its notifications inline by default, which puts the SMTP
+  # round trip inside the signup request: a slow or unavailable mail server
+  # then raises out of the controller (raise_delivery_errors is on in
+  # production) and 500s the request with the user row already committed, so
+  # retrying the same address fails validation as taken. Deliver through
+  # Sidekiq instead — the worker carries the same SMTP configuration.
+  def send_devise_notification(notification, *args)
+    devise_mailer.send(notification, self, *args).deliver_later
+  end
+
   def self.from_omniauth(access_token)
     found = where(omniauth_provider: access_token.provider, omniauth_uid: access_token.uid).first
 
     # If no user matching omniauth ID, attempt to add omniauth ID to user with matching email
-    found ||= confirmed.where(email: access_token.info.email, omniauth_provider: nil, omniauth_uid: nil).first.tap do |u|
+    found ||= confirmed.where(email: access_token.info.email.to_s.downcase, omniauth_provider: nil, omniauth_uid: nil).first.tap do |u|
       u&.update!(omniauth_provider: access_token.provider, omniauth_uid: access_token.uid)
     end
 
@@ -311,13 +324,13 @@ class User < ApplicationRecord
   def generate_login_token!(sso_id: nil)
     update!(
       login_token: generate_unique_token(attr_name: :login_token),
-      login_token_expires_at: 30.minutes.from_now,
+      login_token_expires_at: 5.minutes.from_now,
       login_token_sso_id: sso_id,
     )
   end
 
   def reset_login_token!
-    update!(login_token: nil, login_token_expires_at: nil)
+    update!(login_token: nil, login_token_expires_at: nil, login_token_sso_id: nil)
   end
 
   def login_token_expired?
@@ -328,7 +341,19 @@ class User < ApplicationRecord
   end
 
   def valid_login_token?(token)
-    login_token == token
+    login_token.present? && token.present? && ActiveSupport::SecurityUtils.secure_compare(login_token, token)
+  rescue ArgumentError
+    false
+  end
+
+  def consume_login_token!(token)
+    with_lock do
+      return false if login_token_expired? || !valid_login_token?(token)
+
+      @consumed_login_token_sso_id = login_token_sso_id
+      update!(login_token: nil, login_token_expires_at: nil, login_token_sso_id: nil)
+      true
+    end
   end
 
   def desktop_auth_url
@@ -473,8 +498,9 @@ class User < ApplicationRecord
 
   private
 
-  def reindex_posts
-    kept_published_posts.reindex(mode: :async)
+  def refresh_related_search_documents
+    kept_published_posts.find_each(&:refresh_search_document)
+    organization_memberships.find_each { |membership| membership.notes.find_each(&:refresh_search_document) }
   end
 
   def update_mentions

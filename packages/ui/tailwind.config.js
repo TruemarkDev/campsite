@@ -240,12 +240,13 @@ module.exports = {
       }
     }
   },
+  // Tailwind v4 notes:
+  // - container queries are built into core, so the plugin is gone
+  // - tailwind-scrollbar-hide and tailwindcss-safe-area now ship as CSS, and
+  //   are @imported from the entry stylesheets instead of required here
   plugins: [
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
-    require('tailwind-scrollbar-hide'),
-    require('tailwindcss-safe-area'),
-    require('@tailwindcss/container-queries'),
     require('tailwindcss-animate'),
     plugin(function ({ addVariant, addBase }) {
       addVariant('initial', 'html :where(&)')

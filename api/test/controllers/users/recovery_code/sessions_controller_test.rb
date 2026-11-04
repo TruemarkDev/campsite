@@ -27,7 +27,7 @@ module Users
           # sign in and get redirected to otp
           post user_session_path, params: { user: { email: user.email, password: user.password } }
           assert_response :redirect
-          assert_equal controller.session[:otp_user_id], user.id
+          assert_equal user, TwoFactorChallenge.user(controller.session)
 
           # sign in recovery code
           codes = user.generate_two_factor_backup_codes!

@@ -9,7 +9,7 @@ class CallHealthJob < BaseJob
     # Job runs once an hour, so look back at a 1-hour window of calls that should be processed by now
     calls = Call.joins(:recordings)
       .where(stopped_at: (PERMITTED_PROCESSING_TIME + 1.hour).ago..PERMITTED_PROCESSING_TIME.ago)
-      .where("TIMESTAMPDIFF(SECOND, call_recordings.started_at, call_recordings.stopped_at) > 60 OR call_recordings.stopped_at IS NULL")
+      .where(duration_exceeded_sql)
 
     calls
       .where(call_recordings: { file_path: nil })
@@ -33,6 +33,14 @@ class CallHealthJob < BaseJob
   end
 
   private
+
+  def duration_exceeded_sql
+    if CallRecording.connection.adapter_name == "PostgreSQL"
+      "EXTRACT(EPOCH FROM call_recordings.stopped_at - call_recordings.started_at) > 60 OR call_recordings.stopped_at IS NULL"
+    else
+      "TIMESTAMPDIFF(SECOND, call_recordings.started_at, call_recordings.stopped_at) > 60 OR call_recordings.stopped_at IS NULL"
+    end
+  end
 
   def capture_message(message:, call:)
     Sentry.capture_message(message, extra: { org_slug: call.organization.slug, hms_session_url: call.hms_session_url })

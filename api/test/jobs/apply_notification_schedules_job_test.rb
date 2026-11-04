@@ -10,6 +10,16 @@ class ApplyNotificationSchedulesTest < ActiveJob::TestCase
   end
 
   context "#perform" do
+    test "applies on the user's local day when that day differs from UTC" do
+      @user.update!(preferred_timezone: "Asia/Kathmandu")
+      @schedule.update!(monday: true, tuesday: false, wednesday: false, thursday: false, friday: false, saturday: false, sunday: false)
+
+      # Monday 12:20 UTC is Monday 18:05 in Kathmandu.
+      Timecop.freeze(Time.zone.parse("2024-09-30T12:20:00Z")) do
+        assert_includes NotificationSchedule.needs_applying, @schedule
+      end
+    end
+
     test "pauses notifications" do
       Timecop.freeze(Time.zone.parse("2024-09-26T17:00Z") - @pdt_offset) do
         assert_query_count 9 do

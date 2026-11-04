@@ -10,7 +10,7 @@ class CdnControllerTest < ActionDispatch::IntegrationTest
       secret_access_key: Rails.application.credentials.dig(:aws, :secret_access_key),
       region:            Rails.application.credentials.dig(:aws, :region),
       endpoint:          Rails.application.credentials.dig(:aws, :endpoint),
-      force_path_style:  true
+      force_path_style:  true,
     )
   end
 

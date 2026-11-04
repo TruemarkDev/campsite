@@ -1,11 +1,11 @@
-export type Contributor = {
+export interface Contributor {
   name: string
   username: string
   twitter: string
   avatar: string
 }
 
-export type Changelog = {
+export interface Changelog {
   content: string
   content_html: string
   data: {
@@ -20,7 +20,7 @@ export type Changelog = {
   }
 }
 
-export type GitHubRelease = {
+export interface GitHubRelease {
   id: number
   tag_name: string
   name: string

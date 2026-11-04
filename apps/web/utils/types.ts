@@ -2,7 +2,7 @@ import { ReactElement, ReactNode } from 'react'
 import { NextPage } from 'next'
 import type { AppProps } from 'next/app'
 
-export type ApiErrorResponse = {
+export interface ApiErrorResponse {
   code: string
   message: string
 }
@@ -32,7 +32,7 @@ export type PageWithProviders<T> = React.FC<T> & NextPageWithProviders<T>
   screenshot as the `preview_file_path` — we want to update the single
   transformed file, and need some unique identifer to do it correctly.
 */
-export type TransformedFile = {
+export interface TransformedFile {
   id: string
   raw: File
   url: string
@@ -66,7 +66,7 @@ export enum NotificationName {
   ProjectReminder = 'project_reminder'
 }
 
-export type Changelog = {
+export interface Changelog {
   title: string
   slug: string
   published_at: string

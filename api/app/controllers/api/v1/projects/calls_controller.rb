@@ -24,9 +24,10 @@ module Api
             results = Call.scoped_search(query: params[:q], organization: current_organization, project_public_id: params[:project_id])
             ids = results&.pluck(:id) || []
 
+            order = ids.each_with_index.to_h
             render_json(
               CallPageSerializer,
-              { results: policy_scope(Call.in_order_of(:id, ids).serializer_preload) },
+              { results: policy_scope(Call.where(id: ids).serializer_preload).to_a.sort_by { |call| order.fetch(call.id) } },
             )
           else
             render_page(CallPageSerializer, policy_scope(current_project.completed_recorded_calls.serializer_preload))

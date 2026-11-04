@@ -62,9 +62,9 @@ type DrawingCallback = 'none' | 'tile' | 'background'
 export function ZoomCanvasTileRenderer({ width, height, src, backgroundSrc, style }: Props) {
   const ref = useRef<HTMLCanvasElement>(null)
   const { d3Zoom, d3Container, viewport } = useAtomValue(zoomAtom)
-  const d3Canvas = useRef<D3Selection<Element, unknown, null, undefined>>()
+  const d3Canvas = useRef<D3Selection<Element, unknown, null, undefined> | undefined>(undefined)
   const loaders = useRef<ImageUrls>({})
-  const drawTile = useRef<(tile: Tile, callback: DrawingCallback) => void>()
+  const drawTile = useRef<((tile: Tile, callback: DrawingCallback) => void) | undefined>(undefined)
 
   // keep the canvas in sync with the viewport
   useEffect(() => {
@@ -78,7 +78,7 @@ export function ZoomCanvasTileRenderer({ width, height, src, backgroundSrc, styl
 
     if (d3Container && d3Zoom) {
       // this will end up drawing the canvas again
-      d3Zoom.transform(d3Container, getCurrentTransform(d3Container))
+      d3Zoom.transform(d3Container as Parameters<typeof d3Zoom.transform>[0], getCurrentTransform(d3Container))
     }
   }, [d3Container, d3Zoom, viewport.height, viewport.width])
 

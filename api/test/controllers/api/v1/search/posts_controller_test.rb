@@ -9,20 +9,15 @@ module Api
         include Devise::Test::IntegrationHelpers
 
         setup do
-          Searchkick.enable_callbacks
-
           @user = create(:user, username: "foo_bar", name: "Foo Bar")
           @member = create(:organization_membership, :member, user: @user)
           @org = @member.organization
 
-          @match_post1 = create(:post, :reindex, organization: @org, title: "match-post")
-          @match_post2 = create(:post, :reindex, organization: @org, title: "matching-post")
-          create(:post, :reindex, organization: @org, title: "other-post")
+          @match_post1 = create(:post, :search_document, organization: @org, title: "match-post")
+          @match_post2 = create(:post, :search_document, organization: @org, title: "matching-post")
+          create(:post, :search_document, organization: @org, title: "other-post")
         end
 
-        def teardown
-          Searchkick.disable_callbacks
-        end
 
         context "#index" do
           test "matches all results" do
@@ -44,10 +39,10 @@ module Api
           end
 
           test "can search for posts by a given tag" do
-            post = create(:post, :reindex, organization: @org, title: "match-post")
+            post = create(:post, :search_document, organization: @org, title: "match-post")
             tag = create(:tag, organization: @org)
             post.post_taggings.create!(tag: tag)
-            post.reindex(refresh: true)
+            post.refresh_search_document
 
             sign_in @user
 
@@ -60,7 +55,7 @@ module Api
 
           test "can search for posts by a project's public_id" do
             project = create(:project, organization: @org)
-            post = create(:post, :reindex, organization: @org, title: "match-post", project: project)
+            post = create(:post, :search_document, organization: @org, title: "match-post", project: project)
 
             sign_in @user
 
@@ -75,7 +70,7 @@ module Api
             project = create(:project, private: true, name: "Foo bar", organization: @org)
             create(:project_membership, organization_membership: @member, project: project)
 
-            post = create(:post, :reindex, organization: @org, title: "match-post", project: project)
+            post = create(:post, :search_document, organization: @org, title: "match-post", project: project)
 
             sign_in @user
 
@@ -88,7 +83,7 @@ module Api
 
           test "can't search for posts by a private project's public_id if you don't have permission" do
             project = create(:project, private: true, name: "Foo bar", organization: @org)
-            create(:post, :reindex, organization: @org, title: "match-post", project: project)
+            create(:post, :search_document, organization: @org, title: "match-post", project: project)
 
             sign_in @user
 
@@ -104,7 +99,7 @@ module Api
             project = post.project
             tag = create(:tag, organization: @org)
             post.post_taggings.create!(tag: tag)
-            post.reindex(refresh: true)
+            post.refresh_search_document
 
             sign_in @user
 

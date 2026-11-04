@@ -18,7 +18,7 @@ export function SearchResult({ id, href, onFocus, onPointerMove, children, class
   return (
     <li
       className={cn(
-        'group relative grid min-h-12 scroll-m-1 grid-cols-[24px,_1fr] gap-3 rounded-lg px-3 py-2.5',
+        'group relative grid min-h-12 scroll-m-1 grid-cols-[24px_1fr] gap-3 rounded-lg px-3 py-2.5',
         'data-[state="open"]:bg-tertiary',
         {
           'focus-within:bg-tertiary': canHover

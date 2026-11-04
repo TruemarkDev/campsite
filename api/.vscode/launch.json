@@ -15,10 +15,10 @@
       "args": ["${file}"],
       "askParameters": false,
       "env": {
-        "PATH": "${userHome}/.gem/ruby/3.3.4/bin:${userHome}/.rubies/ruby-3.3.4/bin",
+        "PATH": "${userHome}/.gem/ruby/4.0.6/bin:${userHome}/.rubies/ruby-4.0.6/bin",
         "PARALLEL_WORKERS": "1",
-        "GEM_HOME": "${userHome}/.gem/ruby/3.3.4",
-        "GEM_PATH": "${userHome}/.gem/ruby/3.3.4"
+        "GEM_HOME": "${userHome}/.gem/ruby/4.0.6",
+        "GEM_PATH": "${userHome}/.gem/ruby/4.0.6"
       }
     },
     {

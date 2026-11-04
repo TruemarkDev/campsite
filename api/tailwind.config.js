@@ -7,7 +7,6 @@ function spacing() {
   const values = Object.fromEntries(scale)
 
   values.px = '1px'
-  values.sm = '2px'
   return values
 }
 

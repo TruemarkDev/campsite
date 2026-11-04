@@ -5,22 +5,20 @@
   "main": "./dist/index.mjs",
   "module": "./dist/index.mjs",
   "scripts": {
-    "build": "tsup",
+    "build": "tsup && tsc -p tsconfig.build.json",
     "clean": "rm -rf .turbo dist node_modules",
     "lint": "eslint ./src/*.ts*",
     "test": "vitest --environment=jsdom"
   },
   "dependencies": {
     "@campsite/regex": "workspace:*",
-    "@tiptap-pro/extension-details": "catalog:",
-    "@tiptap-pro/extension-details-content": "catalog:",
-    "@tiptap-pro/extension-details-summary": "catalog:",
     "@tiptap/core": "catalog:",
     "@tiptap/extension-blockquote": "catalog:",
     "@tiptap/extension-bold": "catalog:",
     "@tiptap/extension-bullet-list": "catalog:",
     "@tiptap/extension-code": "catalog:",
     "@tiptap/extension-code-block": "catalog:",
+    "@tiptap/extension-details": "catalog:",
     "@tiptap/extension-document": "catalog:",
     "@tiptap/extension-dropcursor": "catalog:",
     "@tiptap/extension-hard-break": "catalog:",
@@ -35,11 +33,14 @@
     "@tiptap/extension-paragraph": "catalog:",
     "@tiptap/extension-placeholder": "catalog:",
     "@tiptap/extension-strike": "catalog:",
+    "@tiptap/extension-table": "catalog:",
+    "@tiptap/extension-table-of-contents": "catalog:",
     "@tiptap/extension-task-item": "catalog:",
     "@tiptap/extension-task-list": "catalog:",
     "@tiptap/extension-text": "catalog:",
     "@tiptap/extension-typography": "catalog:",
     "@tiptap/extension-underline": "catalog:",
+    "@tiptap/extensions": "catalog:",
     "@tiptap/pm": "catalog:",
     "diff": "catalog:",
     "linkifyjs": "catalog:",
@@ -54,13 +55,15 @@
     "@types/diff": "catalog:",
     "@types/markdown-it": "catalog:",
     "@types/node": "catalog:",
-    "@types/uuid": "catalog:",
+    "eslint": "catalog:",
     "jsdom": "catalog:",
     "tsup": "catalog:",
     "typescript": "catalog:",
+    "vite": "catalog:",
     "vitest": "catalog:"
   },
   "peerDependencies": {
     "prosemirror-model": "^1.22.3"
-  }
+  },
+  "types": "./dist/index.d.ts"
 }

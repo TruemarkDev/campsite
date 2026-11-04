@@ -17,17 +17,17 @@ module Reactable
           :subject_id,
           :content,
           :custom_reaction_id,
-          member ? Arel.sql("MAX(IF(reactions.organization_membership_id=#{member.id}, reactions.public_id, NULL))") : Arel.sql("NULL"),
+          member ? Arel.sql("MAX(CASE WHEN reactions.organization_membership_id=#{member.id} THEN reactions.public_id END)") : Arel.sql("NULL"),
           Arel.sql("COUNT(*)"),
-          Arel.sql("JSON_ARRAYAGG(COALESCE(users.name, users.username, users.email))"),
+          Arel.sql(reaction_user_aggregation_sql),
         )
 
       AsyncPreloader.new(scope) do |scope|
         custom_reactions = CustomReaction.where(id: scope.map(&:third).compact.uniq).index_by(&:id)
 
         grouped_reactions = {}
-        scope.map do |subject_id, content, custom_reaction_id, viewer_reaction_id, reactions_count, users_json| # rubocop:disable Metrics/ParameterLists
-          users_array = JSON.parse(users_json)
+        scope.map do |subject_id, content, custom_reaction_id, viewer_reaction_id, reactions_count, users_json|
+          users_array = parse_reaction_users(users_json)
           visible_users = users_array[0..9]
           overflow_count = users_array.size - visible_users.size
           overflow_text = overflow_count > 0 ? " and #{overflow_count} #{"other".pluralize(overflow_count)}" : ""
@@ -44,6 +44,18 @@ module Reactable
         end
         grouped_reactions
       end
+    end
+
+    def self.reaction_user_aggregation_sql
+      if connection.adapter_name == "PostgreSQL"
+        "json_agg(COALESCE(users.name, users.username, users.email) ORDER BY reactions.created_at, reactions.id)"
+      else
+        "JSON_ARRAYAGG(COALESCE(users.name, users.username, users.email))"
+      end
+    end
+
+    def self.parse_reaction_users(users_json)
+      users_json.is_a?(String) ? JSON.parse(users_json) : users_json
     end
   end
 end

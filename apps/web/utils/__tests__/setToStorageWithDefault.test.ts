@@ -1,26 +1,53 @@
-import { describe, expect, it } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { setToStorageWithDefault } from '../setToStorageWithDefault'
 
 describe('setToStorageWithDefault', () => {
-  it('it stores JSON', async () => {
-    const ls = window.localStorage
+  let storage: Storage
 
-    setToStorageWithDefault(ls, 'test', { a: 4 }, { a: 1 })
-    expect(ls.getItem('test')).toEqual(JSON.stringify({ a: 4 }))
+  beforeEach(() => {
+    const values = new Map<string, string>()
+
+    storage = {
+      clear: () => values.clear(),
+      getItem: (key) => values.get(key) ?? null,
+      key: (index) => Array.from(values.keys())[index] ?? null,
+      get length() {
+        return values.size
+      },
+      removeItem: (key) => values.delete(key),
+      setItem: (key, value) => values.set(key, value)
+    }
+  })
+
+  it('it stores JSON', async () => {
+    setToStorageWithDefault(storage, 'test', { a: 4 }, { a: 1 })
+    expect(storage.getItem('test')).toEqual(JSON.stringify({ a: 4 }))
   })
 
   it('it removes null', async () => {
-    const ls = window.localStorage
-
-    setToStorageWithDefault(ls, 'test', null, { a: 1 })
-    expect(ls.getItem('test')).toBeNull()
+    setToStorageWithDefault(storage, 'test', null, { a: 1 })
+    expect(storage.getItem('test')).toBeNull()
   })
 
   it('it removes initial', async () => {
-    const ls = window.localStorage
+    setToStorageWithDefault(storage, 'test', { a: 1 }, { a: 1 })
+    expect(storage.getItem('test')).toBeNull()
+  })
 
-    setToStorageWithDefault(ls, 'test', { a: 1 }, { a: 1 })
-    expect(ls.getItem('test')).toBeNull()
+  it('does not throw when storage rejects writes', () => {
+    vi.spyOn(storage, 'setItem').mockImplementation(() => {
+      throw new DOMException('Storage quota exceeded', 'QuotaExceededError')
+    })
+
+    expect(() => setToStorageWithDefault(storage, 'test', { a: 4 }, { a: 1 })).not.toThrow()
+  })
+
+  it('does not throw when storage rejects removals', () => {
+    vi.spyOn(storage, 'removeItem').mockImplementation(() => {
+      throw new DOMException('Storage access denied', 'SecurityError')
+    })
+
+    expect(() => setToStorageWithDefault(storage, 'test', null, { a: 1 })).not.toThrow()
   })
 })

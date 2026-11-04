@@ -9,7 +9,7 @@ class Note < ApplicationRecord
   include ActionView::Helpers::UrlHelper
   include ActionView::Helpers::SanitizeHelper
   include MediaUrlBuilder
-  include SearchConfigBuilder
+  include PostgresSearchable
   include Commentable
   include FollowUpable
   include Favoritable
@@ -31,6 +31,7 @@ class Note < ApplicationRecord
   has_many :views, class_name: "NoteView", dependent: :destroy
   has_many :non_member_views, class_name: "NonMemberNoteView", dependent: :destroy_async
   has_many :timeline_events, as: :subject, dependent: :destroy_async
+  has_many :agent_sync_grants, dependent: :destroy
 
   enum :project_permission, { none: 0, view: 1, edit: 2 }, prefix: :project
   enum :visibility, { default: 0, public: 1 }, suffix: true
@@ -51,7 +52,10 @@ class Note < ApplicationRecord
   ].freeze
   SERIALIZER_PRELOADS = [
     :permissions,
-  ]
+    # NoteSerializer renders attachments; without this each note costs an
+    # extra query (and AttachmentSerializer reaches for figma_file).
+    { attachments: :figma_file },
+  ].freeze
 
   scope :serializer_preload, -> {
     eager_load(*SERIALIZER_EAGER_LOADS).preload(*SERIALIZER_PRELOADS)
@@ -71,21 +75,6 @@ class Note < ApplicationRecord
       .or(scope.merge(Project.with_project_membership_for(user, projects_table_alias: :project)))
   }
 
-  searchkick \
-    callbacks: Rails.env.test? ? :inline : :async,
-    text_start: [:title, :description, :comments_content, :user_name, :user_username],
-    word_start: [:title, :description, :comments_content, :user_name, :user_username],
-    highlight: [:title, :description, :comments_content],
-    filterable: [:organization_id, :discarded_at, :project_id, :user_id],
-    merge_mappings: true,
-    mappings: {
-      properties: {
-        # created_at is used in the boost_by_recency option, thus in a function_score
-        # it must be mapped otherwise searches will crash on empty indices
-        created_at: { type: "date" },
-      },
-    }
-
   def search_data
     {
       id: id,
@@ -103,90 +92,12 @@ class Note < ApplicationRecord
     }
   end
 
-  scope :search_import, -> { includes(member: :user).preload(:kept_comments) }
-
-  def self.scoped_search(
-    query:,
-    organization:,
-    user_id: nil,
-    project_public_id: nil,
-    limit: 250
-  )
-    where = {
-      organization_id: organization.id,
-      discarded_at: nil,
-    }
-
-    where[:user_id] = user_id if user_id
-    where[:project_id] = Project.find_by(public_id: project_public_id)&.id if project_public_id
-
-    fields = [
-      # exact-match phrases get the highest boost
-      { title: :phrase, boost: 3 },
-      { description: :phrase, boost: 3 },
-      { comments_content: :phrase, boost: 3 },
-      { user_name: :phrase, boost: 3 },
-      { user_username: :phrase, boost: 3 },
-
-      # boost phrase partial matches
-      { title: :text_start, boost: 2 },
-      { description: :text_start, boost: 2 },
-      { comments_content: :text_start, boost: 2 },
-      { user_name: :text_start, boost: 2 },
-      { user_username: :text_start, boost: 2 },
-
-      # least restrictive: match any word in the query
-      { title: :word_start },
-      { description: :word_start },
-      { comments_content: :word_start },
-      { user_name: :word_start },
-      { user_username: :word_start },
-    ]
-
-    search(
-      query,
-      fields: fields,
-      operator: "or",
-      boost_by_recency: { created_at: { scale: "7d", offset: "2d", decay: 0.999 } },
-      misspellings: { below: 2 },
-      where: where,
-      limit: limit,
-      load: false,
-      body_options: {
-        highlight: search_highlight_config(query, [:title, :description, :comments_content]),
-      },
-      boost_where: {
-        title: { factor: 2, should_match: 2 },
-      },
-    )
+  def self.scoped_search(**options)
+    SearchDocument.search_resource(self, **options)
   end
 
-  def self.scoped_title_search(
-    query:,
-    organization:,
-    limit: 250
-  )
-    where = {
-      organization_id: organization.id,
-      discarded_at: nil,
-    }
-
-    fields = [
-      { title: :phrase, boost: 3 },
-      { title: :text_start, boost: 2 },
-      { title: :word_start },
-    ]
-
-    search(
-      query,
-      fields: fields,
-      operator: "or",
-      boost_by_recency: { created_at: { scale: "7d", offset: "2d", decay: 0.999 } },
-      misspellings: { below: 2 },
-      where: where,
-      limit: limit,
-      load: false,
-    )
+  def self.scoped_title_search(**options)
+    SearchDocument.search_resource(self, **options, title_only: true)
   end
 
   def api_type_name
@@ -425,7 +336,7 @@ class Note < ApplicationRecord
 
   def revalidate_public_static_cache_path
     params = {
-      secret: Rails.application.credentials.vercel.revalidate_static_cache,
+      secret: ENV.fetch("REVALIDATE_STATIC_CACHE_TOKEN"),
       rpath: public_share_path,
     }
 

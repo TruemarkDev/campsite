@@ -28,7 +28,6 @@ module Api
           calls_result = Call.scoped_search(organization: current_organization, query: query) if focus.nil? || focus == "calls"
           notes_result = Note.scoped_search(organization: current_organization, query: query) if focus.nil? || focus == "notes"
 
-          Searchkick.multi_search([posts_result, calls_result, notes_result].compact)
 
           posts_result ||= []
           calls_result ||= []
@@ -38,18 +37,18 @@ module Api
           call_ids = calls_result.pluck(:id) || []
           note_ids = notes_result.pluck(:id) || []
 
-          posts_async = post_ids.empty? ? policy_scope(Post.none) : policy_scope(Post.in_order_of(:id, post_ids).eager_load(SearchPostSerializer::POST_INCLUDES)).limit(per_resource_limit).load_async
-          calls_async = call_ids.empty? ? policy_scope(Call.none) : policy_scope(Call.in_order_of(:id, call_ids)).limit(per_resource_limit).load_async
-          notes_async = note_ids.empty? ? policy_scope(Note.none) : policy_scope(Note.in_order_of(:id, note_ids).eager_load(SearchNoteSerializer::NOTE_INCLUDES)).limit(per_resource_limit).load_async
+          posts_async = post_ids.empty? ? policy_scope(Post.none) : policy_scope(Post.where(id: post_ids).eager_load(SearchPostSerializer::POST_INCLUDES)).load_async
+          calls_async = call_ids.empty? ? policy_scope(Call.none) : policy_scope(Call.where(id: call_ids)).load_async
+          notes_async = note_ids.empty? ? policy_scope(Note.none) : policy_scope(Note.where(id: note_ids).eager_load(SearchNoteSerializer::NOTE_INCLUDES)).load_async
 
           posts = posts_async.index_by(&:id)
           notes = notes_async.index_by(&:id)
           calls = calls_async.index_by(&:id)
 
-          # pluck the id+score and add a type so that we can merge them
-          post_items = posts_result.map { |h| h.merge(type: :post, resource: posts[h[:id]]) }
-          call_items = calls_result.map { |h| h.merge(type: :call, resource: calls[h[:id]]) }
-          note_items = notes_result.map { |h| h.merge(type: :note, resource: notes[h[:id]]) }
+          # pluck the id+score and add a type so that we can merge them.
+          post_items = posts_result.map { |h| h.to_h.symbolize_keys.merge(type: :post, resource: posts[h[:id]]) }.select { |h| h[:resource] }.first(per_resource_limit)
+          call_items = calls_result.map { |h| h.to_h.symbolize_keys.merge(type: :call, resource: calls[h[:id]]) }.select { |h| h[:resource] }.first(per_resource_limit)
+          note_items = notes_result.map { |h| h.to_h.symbolize_keys.merge(type: :note, resource: notes[h[:id]]) }.select { |h| h[:resource] }.first(per_resource_limit)
 
           # combine all the results
           results = (post_items + call_items + note_items)

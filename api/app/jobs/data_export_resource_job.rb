@@ -5,8 +5,11 @@ class DataExportResourceJob < BaseJob
 
   sidekiq_retries_exhausted do |msg|
     export_resource_id = msg["args"].first
-    DataExportResource.where(id: export_resource_id)
-      .update_all(status: :error, completed_at: Time.current)
+    export_resource = DataExportResource.find_by(id: export_resource_id)
+    next unless export_resource
+
+    export_resource.update!(status: :error, completed_at: Time.current)
+    export_resource.data_export.check_completed
   end
 
   def perform(export_resource_id)

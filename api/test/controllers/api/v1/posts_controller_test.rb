@@ -40,6 +40,26 @@ module Api
       end
 
       context "#index" do
+        test "search pages authorized results in relevance order before serializer hydration" do
+          records = Array.new(3) { create(:post, member: @member, organization: @organization) }
+          hidden = create(:post)
+          ranked = [records[2], hidden, records[0], records[1]]
+          Post.stubs(:scoped_search).returns(ranked.map { |record| { id: record.id } })
+          sign_in @member.user
+
+          get organization_posts_path(@organization.slug), params: { q: "needle", limit: 2 }
+          assert_response :ok
+          assert_response_gen_schema
+          assert_equal [records[2], records[0]].map(&:public_id), json_response["data"].pluck("id")
+          cursor = json_response["next_cursor"]
+          assert_equal records[0].public_id, cursor
+
+          get organization_posts_path(@organization.slug), params: { q: "needle", limit: 2, after: cursor }
+          assert_response :ok
+          assert_equal [records[1].public_id], json_response["data"].pluck("id")
+          assert_nil json_response["next_cursor"]
+        end
+
         before do
           @post = create(:post, :with_links, :with_attachments, :with_reactions, :with_tags, :with_viewers, :with_poll, organization: @organization)
           @other_post = create(:post, :with_links, :with_attachments, :with_reactions, :with_tags, :with_viewers, :with_poll, organization: @organization)
@@ -258,7 +278,6 @@ module Api
           @post.update!(title: "Needle in a haystack")
           @other_post.update!(description_html: "<p>This post has a needle in it</p>")
 
-          Post.reindex
 
           sign_in @user
           get organization_posts_path(@organization.slug, params: { order: { by: "last_activity_at", direction: "desc" }, q: "needle" })
@@ -534,7 +553,7 @@ module Api
 
           assert_response_gen_schema
           assert_equal 2, json_response["feedback_requests"].length
-          assert_equal [member1.public_id, member2.public_id], json_response["feedback_requests"].pluck("member").pluck("id")
+          assert_equal [member1.public_id, member2.public_id].sort, json_response["feedback_requests"].pluck("member").pluck("id").sort
         end
 
         test "notifies a mentioned org member" do
@@ -994,7 +1013,7 @@ module Api
           enable_rack_attack do
             simulate_rack_attack_requests(request_count: Rack::Attack::REQUESTS_BY_IP_LIMIT, ip: ip)
             headers = {
-              "HTTP_FLY_CLIENT_IP" => ip,
+              "HTTP_CF_CONNECTING_IP" => ip,
             }
             get organization_post_path(@organization.slug, @post.public_id), headers: headers
           end
@@ -1010,7 +1029,7 @@ module Api
           enable_rack_attack do
             simulate_rack_attack_requests(request_count: Rack::Attack::REQUESTS_BY_IP_LIMIT, ip: ip)
             headers = {
-              "HTTP_FLY_CLIENT_IP" => ip,
+              "HTTP_CF_CONNECTING_IP" => ip,
               "x-campsite-ssr-secret" => Rails.application.credentials.rack_attack.ssr_secret,
             }
             get organization_post_path(@organization.slug, @post.public_id), headers: headers
@@ -1027,7 +1046,7 @@ module Api
           enable_rack_attack do
             simulate_rack_attack_requests(request_count: Rack::Attack::REQUESTS_BY_IP_LIMIT, ip: ip)
             headers = {
-              "HTTP_FLY_CLIENT_IP" => ip,
+              "HTTP_CF_CONNECTING_IP" => ip,
               "x-campsite-ssr-secret" => "this-is-not-the-secret",
             }
             get organization_post_path(@organization.slug, @post.public_id), headers: headers

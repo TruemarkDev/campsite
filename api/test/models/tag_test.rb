@@ -3,6 +3,12 @@
 require "test_helper"
 
 class TagTest < ActiveSupport::TestCase
+  test "search matches tag names without regard to casing" do
+    tag = create(:tag, name: "release-notes")
+
+    assert_includes Tag.search_by("RELEASE"), tag
+  end
+
   describe "validations" do
     test "is valid" do
       tag = build(:tag, name: "aa")

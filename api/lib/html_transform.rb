@@ -14,6 +14,8 @@ class HtmlTransform
     Blockquote,
     ResourceMention,
     LinkUnfurl,
+    Heading,
+    Table,
     Drop,
     Italic,
     Strong,

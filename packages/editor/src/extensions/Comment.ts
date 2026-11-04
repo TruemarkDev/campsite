@@ -1,6 +1,6 @@
 import { Mark, mergeAttributes, Range } from '@tiptap/core'
 import { Mark as PMMark } from '@tiptap/pm/model'
-import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state'
+import { Plugin, PluginKey } from '@tiptap/pm/state'
 import { Decoration, DecorationSet } from '@tiptap/pm/view'
 import { v4 as uuid } from 'uuid'
 
@@ -93,7 +93,6 @@ export const Comment = Mark.create<CommentOptions>({
               to: state.selection.to
             }
           }).setMeta('addToHistory', false)
-          tr.setSelection(TextSelection.near(tr.doc.resolve(state.selection.to)))
           return dispatch?.(tr)
         },
       unsetNewComment:

@@ -2,7 +2,7 @@
 
 class Call < ApplicationRecord
   include PublicIdGenerator
-  include SearchConfigBuilder
+  include PostgresSearchable
   include Pinnable
   include Favoritable
   include FollowUpable
@@ -75,27 +75,12 @@ class Call < ApplicationRecord
         },
       ],
     },
-  ]
+  ].freeze
 
   scope :serializer_preload, -> {
     eager_load(SERIALIZER_EAGER_LOAD).preload(room: { subject: { organization_memberships: OrganizationMembership::SERIALIZER_EAGER_LOAD } })
   }
   scope :recorded, -> { joins(:recordings).distinct }
-
-  searchkick \
-    callbacks: Rails.env.test? ? :inline : :async,
-    text_start: [:title, :summary, :transcription],
-    word_start: [:title, :summary, :transcription],
-    highlight: [:title, :summary, :transcription],
-    filterable: [:organization_id, :has_recordings],
-    merge_mappings: true,
-    mappings: {
-      properties: {
-        # created_at is used in the boost_by_recency option, thus in a function_score
-        # it must be mapped otherwise searches will crash on empty indices
-        created_at: { type: "date" },
-      },
-    }
 
   def search_data
     {
@@ -111,82 +96,12 @@ class Call < ApplicationRecord
     }
   end
 
-  scope :search_import, -> { includes(:room).preload(room: { subject: { organization_memberships: :user } }) }
-
-  def self.scoped_search(
-    query:,
-    organization:,
-    project_public_id: nil,
-    limit: 250
-  )
-    where = {
-      organization_id: organization.id,
-      has_recordings: true,
-    }
-
-    where[:project_id] = Project.find_by(public_id: project_public_id)&.id if project_public_id
-
-    fields = [
-      # exact-match phrases get the highest boost
-      { title: :phrase, boost: 3 },
-      { summary: :phrase, boost: 3 },
-      { transcription: :phrase, boost: 3 },
-
-      # boost phrase partial matches
-      { title: :text_start, boost: 2 },
-      { summary: :text_start, boost: 2 },
-      { transcription: :text_start, boost: 2 },
-
-      # least restrictive: match any word in the query
-      { title: :word_start },
-      { summary: :word_start },
-      { transcription: :word_start },
-    ]
-
-    search(
-      query,
-      fields: fields,
-      operator: "or",
-      boost_by_recency: { created_at: { scale: "7d", offset: "2d", decay: 0.999 } },
-      misspellings: { below: 2 },
-      where: where,
-      limit: limit,
-      load: false,
-      body_options: {
-        highlight: search_highlight_config(query, [:title, :summary, :transcription]),
-      },
-      boost_where: {
-        title: { factor: 2, should_match: 2 },
-      },
-    )
+  def self.scoped_search(**options)
+    SearchDocument.search_resource(self, **options)
   end
 
-  def self.scoped_title_search(
-    query:,
-    organization:,
-    limit: 250
-  )
-    where = {
-      organization_id: organization.id,
-      has_recordings: true,
-    }
-
-    fields = [
-      { title: :phrase, boost: 3 },
-      { title: :text_start, boost: 2 },
-      { title: :word_start },
-    ]
-
-    search(
-      query,
-      fields: fields,
-      operator: "or",
-      boost_by_recency: { created_at: { scale: "7d", offset: "2d", decay: 0.999 } },
-      misspellings: { below: 2 },
-      where: where,
-      limit: limit,
-      load: false,
-    )
+  def self.scoped_title_search(**options)
+    SearchDocument.search_resource(self, **options, title_only: true)
   end
 
   def self.create_or_find_by_hms_event!(event)

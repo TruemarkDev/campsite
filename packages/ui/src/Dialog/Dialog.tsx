@@ -52,7 +52,7 @@ export function Root({
       maxWidth = 'max-w-[calc(100vw-32px)] sm:max-w-xs'
       break
     case 'sm':
-      maxWidth = 'max-w-[calc(100vw-32px)] sm:max-w-sm'
+      maxWidth = 'max-w-[calc(100vw-32px)] sm:max-w-96'
       break
     default:
     case 'base':
@@ -290,7 +290,7 @@ export function CloseButton({ className, ...props }: DefaultProps) {
       asChild
     >
       <Button
-        className={cn('absolute right-3 top-3', className)}
+        className={cn('absolute top-3 right-3', className)}
         variant='plain'
         iconOnly={<CloseIcon strokeWidth='2' />}
         accessibilityLabel='Close'

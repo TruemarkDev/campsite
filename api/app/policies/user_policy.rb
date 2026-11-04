@@ -11,6 +11,10 @@ class UserPolicy < ApplicationPolicy
     @user == @record
   end
 
+  def manage_self?
+    @user == @record
+  end
+
   def create_organization?
     confirmed_user?
   end

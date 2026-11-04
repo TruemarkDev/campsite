@@ -9,11 +9,12 @@ module Doorkeeper
     context "#create" do
       test "refreshes a token" do
         token = create(:access_token, :zapier, expires_in: 0)
+        refresh_token = token.plaintext_refresh_token
 
         post oauth_token_url(subdomain: "auth"),
           params: {
             grant_type: "refresh_token",
-            refresh_token: token.plaintext_refresh_token,
+            refresh_token: refresh_token,
             client_id: token.application.uid,
             client_secret: token.application.plaintext_secret,
           }
@@ -21,6 +22,17 @@ module Doorkeeper
         assert_response :success
         assert_includes response.body, "access_token"
         assert_includes response.body, "refresh_token"
+
+        post oauth_token_url(subdomain: "auth"),
+          params: {
+            grant_type: "refresh_token",
+            refresh_token: refresh_token,
+            client_id: token.application.uid,
+            client_secret: token.application.plaintext_secret,
+          }
+
+        assert_response :bad_request
+        assert_equal "invalid_grant", json_response["error"]
       end
     end
   end

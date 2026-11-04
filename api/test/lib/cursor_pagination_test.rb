@@ -11,6 +11,56 @@ class CursorPaginationTest < ActiveSupport::TestCase
   end
 
   context "#run" do
+    test "walks nullable sort values in both directions without skipping boundary records" do
+      timestamp = 1.day.ago
+      @first_user.update_column(:last_seen_at, timestamp)
+      @second_user.update_column(:last_seen_at, timestamp)
+      @third_user.update_column(:last_seen_at, nil)
+      @fourth_user.update_column(:last_seen_at, nil)
+
+      {
+        asc: [@third_user, @fourth_user, @first_user, @second_user],
+        desc: [@second_user, @first_user, @fourth_user, @third_user],
+      }.each do |direction, expected|
+        order = { last_seen_at: direction, id: direction }
+        returned = []
+        cursor = nil
+        loop do
+          page = CursorPagination.new(scope: User.all, order: order, limit: 1, after: cursor).run
+          returned.concat(page.results)
+          cursor = page.next_cursor
+          break unless cursor
+        end
+        assert_equal expected, returned
+        assert_equal expected.uniq, returned.uniq
+        assert_equal expected.length, returned.length
+        assert_nil cursor
+
+        page = CursorPagination.new(scope: User.all, order: order, limit: 2, before: expected.last.public_id).run
+        assert_equal expected[1, 2], page.results
+        assert_equal expected[1].public_id, page.prev_cursor
+      end
+    end
+
+    test "default and oversized windows remain bounded" do
+      User.insert_all!(Array.new(105) { |index| { public_id: "cursor#{index}", email: "cursor#{index}@example.com" } })
+      [nil, 0, -1, "invalid", 10_000].each do |limit|
+        expected = limit == 10_000 ? 100 : 50
+        page = CursorPagination.new(scope: User.all, limit: limit).run
+        assert_equal expected, page.results.length
+        assert_equal page.results.last.public_id, page.next_cursor
+      end
+    end
+
+    test "rejects unknown columns and directions before constructing SQL" do
+      assert_raises(ArgumentError) do
+        CursorPagination.new(scope: User.all, order: { "id DESC; DROP TABLE users" => :asc })
+      end
+      assert_raises(ArgumentError) do
+        CursorPagination.new(scope: User.all, order: { id: :sideways })
+      end
+    end
+
     test "returns values if no option is provided" do
       pagination = CursorPagination.new(scope: User.all).run
       assert_equal 4, pagination.results.length
@@ -121,6 +171,27 @@ class CursorPaginationTest < ActiveSupport::TestCase
       pagination = CursorPagination.new(scope: User.all, after: @first_user.public_id, limit: 4).run
 
       assert_nil pagination.next_cursor
+    end
+  end
+
+  context "#hydrate!" do
+    test "hydrates only the selected records in pagination order" do
+      pagination = CursorPagination.new(scope: User.all, order: { created_at: :asc, id: :asc }, limit: 2).run
+      selected_ids = pagination.results.map(&:id)
+
+      hydrated = pagination.hydrate!(User.where(id: selected_ids.reverse))
+
+      assert_same pagination, hydrated
+      assert_equal selected_ids, pagination.results.map(&:id)
+    end
+
+    test "preserves before-page ordering while hydrating" do
+      pagination = CursorPagination.new(scope: User.all, before: @fourth_user.public_id, order: :asc, limit: 2).run
+      selected_ids = pagination.results.map(&:id)
+
+      pagination.hydrate!(User.where(id: selected_ids.reverse))
+
+      assert_equal selected_ids, pagination.results.map(&:id)
     end
   end
 

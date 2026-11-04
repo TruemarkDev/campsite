@@ -4,7 +4,7 @@ import { Organization } from '@campsite/types'
 
 import { useGetCurrentOrganization } from './useGetCurrentOrganization'
 
-type Props = {
+interface Props {
   enabled?: boolean
 }
 

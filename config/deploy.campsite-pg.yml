@@ -1,0 +1,203 @@
+# Accessory-only declaration. Never run `kamal deploy` with this config.
+# pg-a/pg-b pin the image built from 1b6c08c.
+service: campsite-pg-accessories
+image: truemarkdev/campsite-postgres-ha
+secrets_path: .kamal/campsite-secrets
+
+servers:
+  web:
+    hosts:
+      - 127.0.0.1 # Kamal schema placeholder; never deploy this service.
+
+registry:
+  server: builder.home:5555
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://prakash@builder.home
+  context: config/postgres
+  dockerfile: config/postgres/Dockerfile
+
+accessories:
+  etcd-a:
+    service: campsite-etcd-a
+    network: host
+    cmd: /usr/local/bin/etcd
+    image: quay.io/coreos/etcd:v3.6.15@sha256:7cf6622cb09b111289eed8a0cce3478e4f01d5048b0e0a1ed208299f3419334d
+    host: 192.168.10.33
+    env:
+      clear:
+        ETCD_NAME: etcd-a
+        ETCD_DATA_DIR: /etcd-data
+        ETCD_LISTEN_CLIENT_URLS: http://192.168.10.33:2379
+        ETCD_ADVERTISE_CLIENT_URLS: http://192.168.10.33:2379
+        ETCD_LISTEN_PEER_URLS: http://192.168.10.33:2380
+        ETCD_INITIAL_ADVERTISE_PEER_URLS: http://192.168.10.33:2380
+        ETCD_INITIAL_CLUSTER: etcd-a=http://192.168.10.33:2380,etcd-b=http://192.168.10.35:2380,etcd-c=http://192.168.10.32:2380
+        ETCD_INITIAL_CLUSTER_STATE: new
+        ETCD_AUTO_COMPACTION_RETENTION: 1h
+      secret:
+        - ETCD_INITIAL_CLUSTER_TOKEN:ETCD_CLUSTER_TOKEN
+    volumes:
+      - /srv/campsite-data/etcd:/etcd-data
+    options:
+      restart: unless-stopped
+      memory: 256m
+
+  etcd-b:
+    service: campsite-etcd-b
+    network: host
+    cmd: /usr/local/bin/etcd
+    image: quay.io/coreos/etcd:v3.6.15@sha256:7cf6622cb09b111289eed8a0cce3478e4f01d5048b0e0a1ed208299f3419334d
+    host: 192.168.10.35
+    env:
+      clear:
+        ETCD_NAME: etcd-b
+        ETCD_DATA_DIR: /etcd-data
+        ETCD_LISTEN_CLIENT_URLS: http://192.168.10.35:2379
+        ETCD_ADVERTISE_CLIENT_URLS: http://192.168.10.35:2379
+        ETCD_LISTEN_PEER_URLS: http://192.168.10.35:2380
+        ETCD_INITIAL_ADVERTISE_PEER_URLS: http://192.168.10.35:2380
+        ETCD_INITIAL_CLUSTER: etcd-a=http://192.168.10.33:2380,etcd-b=http://192.168.10.35:2380,etcd-c=http://192.168.10.32:2380
+        ETCD_INITIAL_CLUSTER_STATE: new
+        ETCD_AUTO_COMPACTION_RETENTION: 1h
+      secret:
+        - ETCD_INITIAL_CLUSTER_TOKEN:ETCD_CLUSTER_TOKEN
+    volumes:
+      - /srv/campsite-data/etcd:/etcd-data
+    options:
+      restart: unless-stopped
+      memory: 256m
+
+  etcd-c:
+    service: campsite-etcd-c
+    network: host
+    cmd: /usr/local/bin/etcd
+    image: quay.io/coreos/etcd:v3.6.15@sha256:7cf6622cb09b111289eed8a0cce3478e4f01d5048b0e0a1ed208299f3419334d
+    host: 192.168.10.32
+    env:
+      clear:
+        ETCD_NAME: etcd-c
+        ETCD_DATA_DIR: /etcd-data
+        ETCD_LISTEN_CLIENT_URLS: http://192.168.10.32:2379
+        ETCD_ADVERTISE_CLIENT_URLS: http://192.168.10.32:2379
+        ETCD_LISTEN_PEER_URLS: http://192.168.10.32:2380
+        ETCD_INITIAL_ADVERTISE_PEER_URLS: http://192.168.10.32:2380
+        ETCD_INITIAL_CLUSTER: etcd-a=http://192.168.10.33:2380,etcd-b=http://192.168.10.35:2380,etcd-c=http://192.168.10.32:2380
+        ETCD_INITIAL_CLUSTER_STATE: new
+        ETCD_AUTO_COMPACTION_RETENTION: 1h
+      secret:
+        - ETCD_INITIAL_CLUSTER_TOKEN:ETCD_CLUSTER_TOKEN
+    volumes:
+      - /srv/campsite-runtime/etcd:/etcd-data
+    options:
+      restart: unless-stopped
+      memory: 256m
+
+  pg-a:
+    service: campsite-pg-a
+    network: host
+    image: builder.home:5555/truemarkdev/campsite-postgres-ha:1b6c08c1eb4a99c4cb0387c401a5c0865d6a581a
+    host: 192.168.10.33
+    env:
+      clear:
+        PATRONI_SCOPE: campsite
+        PATRONI_NAME: pg-a
+        PATRONI_REST_LISTEN: 192.168.10.33:8008
+        PATRONI_REST_CONNECT_ADDRESS: 192.168.10.33:8008
+        PATRONI_ETCD3_HOSTS: 192.168.10.33:2379,192.168.10.35:2379,192.168.10.32:2379
+        PATRONI_MAXIMUM_LAG_ON_FAILOVER: '16777216'
+        PATRONI_POSTGRES_LISTEN: 192.168.10.33,127.0.0.1:5432
+        PATRONI_POSTGRES_CONNECT_ADDRESS: 192.168.10.33:5432
+        PGDATA: /var/lib/postgresql/data
+        PATRONI_SUPERUSER_USERNAME: postgres
+        PATRONI_REPLICATION_USERNAME: replicator
+        PATRONI_ARCHIVE_ENABLED: 'true'
+        # pgBackRest reads these directly; see config/postgres/Dockerfile.
+        PGBACKREST_STANZA: campsite
+        PGBACKREST_PG1_PATH: /var/lib/postgresql/data
+        PGBACKREST_REPO1_PATH: /mnt/starkdrive-shared/backups/campsite/pgbackrest
+        PGBACKREST_REPO1_RETENTION_FULL: '5'
+        PGBACKREST_COMPRESS_TYPE: zst
+        PGBACKREST_PROCESS_MAX: '2'
+        PGBACKREST_START_FAST: 'y'
+        PGBACKREST_LOG_LEVEL_CONSOLE: info
+        PGBACKREST_LOG_LEVEL_FILE: 'off'
+        # Archive asynchronously and cap the local queue: while the NAS is
+        # unreachable WAL waits in the spool, and past 4 GiB pgBackRest drops
+        # archive entries (a backup gap) rather than filling the data disk.
+        PGBACKREST_ARCHIVE_ASYNC: 'y'
+        PGBACKREST_SPOOL_PATH: /tmp/pgbackrest-spool
+        PGBACKREST_ARCHIVE_PUSH_QUEUE_MAX: 4GiB
+      secret:
+        - PATRONI_SUPERUSER_PASSWORD
+        - PATRONI_REPLICATION_PASSWORD
+    volumes:
+      - /srv/campsite-data/postgres:/var/lib/postgresql/data
+      # vyas:/volume1/shared is systemd-automounted at /mnt/starkdrive-shared
+      # (homelab setup_shared_mount.yml). Bind the parent /mnt, never the
+      # automount point itself: binding the point triggers the NFS mount at
+      # container start and fails with "no such device" while the NAS is down.
+      # rslave carries the mount in once pgBackRest first touches the path, so
+      # a NAS outage stalls WAL archiving instead of preventing startup.
+      - /mnt:/mnt:rslave
+    options:
+      restart: unless-stopped
+      memory: 1g
+
+  pg-b:
+    service: campsite-pg-b
+    network: host
+    image: builder.home:5555/truemarkdev/campsite-postgres-ha:1b6c08c1eb4a99c4cb0387c401a5c0865d6a581a
+    host: 192.168.10.35
+    env:
+      clear:
+        PATRONI_SCOPE: campsite
+        PATRONI_NAME: pg-b
+        PATRONI_REST_LISTEN: 192.168.10.35:8008
+        PATRONI_REST_CONNECT_ADDRESS: 192.168.10.35:8008
+        PATRONI_ETCD3_HOSTS: 192.168.10.33:2379,192.168.10.35:2379,192.168.10.32:2379
+        PATRONI_MAXIMUM_LAG_ON_FAILOVER: '16777216'
+        PATRONI_POSTGRES_LISTEN: 192.168.10.35,127.0.0.1:5432
+        PATRONI_POSTGRES_CONNECT_ADDRESS: 192.168.10.35:5432
+        PGDATA: /var/lib/postgresql/data
+        PATRONI_SUPERUSER_USERNAME: postgres
+        PATRONI_REPLICATION_USERNAME: replicator
+        PATRONI_ARCHIVE_ENABLED: 'true'
+        # pgBackRest reads these directly; see config/postgres/Dockerfile.
+        PGBACKREST_STANZA: campsite
+        PGBACKREST_PG1_PATH: /var/lib/postgresql/data
+        PGBACKREST_REPO1_PATH: /mnt/starkdrive-shared/backups/campsite/pgbackrest
+        PGBACKREST_REPO1_RETENTION_FULL: '5'
+        PGBACKREST_COMPRESS_TYPE: zst
+        PGBACKREST_PROCESS_MAX: '2'
+        PGBACKREST_START_FAST: 'y'
+        PGBACKREST_LOG_LEVEL_CONSOLE: info
+        PGBACKREST_LOG_LEVEL_FILE: 'off'
+        # Archive asynchronously and cap the local queue: while the NAS is
+        # unreachable WAL waits in the spool, and past 4 GiB pgBackRest drops
+        # archive entries (a backup gap) rather than filling the data disk.
+        PGBACKREST_ARCHIVE_ASYNC: 'y'
+        PGBACKREST_SPOOL_PATH: /tmp/pgbackrest-spool
+        PGBACKREST_ARCHIVE_PUSH_QUEUE_MAX: 4GiB
+      secret:
+        - PATRONI_SUPERUSER_PASSWORD
+        - PATRONI_REPLICATION_PASSWORD
+    volumes:
+      - /srv/campsite-data/postgres:/var/lib/postgresql/data
+      # vyas:/volume1/shared is systemd-automounted at /mnt/starkdrive-shared
+      # (homelab setup_shared_mount.yml). Bind the parent /mnt, never the
+      # automount point itself: binding the point triggers the NFS mount at
+      # container start and fails with "no such device" while the NAS is down.
+      # rslave carries the mount in once pgBackRest first touches the path, so
+      # a NAS outage stalls WAL archiving instead of preventing startup.
+      - /mnt:/mnt:rslave
+    options:
+      restart: unless-stopped
+      memory: 1g
+
+ssh:
+  user: prakash

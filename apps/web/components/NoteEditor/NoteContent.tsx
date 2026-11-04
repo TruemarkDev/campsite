@@ -10,7 +10,7 @@ import {
   useState
 } from 'react'
 import { HocuspocusProvider } from '@hocuspocus/provider'
-import { Editor as TTEditor } from '@tiptap/core'
+import { Range, Editor as TTEditor } from '@tiptap/core'
 import { EditorContent } from '@tiptap/react'
 import { useSetAtom } from 'jotai'
 
@@ -26,15 +26,20 @@ import { ResourceMentionList } from '@/components/MarkdownEditor/ResourceMention
 import { ADD_ATTACHMENT_SHORTCUT, SlashCommand } from '@/components/Post/Notes/SlashCommand'
 import { activeNoteEditorAtom } from '@/components/Post/Notes/types'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
+import { useCurrentUserOrOrganizationHasFeature } from '@/hooks/useCurrentUserOrOrganizationHasFeature'
 
 import { CodeBlockLanguagePicker } from '../CodeBlockLanguagePicker'
 import { EditorBubbleMenu } from '../EditorBubbleMenu'
 import { MentionInteractivity } from '../InlinePost/MemberHovercard'
 import { DropProps, useEditorFileHandlers } from '../MarkdownEditor/useEditorFileHandlers'
 import { HighlightCommentPopover } from '../NoteComments/HighlightCommentPopover'
+import { AiEditDialog } from '../Post/Notes/AiEditDialog'
 import { useUploadNoteAttachments } from '../Post/Notes/Attachments/useUploadAttachments'
 import { NoteCommentPreview } from '../Post/Notes/CommentRenderer'
+import { SuggestionReview } from '../Post/Notes/SuggestionReview'
 import { useNoteEditor } from '../Post/Notes/useNoteEditor'
+import { NoteTableOfContents } from './NoteTableOfContents'
+import { useNoteTableOfContents } from './useNoteTableOfContents'
 
 interface Props {
   provider?: HocuspocusProvider | null
@@ -62,8 +67,10 @@ export const NoteContent = memo(
     const [activeComment, setActiveComment] = useState<ActiveEditorComment | null>(null)
     const [hoverComment, setHoverComment] = useState<ActiveEditorComment | null>(null)
     const [openAttachmentId, setOpenAttachmentId] = useState<string | undefined>()
+    const [aiEditRange, setAiEditRange] = useState<Range | null>(null)
+    const hasAiNoteEditing = useCurrentUserOrOrganizationHasFeature('ai_note_editing')
 
-    const canUploadAttachments = editable === 'all'
+    const canUploadAttachments = editable === 'all' && !isSyncError
     const upload = useUploadNoteAttachments({ noteId, enabled: canUploadAttachments })
 
     const editor = useNoteEditor({
@@ -76,6 +83,7 @@ export const NoteContent = memo(
       onBlurAtTop,
       provider
     })
+    const tableOfContents = useNoteTableOfContents(editor)
 
     const setActiveEditor = useSetAtom(activeNoteEditorAtom)
 
@@ -144,13 +152,13 @@ export const NoteContent = memo(
         <LayeredHotkeys
           keys={ADD_ATTACHMENT_SHORTCUT}
           callback={() => {
-            if (!editor.isFocused) return
+            if (!canUploadAttachments || editor.isDestroyed || !editor.isFocused) return
 
             const input = document.createElement('input')
 
             input.type = 'file'
             input.onchange = async () => {
-              if (input.files?.length) {
+              if (!editor.isDestroyed && input.files?.length) {
                 upload({
                   files: Array.from(input.files),
                   editor
@@ -175,7 +183,7 @@ export const NoteContent = memo(
         />
         <MentionInteractivity container={containerRef} />
         <CodeBlockLanguagePicker editor={editor} />
-        <SlashCommand editor={editor} upload={upload} />
+        <SlashCommand editor={editor} upload={upload} onAiEdit={hasAiNoteEditing ? setAiEditRange : undefined} />
         <MentionList editor={editor} />
         <ResourceMentionList editor={editor} />
         <ReactionList editor={editor} />
@@ -194,8 +202,16 @@ export const NoteContent = memo(
           onCommentDeactivated={() => setActiveComment(null)}
         />
 
-        {!isSyncError && <EditorBubbleMenu editor={editor} canComment />}
+        {!isSyncError && (
+          <EditorBubbleMenu editor={editor} canComment onAiEdit={hasAiNoteEditing ? setAiEditRange : undefined} />
+        )}
 
+        {hasAiNoteEditing && (
+          <AiEditDialog editor={editor} noteId={noteId} range={aiEditRange} onClose={() => setAiEditRange(null)} />
+        )}
+
+        <SuggestionReview editor={editor} noteId={noteId} />
+        <NoteTableOfContents anchors={tableOfContents} />
         <EditorContent editor={editor} onKeyDown={props.onKeyDown} onPaste={onPaste} onDrop={onDrop} />
         <div className={cn('mx-auto h-[2px] max-w-[44rem] bg-blue-500', { hidden: !tailDropcursorVisible })} />
       </div>

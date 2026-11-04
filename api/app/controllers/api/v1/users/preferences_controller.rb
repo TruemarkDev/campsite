@@ -6,6 +6,8 @@ module Api
       class PreferencesController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: :update
 
+        before_action :authorize_current_user, only: :update
+
         extend Apigen::Controller
 
         response code: 200 do

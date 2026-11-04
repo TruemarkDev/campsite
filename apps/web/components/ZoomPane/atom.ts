@@ -1,4 +1,7 @@
 import { Selection as D3Selection } from 'd3-selection'
+
+import type {} from 'd3-transition'
+
 import { ZoomBehavior, ZoomTransform } from 'd3-zoom'
 import { atom } from 'jotai'
 
@@ -15,7 +18,7 @@ interface ZoomState {
   transform: ZoomTransform
 }
 
-const _zoomAtom = atom<ZoomState>({
+export const zoomStateAtom = atom<ZoomState>({
   d3Zoom: null,
   d3Container: null,
   viewport: { width: 0, height: 0 },
@@ -24,20 +27,20 @@ const _zoomAtom = atom<ZoomState>({
   panning: false
 })
 
-export const zoomAtom = atom((get) => get(_zoomAtom))
+export const zoomAtom = atom((get) => get(zoomStateAtom))
 
 export const setupZoomAtom = atom(null, (_get, set, state: Omit<ZoomState, 'panning'>) => {
-  set(_zoomAtom, { panning: false, ...state })
+  set(zoomStateAtom, { panning: false, ...state })
 })
 
 export const setZoomAtom = atom(
   null,
   (_get, set, data: Partial<Pick<ZoomState, 'viewport' | 'size' | 'transform' | 'panning'>>) =>
-    set(_zoomAtom, (prev) => ({ ...prev, ...data }))
+    set(zoomStateAtom, (prev) => ({ ...prev, ...data }))
 )
 
 export const panZoomAtom = atom(null, (_get, set, action: { x: number; y: number; behavior?: 'smooth' | 'auto' }) => {
-  set(_zoomAtom, (prev) => {
+  set(zoomStateAtom, (prev) => {
     const { transform, d3Container, d3Zoom, viewport } = prev
 
     if (d3Container && d3Zoom) {
@@ -65,7 +68,7 @@ export const panZoomAtom = atom(null, (_get, set, action: { x: number; y: number
 export const changeZoomAtom = atom(
   null,
   (_get, set, action: 'zoom-50%' | 'zoom-100%' | 'zoom-fit' | 'zoom-in' | 'zoom-out') => {
-    set(_zoomAtom, (prev) => {
+    set(zoomStateAtom, (prev) => {
       const { transform, d3Container, d3Zoom, viewport, size } = prev
 
       if (d3Container && d3Zoom) {

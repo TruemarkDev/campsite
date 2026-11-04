@@ -1,7 +1,41 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
 
+/*
+  The JS config replaces theme.spacing outright, which drops the --spacing base
+  variable v4 core utilities derive from. The scale there is n * 4px, so restore
+  the same base here.
+*/
+@theme {
+  --spacing: 4px;
+}
+@config '../../tailwind.config.js';
+@import 'tailwind-scrollbar-hide/v4';
+@import 'tailwindcss-safe-area';
+
+@layer base {
+  /*
+    Tailwind v3's preflight defaulted every border to the theme's
+    borderColor.DEFAULT; v4's preflight uses currentColor instead, which would
+    silently repaint every bare `border` utility in the text colour. Restore
+    the v3 behaviour.
+  */
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--border-primary, currentColor);
+  }
+
+  /*
+    v3's preflight gave buttons `cursor: pointer`; v4 defers to the browser
+    default (an arrow). Restore the pointer for enabled buttons.
+  */
+  button:not(:disabled),
+  [role='button']:not(:disabled) {
+    cursor: pointer;
+  }
+}
 @media (prefers-color-scheme: dark) {
   body.sb-main-centered {
     background: var(--bg-main);
@@ -11,7 +45,7 @@
 @layer base {
   button,
   a {
-    @apply ring-2 ring-transparent focus-visible:border-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-100 dark:focus-visible:ring-blue-600/40;
+    @apply ring-2 ring-transparent focus-visible:border-blue-500 focus-visible:ring-2 focus-visible:ring-blue-100 focus-visible:outline-none dark:focus-visible:ring-blue-600/40;
     -webkit-app-region: no-drag;
   }
 

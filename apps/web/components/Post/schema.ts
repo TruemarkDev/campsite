@@ -13,7 +13,7 @@ export const postSchema = z.object({
   project_id: z.string().optional(),
   // for carousel attachments; will eventually deprecate this
   attachments: z.array(
-    z.any() as unknown as z.Schema<
+    z.custom<
       Attachment & {
         figma_file_id?: number
         remote_figma_node_id?: string
@@ -21,7 +21,7 @@ export const postSchema = z.object({
         remote_figma_node_name?: string
         figma_share_url?: string
       }
-    >
+    >()
   ),
   // for inline attachments
   attachment_ids: z.array(z.string()),
@@ -44,7 +44,9 @@ export const postSchema = z.object({
       z.object({
         id: z.string(),
         has_replied: z.boolean(),
-        member: z.any()
+        // .optional() keeps Zod 3's behavior for any(): the key itself may be
+        // absent (e.g. a trimmed cached draft) without invalidating the form.
+        member: z.any().optional()
       })
     )
     .nullable(),

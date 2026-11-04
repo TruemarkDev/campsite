@@ -6,6 +6,7 @@ module Api
       class ForMeNotesController < BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership
         after_action :verify_policy_scoped, only: :index
 
         response model: NotePageSerializer, code: 200

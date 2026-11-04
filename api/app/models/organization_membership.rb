@@ -1,13 +1,14 @@
 # frozen_string_literal: true
 
 class OrganizationMembership < ApplicationRecord
-  SlackNotificationPreferenceError = Class.new(StandardError)
+  class SlackNotificationPreferenceError < StandardError
+  end
 
   include Discard::Model
   include PublicIdGenerator
 
   SEEN_RECENTLY_THRESHOLD = 30.days
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at, :last_seen_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at, :last_seen_at].freeze
 
   belongs_to :organization
   belongs_to :user
@@ -44,6 +45,7 @@ class OrganizationMembership < ApplicationRecord
   has_many :follow_ups, dependent: :destroy_async
   has_many :unshown_follow_ups, -> { unshown }, class_name: "FollowUp"
   has_many :notes, dependent: :destroy_async
+  has_many :agent_sync_grants, dependent: :destroy
   has_many :kept_notes, -> { kept }, class_name: "Note"
   has_many :kept_active_project_membership_notes, through: :kept_projects, source: :kept_notes
   has_many :kept_subscribed_notes, ->(organization_membership) { joins(:member).where(member: { organization_id: organization_membership.organization_id }) }, through: :user
@@ -72,15 +74,16 @@ class OrganizationMembership < ApplicationRecord
   scope :in_organization_where_guest_without_shared_project_viewable_by, ->(user) { joins(:organization).where(organization: user.view_guest_without_shared_project_organizations) }
 
   scope :search_by, ->(query_string) do
+    operator = connection.adapter_name == "PostgreSQL" ? "ILIKE" : "LIKE"
     joins(:user)
-      .where("users.username LIKE :query OR users.name LIKE :query OR users.email LIKE :query",
+      .where("users.username #{operator} :query OR users.name #{operator} :query OR users.email #{operator} :query",
         query: "%#{query_string}%")
   end
 
   scope :seen_recently, -> { where(last_seen_at: SEEN_RECENTLY_THRESHOLD.ago..) }
   scope :role_counted, -> { where(role_name: Role.counted.map(&:name)) }
 
-  SERIALIZER_EAGER_LOAD = [:user, :latest_status]
+  SERIALIZER_EAGER_LOAD = [:user, :latest_status].freeze
   scope :serializer_eager_load, -> { eager_load(*SERIALIZER_EAGER_LOAD) }
 
   counter_culture :organization,

@@ -10,7 +10,11 @@ module Backfills
       count = if dry_run
         thread_rooms.count
       else
-        thread_rooms.update_all("creator_id = message_threads.owner_id, source = #{CallRoom.sources[:subject]}")
+        updates = CallRoom.sanitize_sql_array([
+          "creator_id = message_threads.owner_id, source = ?",
+          CallRoom.sources.fetch(:subject),
+        ])
+        thread_rooms.update_all(updates)
       end
 
       "#{dry_run ? "Would have updated" : "Updated"} #{count} Call #{"record".pluralize(count)}"

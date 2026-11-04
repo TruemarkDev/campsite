@@ -1,0 +1,10 @@
+# Canonical toolchain for the Rails API.
+# Source of truth for local dev (mise) and mirrored by:
+#   - api/.ruby-version  (consumed literally by api/Dockerfile + api/script/bootstrap)
+#   - api/Dockerfile     `FROM node:<version>` for the asset-build stage
+#   - .nvmrc and the root mise.toml, which must agree on the Node baseline
+# When bumping a version here, update those too (see MAINTENANCE.md).
+[tools]
+ruby = "4.0.6"
+node = "24.19.0"
+pnpm = "11.9.0"

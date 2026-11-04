@@ -5,11 +5,11 @@ import { usePusher } from '@/contexts/pusher'
 
 import { useBindChannelEvent } from './useBindChannelEvent'
 
-type PusherMember = {
+interface PusherMember {
   id: string
 }
 
-type Props = {
+interface Props {
   channelName: string | null | undefined
   setUserIds: (userIds: Set<string> | ((previous: Set<string>) => Set<string>)) => void
 }

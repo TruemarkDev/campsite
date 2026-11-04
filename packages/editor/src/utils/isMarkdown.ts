@@ -25,7 +25,7 @@ export default function isMarkdown(text: string): boolean {
 
   const tables = text.match(/\|\s?[-]+\s?\|/gm)
 
-  if (tables && tables.length > 1) {
+  if (tables && tables.length > 0) {
     return true
   }
 

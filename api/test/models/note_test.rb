@@ -12,30 +12,26 @@ class PostTest < ActiveSupport::TestCase
 
   context "#search" do
     def setup
-      Searchkick.enable_callbacks
       @member = create(:organization_membership)
       @user = @member.user
       @org = @member.organization
     end
 
-    def teardown
-      Searchkick.disable_callbacks
-    end
 
     test "does not match other orgs" do
-      create(:note, :reindex, title: "Foo bar", member: create(:organization_membership))
+      create(:note, :search_document, title: "Foo bar", member: create(:organization_membership))
       results = Note.scoped_search(query: "foo", organization: @org)
       assert_equal 0, results.count
     end
 
     test "does not match discarded notes" do
-      create(:note, :reindex, :discarded, title: "Foo bar", member: @member)
+      create(:note, :search_document, :discarded, title: "Foo bar", member: @member)
       results = Note.scoped_search(query: "foo", organization: @org)
       assert_equal 0, results.count
     end
 
     test "search title" do
-      note =  create(:note, :reindex, title: "Foo bar", member: @member)
+      note =  create(:note, :search_document, title: "Foo bar", member: @member)
       results = Note.scoped_search(query: "foo", organization: @org)
       notes = Pundit.policy_scope(@user, Note.where(id: results.pluck(:id)))
       assert_equal 1, notes.count
@@ -43,7 +39,7 @@ class PostTest < ActiveSupport::TestCase
     end
 
     test "search description" do
-      note =  create(:note, :reindex, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>", member: @member)
+      note =  create(:note, :search_document, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>", member: @member)
       results = Note.scoped_search(query: "dog", organization: @org)
       notes = Pundit.policy_scope(@user, Note.where(id: results.pluck(:id)))
       assert_equal 1, notes.count
@@ -51,9 +47,9 @@ class PostTest < ActiveSupport::TestCase
     end
 
     test "search comments" do
-      note = create(:note, :reindex, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>", member: @member)
+      note = create(:note, :search_document, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>", member: @member)
       create(:comment, body_html: "<p>needle</p>", subject: note, member: @member)
-      note.reload.reindex(refresh: true)
+      note.reload.refresh_search_document
       results = Note.scoped_search(query: "needle", organization: @org)
       notes = Pundit.policy_scope(@user, Note.where(id: results.pluck(:id)))
       assert_equal 1, notes.count
@@ -62,7 +58,6 @@ class PostTest < ActiveSupport::TestCase
 
     test "works when there are no notes" do
       Note.destroy_all
-      Note.reindex
 
       results = Note.scoped_search(query: "foo", organization: @org)
 
@@ -111,16 +106,20 @@ class PostTest < ActiveSupport::TestCase
 
   context "#revalidate_public_static_cache_url" do
     test "path is correct" do
+      previous_token = ENV["REVALIDATE_STATIC_CACHE_TOKEN"]
+      ENV["REVALIDATE_STATIC_CACHE_TOKEN"] = "REVALIDATE_SECRET"
       org = create(:organization, slug: "foo")
       member = create(:organization_membership, organization: org)
       note = create(:note, member: member, visibility: :public, title: "Foo bar", description_html: "<p>cat</p> <p>dog</p>")
       path = note.revalidate_public_static_cache_path
       parsed = URI.parse(path)
-      params = CGI.parse(parsed.query)
+      params = URI.decode_www_form(parsed.query).group_by(&:first).transform_values { |pairs| pairs.map(&:last) }
 
       assert_equal params["secret"].first, "REVALIDATE_SECRET"
       assert_equal params["rpath"].first, "/foo/p/notes/foo-bar-#{note.public_id}"
       assert_equal parsed.path, "/api/revalidate"
+    ensure
+      ENV["REVALIDATE_STATIC_CACHE_TOKEN"] = previous_token
     end
   end
 

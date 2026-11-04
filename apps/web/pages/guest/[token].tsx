@@ -22,6 +22,8 @@ const JoinProjectPage: PageWithLayout<any> = () => {
       { orgSlug: organization.slug, projectId: project.id, token },
       {
         onSuccess: () => {
+          // Reload to initialize the accepted project's organization context.
+          // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = `/${organization.slug}/projects/${project.id}`
         }
       }

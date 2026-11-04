@@ -93,14 +93,14 @@ const CreateProjectDialog = dynamic(
 export function NavigationBar() {
   const isDesktop = useIsDesktopApp()
   const wrapperClasses = cn(
-    '  lg:hidden min-h-[--navbar-height] z-10 drag border-b transition-shadow flex-none bg-primary'
+    '  lg:hidden min-h-[var(--navbar-height)] z-10 drag border-b transition-shadow flex-none bg-primary'
   )
 
   return (
     <>
       <m.nav onDoubleClick={() => isDesktop && nativeWindow.maximize()} className={wrapperClasses}>
         <div
-          className={cn('mx-auto grid h-[--navbar-height] max-w-7xl grid-cols-5 items-center', {
+          className={cn('mx-auto grid h-[var(--navbar-height)] max-w-7xl grid-cols-5 items-center', {
             'pl-24 2xl:px-3': isDesktop && isMacOs,
             'px-3': !isDesktop || !isMacOs
           })}
@@ -141,7 +141,7 @@ export function SignedOutNavigationBar() {
   return (
     <nav
       onDoubleClick={() => isDesktop && nativeWindow.maximize()}
-      className='drag bg-primary sticky inset-x-0 top-0 z-10 min-h-[--navbar-height] border-b transition-shadow'
+      className='drag bg-primary sticky inset-x-0 top-0 z-10 min-h-[var(--navbar-height)] border-b transition-shadow'
     >
       <div className='mx-auto grid h-14 grid-cols-3 items-center gap-4 px-3'>
         {accessory}
@@ -164,7 +164,10 @@ function TrailingAccessory() {
   const isPost = router.pathname === '/[org]/posts/[postId]'
   const isVersions = router.pathname === '/[org]/posts/[postId]/versions'
   const isProject =
-    router.pathname === '/[org]/projects/[projectId]' || router.pathname === '/[org]/projects/[projectId]/docs'
+    router.pathname === '/[org]/projects/[projectId]' ||
+    router.pathname === '/[org]/projects/[projectId]/docs' ||
+    router.pathname === '/[org]/projects/[projectId]/calls' ||
+    router.pathname === '/[org]/projects/[projectId]/board'
   const isProjects = router.pathname === '/[org]/projects' || router.pathname === '/[org]/projects/archived'
   const isPeople = router.pathname === '/[org]/people'
   const isChatThread = router.pathname === '/[org]/chat/[threadId]'
@@ -406,7 +409,10 @@ function CenterAccessory() {
   const isPosts = router.pathname === '/[org]/posts'
   const isPost = router.pathname === '/[org]/posts/[postId]'
   const isProject =
-    router.pathname === '/[org]/projects/[projectId]' || router.pathname === '/[org]/projects/[projectId]/docs'
+    router.pathname === '/[org]/projects/[projectId]' ||
+    router.pathname === '/[org]/projects/[projectId]/docs' ||
+    router.pathname === '/[org]/projects/[projectId]/calls' ||
+    router.pathname === '/[org]/projects/[projectId]/board'
   const isProjects = router.pathname === '/[org]/projects' || router.pathname === '/[org]/projects/archived'
   const isPeople = router.pathname === '/[org]/people'
   const isSearch = router.pathname === '/[org]/search'
@@ -883,7 +889,7 @@ function BadgedChatIcon({ prefetch }: { prefetch?: boolean }) {
   return (
     <div className='relative'>
       {hasUnreads && (
-        <div className='pointer-events-none absolute -right-[3px] -top-px z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
+        <div className='pointer-events-none absolute -top-px -right-[3px] z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
       )}
       <ChatBubbleIcon size={28} />
     </div>
@@ -899,7 +905,7 @@ function BadgedNotificationsIcon() {
   return (
     <div className='relative'>
       {hasUnreads && (
-        <div className='pointer-events-none absolute -right-[3px] -top-px z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
+        <div className='pointer-events-none absolute -top-px -right-[3px] z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
       )}
       <InboxIcon size={28} />
     </div>
@@ -915,7 +921,7 @@ function BadgedHomeIcon() {
   return (
     <div className='relative'>
       {hasUnreads && (
-        <div className='pointer-events-none absolute -right-[3px] -top-px z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
+        <div className='pointer-events-none absolute -top-px -right-[3px] z-10 h-2 w-2 flex-none rounded-full bg-blue-500' />
       )}
       <HomeIcon size={28} />
     </div>

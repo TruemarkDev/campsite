@@ -9,6 +9,7 @@ const routeDocs = includeFile("@base/route-docs", { config, route, utils });
 const queryName = (query && query.name) || "query";
 const pathParams = _.values(parameters);
 const pathParamsNames = _.map(pathParams, "name");
+const hasQueryParams = Boolean(query);
 
 const isFetchTemplate = config.httpClientType === HTTP_CLIENT.FETCH;
 
@@ -21,14 +22,15 @@ const requestConfigParam = {
 
 const argToTmpl = ({ name, optional, type, defaultValue }) => `${name}${!defaultValue && optional ? '?' : ''}: ${type}${defaultValue ? ` = ${defaultValue}` : ''}`;
 
-const rawWrapperArgs = config.extractRequestParams ?
+// Keep path-only endpoints positional; extract a parameter object only for query endpoints.
+const rawWrapperArgs = config.extractRequestParams && query ?
     _.compact([
-        requestParams && {
+        hasQueryParams && requestParams && {
           name: pathParams.length ? `{ ${_.join(pathParamsNames, ", ")}, ...${queryName} }` : queryName,
           optional: false,
           type: getInlineParseContent(requestParams),
         },
-        ...(!requestParams ? pathParams : []),
+        ...(!hasQueryParams ? pathParams : []),
         payload,
         requestConfigParam,
     ]) :
@@ -78,14 +80,14 @@ const describeReturnType = () => {
     }
 }
 
-const keyRawWrapperArgs = config.extractRequestParams ?
+const keyRawWrapperArgs = config.extractRequestParams && query ?
     _.compact([
-        requestParams && {
+        hasQueryParams && requestParams && {
           name: "params",
           optional: false,
           type: getInlineParseContent(requestParams),
         },
-        ...(!requestParams ? pathParams : []),
+        ...(!hasQueryParams ? pathParams : []),
     ]) :
     _.compact([
         ...pathParams,

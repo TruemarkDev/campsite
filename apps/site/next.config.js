@@ -4,24 +4,19 @@ const { withSentryConfig } = require('@sentry/nextjs')
 const createMDX = require('@next/mdx')
 
 const config = {
-  experimental: {
-    /**
-     *
-     * Why do we need this?
-     *
-     * `@campsite/site` depends on `@campsite/ui` which depends `react-day-picker`
-     * which depends on an ESM only package `date-fns`.
-     *
-     * @see https://nextjs.org/docs/messages/import-esm-externals
-     */
-    esmExternals: 'loose'
-  },
   transpilePackages: ['@campsite/ui', '@campsite/config'],
   reactStrictMode: true,
   pageExtensions: ['js', 'jsx', 'md', 'mdx', 'ts', 'tsx'],
   images: {
-    domains: ['campsite.imgix.net', 'campsite-dev.imgix.net'],
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'campsite.imgix.net'
+      },
+      {
+        protocol: 'https',
+        hostname: 'campsite-dev.imgix.net'
+      },
       {
         protocol: 'https',
         hostname: 'user-images.githubusercontent.com'

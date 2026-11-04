@@ -163,7 +163,7 @@ function OrigamiRenderer({ attachment }: Props) {
       >
         <QRCode size={256} value={origamiUrl} />
 
-        <div className='flex flex-col items-center justify-center space-x-0 space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0'>
+        <div className='flex flex-col items-center justify-center space-y-3 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-3'>
           <Button href={attachment.download_url} download={attachment.name || 'file'} leftSlot={<DownloadIcon />}>
             Download
           </Button>
@@ -209,7 +209,7 @@ function PrincipleRenderer({ attachment }: Props) {
       >
         <QRCode size={256} value={principleUrl} />
 
-        <div className='flex flex-col items-center justify-center space-x-0 space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0'>
+        <div className='flex flex-col items-center justify-center space-y-3 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-3'>
           <Button href={attachment.download_url} download={attachment.name || 'file'} leftSlot={<DownloadIcon />}>
             Download
           </Button>
@@ -255,7 +255,7 @@ function StitchRenderer({ attachment }: Props) {
       >
         <QRCode size={256} value={stitchUrl} />
 
-        <div className='flex flex-col items-center justify-center space-x-0 space-y-3 sm:flex-row sm:space-x-3 sm:space-y-0'>
+        <div className='flex flex-col items-center justify-center space-y-3 space-x-0 sm:flex-row sm:space-y-0 sm:space-x-3'>
           <Button href={attachment.download_url} download={attachment.name || 'file'} leftSlot={<DownloadIcon />}>
             Download
           </Button>

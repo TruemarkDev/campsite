@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+cd "$(dirname "$0")/../api"
+export PATH="$(mise where ruby)/bin:$PATH"
+unset DATABASE_URL RAILS_MASTER_KEY
+export RAILS_ENV=test DB_ADAPTER=postgresql
+export PG_TEST_PORT="${PG_TEST_PORT:-5432}"
+export PG_TEST_USER="${PG_TEST_USER:-$(id -un)}"
+export PG_TEST_PASSWORD="${PG_TEST_PASSWORD-}"
+# macOS native pg connections can crash across fork; run serially by default.
+export PARALLEL_WORKERS="${PARALLEL_WORKERS:-1}"
+exec bundle exec rails "$@"

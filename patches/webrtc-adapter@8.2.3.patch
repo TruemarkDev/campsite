@@ -1,0 +1,35 @@
+diff --git a/dist/adapter_factory.js b/dist/adapter_factory.js
+index 0cd97fabb304821c37220b006038046046747366..4cdc59d494f150c13f528e5a80ce5515bac104e3 100644
+--- a/dist/adapter_factory.js
++++ b/dist/adapter_factory.js
+@@ -45,6 +45,12 @@ function adapterFactory() {
+     sdp: sdp
+   };
+ 
++  var peerConnectionPrototype = window && window.RTCPeerConnection && window.RTCPeerConnection.prototype;
++  if (peerConnectionPrototype && !Object.isExtensible(peerConnectionPrototype)) {
++    logging('RTCPeerConnection prototype is not extensible, not shimming.');
++    return adapter;
++  }
++
+   // Shim browser if found.
+   switch (browserDetails.browser) {
+     case 'chrome':
+diff --git a/src/js/adapter_factory.js b/src/js/adapter_factory.js
+index 54bdda28d4b1eba27a8cd551fa9493c4567ed1a9..f16b4c5991d77ca1fab9eed4406f6e668477a065 100644
+--- a/src/js/adapter_factory.js
++++ b/src/js/adapter_factory.js
+@@ -34,6 +34,13 @@ export function adapterFactory({window} = {}, options = {
+     sdp,
+   };
+ 
++  const peerConnectionPrototype = window && window.RTCPeerConnection &&
++      window.RTCPeerConnection.prototype;
++  if (peerConnectionPrototype && !Object.isExtensible(peerConnectionPrototype)) {
++    logging('RTCPeerConnection prototype is not extensible, not shimming.');
++    return adapter;
++  }
++
+   // Shim browser if found.
+   switch (browserDetails.browser) {
+     case 'chrome':

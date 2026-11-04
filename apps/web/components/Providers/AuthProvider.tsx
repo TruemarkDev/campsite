@@ -1,7 +1,6 @@
 import { useEffect } from 'react'
 import * as Sentry from '@sentry/nextjs'
 import { appMenu } from '@todesktop/client-core'
-import { useGetCurrentUser } from 'hooks/useGetCurrentUser'
 import { useRouter } from 'next/router'
 
 import { COMMUNITY_SLUG, WEB_URL } from '@campsite/config'
@@ -11,6 +10,7 @@ import { useHasMounted, useIsDesktopApp } from '@campsite/ui/src/hooks'
 import { FullPageError } from '@/components/Error'
 import { FullPageLoading } from '@/components/FullPageLoading'
 import { useGetCurrentOrganization } from '@/hooks/useGetCurrentOrganization'
+import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
 import { useGetOrganizationMemberships } from '@/hooks/useGetOrganizationMemberships'
 import { signinUrl } from '@/utils/queryClient'
 
@@ -66,6 +66,11 @@ export function AuthProvider({ children, allowLoggedOut }: Props) {
     return <FullPageError message={userError.message} />
   }
 
+  // Never initialize authenticated application providers before the current-user request settles.
+  if (userIsLoading) {
+    return <FullPageLoading />
+  }
+
   // redirect logged-out users
   if (!allowLoggedOut && currentUser && !currentUser.logged_in) {
     redirectToSignin()
@@ -80,11 +85,6 @@ export function AuthProvider({ children, allowLoggedOut }: Props) {
   // If getCurrentUser didn't error and didn't return data, redirect to login
   if (userSuccess && !currentUser) {
     redirectToSignin()
-    return <FullPageLoading />
-  }
-
-  // always show loading if we're waiting on the user
-  if (userIsLoading) {
     return <FullPageLoading />
   }
 

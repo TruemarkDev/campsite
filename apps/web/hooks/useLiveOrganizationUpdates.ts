@@ -12,11 +12,15 @@ import { setNormalizedData } from '@/utils/queryNormalization'
 import { useBindChannelEvent } from './useBindChannelEvent'
 import { useOrganizationChannel } from './useOrganizationChannel'
 
-type NewPostEvent = {
+interface NewPostEvent {
   user_id?: string
   username?: string
   project_ids: string[]
   tag_names: string[]
+}
+
+interface ProjectBeadsBoardStaleEvent {
+  project_id: string
 }
 
 const getMe = apiClient.users.getMe()
@@ -89,6 +93,20 @@ export function useLiveOrganizationUpdates(organization?: Organization) {
     [currentUser?.id, queryClient, queryNormalizer, scope]
   )
 
+  const invalidateProjectBeadsBoard = useCallback(
+    ({ project_id }: ProjectBeadsBoardStaleEvent) => {
+      if (!organization) return
+
+      queryClient.invalidateQueries({
+        queryKey: apiClient.organizations
+          .getProjectsBeadsBoard()
+          .requestKey(organization.slug, project_id)
+      })
+    },
+    [organization, queryClient]
+  )
+
   useBindChannelEvent(organizationChannel, 'posts-stale', invalidateFeedQueries)
   useBindChannelEvent(organizationChannel, 'user-stale', updateUser)
+  useBindChannelEvent(organizationChannel, 'project-beads-board-stale', invalidateProjectBeadsBoard)
 }

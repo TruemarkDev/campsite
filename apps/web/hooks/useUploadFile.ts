@@ -3,16 +3,17 @@ import { useMutation } from '@tanstack/react-query'
 
 import { PresignedPostFields } from '@campsite/types'
 
+import { objectStorageUploadUrl } from '@/utils/objectStorageUrl'
 import { apiClient } from '@/utils/queryClient'
 import { PresignedResource, TransformedFile } from '@/utils/types'
 
-type PresignedProps = {
+interface PresignedProps {
   file: TransformedFile
   resource: PresignedResource
   orgSlug?: string
 }
 
-type UploadProps = {
+interface UploadProps {
   file: Blob
   type: string
   resource: PresignedResource
@@ -77,7 +78,8 @@ export async function handleFile({ file, type, resource, orgSlug }: UploadProps)
   formData.append('x-amz-signature', fields.x_amz_signature)
   formData.append('file', file)
 
-  const result = await fetch(fields.url, {
+  const uploadUrl = objectStorageUploadUrl(fields.url, process.env.NEXT_PUBLIC_OBJECT_STORAGE_URL)
+  const result = await fetch(uploadUrl, {
     method: 'POST',
     body: formData
   }).catch((err) => {

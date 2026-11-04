@@ -13,7 +13,11 @@ export function ToggleCommentsButton() {
 
   return (
     <>
-      <LayeredHotkeys keys='shift+c' callback={toggleCommentsVisibility} options={{ preventDefault: true }} />
+      <LayeredHotkeys
+        keys='shift+c'
+        callback={toggleCommentsVisibility}
+        options={{ description: 'Toggle comments', metadata: { category: 'View' }, preventDefault: true }}
+      />
 
       <Button
         tooltip='Toggle comments'

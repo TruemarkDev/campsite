@@ -4,11 +4,12 @@ import { defineConfig } from 'vitest/config'
 export default defineConfig({
   test: {
     environment: 'node',
-    globals: true
+    globals: true,
+    env: { AUTHTOKEN: 'styled-text-test-token' }
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, '.')
+      '@': path.resolve(import.meta.dirname, '.')
     }
   }
 })

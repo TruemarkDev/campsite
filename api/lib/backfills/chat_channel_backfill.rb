@@ -3,7 +3,8 @@
 module Backfills
   class ChatChannelBackfill
     def self.run(dry_run: true, organization_slug: nil)
-      message_threads = MessageThread.where.missing(:project).where.not(title: [nil, ""]).where("title REGEXP ?", "[^[:space:]]")
+      non_whitespace_title = MessageThread.connection.adapter_name == "PostgreSQL" ? "title ~ ?" : "title REGEXP ?"
+      message_threads = MessageThread.where.missing(:project).where.not(title: [nil, ""]).where(non_whitespace_title, "[^[:space:]]")
 
       if organization_slug
         organization = Organization.find_by!(slug: organization_slug)

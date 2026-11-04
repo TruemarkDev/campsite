@@ -108,7 +108,7 @@ function ActiveCallHeader() {
 
   return (
     <div className='flex w-full items-center justify-between'>
-      <div className='flex flex-1 select-none items-center gap-1'>
+      <div className='flex flex-1 items-center gap-1 select-none'>
         <UIText element='span' weight='font-semibold'>
           {title}
         </UIText>
@@ -490,7 +490,7 @@ function AudioControlsPicker() {
   const outputOptions = outputDevices?.map((device) => ({ label: device.label, value: device.deviceId })) || []
 
   return (
-    <div className='flex max-h-[--radix-popper-available-height] flex-col'>
+    <div className='flex max-h-[var(--radix-popper-available-height)] flex-col'>
       <div className='flex flex-col gap-5 p-3'>
         <div className='flex flex-col gap-1.5'>
           <UIText size='text-xs' weight='font-medium'>

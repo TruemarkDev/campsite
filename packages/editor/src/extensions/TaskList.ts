@@ -4,7 +4,7 @@ import { createMarkdownParserSpec } from '../utils/createMarkdownParser'
 
 export const TaskList = TiptapTaskList.extend({
   markdownParseSpec() {
-    return createMarkdownParserSpec({ block: TaskList.name })
+    return createMarkdownParserSpec({ block: TiptapTaskList.name })
   },
 
   markdownToken: 'task_list'

@@ -1,0 +1,57 @@
+scope: ${PATRONI_SCOPE}
+name: ${PATRONI_NAME}
+restapi:
+  listen: ${PATRONI_REST_LISTEN}
+  connect_address: ${PATRONI_REST_CONNECT_ADDRESS}
+etcd3:
+  hosts: ${PATRONI_ETCD3_HOSTS}
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    synchronous_mode: true
+    synchronous_mode_strict: false
+    maximum_lag_on_failover: ${PATRONI_MAXIMUM_LAG_ON_FAILOVER}
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        max_connections: 200
+        # Existing clusters use the matching Patroni DCS setting; bootstrap
+        # values apply only to a newly initialized cluster.
+        shared_preload_libraries: pg_stat_statements
+  initdb:
+    - encoding: UTF8
+    - data-checksums
+postgresql:
+  listen: ${PATRONI_POSTGRES_LISTEN}
+  connect_address: ${PATRONI_POSTGRES_CONNECT_ADDRESS}
+  data_dir: ${PGDATA}
+  bin_dir: /usr/lib/postgresql/18/bin
+  parameters:
+    archive_mode: '${PATRONI_ARCHIVE_MODE}'
+    archive_command: '${PATRONI_ARCHIVE_COMMAND}'
+    password_encryption: scram-sha-256
+  # A replica or a rewound former leader fetches WAL it no longer has from the
+  # pgBackRest repository. Empty (unset) while archiving is disabled.
+  recovery_conf:
+    restore_command: '${PATRONI_RESTORE_COMMAND}'
+  # Without this, initdb's local-only defaults block streaming replication between
+  # members and every client on the LAN. UFW is the outer allowlist; this is the
+  # inner one. Members: pg-a 192.168.10.33 (Groot), pg-b 192.168.10.35;
+  # clients: both members plus Quill 192.168.10.32 (application runtimes).
+  pg_hba:
+    - local all all peer
+    - host all all 127.0.0.1/32 scram-sha-256
+    - host replication ${PATRONI_REPLICATION_USERNAME} 192.168.10.33/32 scram-sha-256
+    - host replication ${PATRONI_REPLICATION_USERNAME} 192.168.10.35/32 scram-sha-256
+    - host all all 192.168.10.33/32 scram-sha-256
+    - host all all 192.168.10.35/32 scram-sha-256
+    - host all all 192.168.10.32/32 scram-sha-256
+  authentication:
+    superuser:
+      username: ${PATRONI_SUPERUSER_USERNAME}
+      password: ${PATRONI_SUPERUSER_PASSWORD}
+    replication:
+      username: ${PATRONI_REPLICATION_USERNAME}
+      password: ${PATRONI_REPLICATION_PASSWORD}

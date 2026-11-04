@@ -16,7 +16,7 @@ import { useScopedStorage } from '@/hooks/useScopedStorage'
 
 export function SidebarChatSectionGroup() {
   const router = useRouter()
-  const { data: threadsInbox, isLoading } = useGetThreads()
+  const { data: threadsInbox, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } = useGetThreads()
   const hasThreads = threadsInbox?.threads && threadsInbox.threads.length > 0
   const [collapsed, setCollapsed] = useScopedStorage('sidebar-chat-collapsed', false)
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
@@ -39,7 +39,7 @@ export function SidebarChatSectionGroup() {
   if (isLoading) return null
   if (hasSidebarDMs) return null
 
-  if (!hasThreads || (!collapsed && !nonFavoritedThreads?.length)) {
+  if (!hasThreads || (!collapsed && !nonFavoritedThreads?.length && !hasNextPage)) {
     return (
       <SidebarGroup>
         <SidebarCollapsibleButton collapsed={collapsed} setCollapsed={setCollapsed} label='Chat' />
@@ -72,7 +72,7 @@ export function SidebarChatSectionGroup() {
 
         <button
           onClick={() => setCreateDialogOpen(true)}
-          className='hover:bg-quaternary text-tertiary hover:text-primary group flex h-6 w-6 items-center justify-center rounded-md p-0.5 opacity-0 focus:outline-0 focus:ring-0 group-hover/chat:opacity-100 group-has-[[data-state="open"]]/chat:opacity-100'
+          className='hover:bg-quaternary text-tertiary hover:text-primary group flex h-6 w-6 items-center justify-center rounded-md p-0.5 opacity-0 group-hover/chat:opacity-100 group-has-[[data-state="open"]]/chat:opacity-100 focus:ring-0 focus:outline-0'
         >
           <PlusIcon size={16} strokeWidth='2' />
         </button>
@@ -82,6 +82,14 @@ export function SidebarChatSectionGroup() {
         {renderableItems?.map((thread) => (
           <SidebarChatThread thread={thread} key={thread.id} onPeek={setHoveredId} location='chats' />
         ))}
+        {!collapsed && hasNextPage && (
+          <SidebarLink
+            id='more-chats'
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            label={isFetchingNextPage ? 'Loading…' : 'Load more conversations'}
+          />
+        )}
         {!collapsed && (
           <SidebarLink
             id='new-chat'

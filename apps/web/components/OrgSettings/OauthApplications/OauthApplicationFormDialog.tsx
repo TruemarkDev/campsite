@@ -3,7 +3,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { z } from 'zod'
 
 import { OauthApplication, OrganizationsOrgSlugOauthApplicationsPostRequest } from '@campsite/types/generated'
 import { Button } from '@campsite/ui/Button'
@@ -17,6 +16,8 @@ import { useScope } from '@/contexts/scope'
 import { useCreateOauthApplication } from '@/hooks/useCreateOauthApplication'
 import { apiErrorToast } from '@/utils/apiErrorToast'
 import { TransformedFile } from '@/utils/types'
+
+import { oauthApplicationFormSchema } from './schema'
 
 interface OauthApplicationFormDialogProps {
   open: boolean
@@ -32,12 +33,7 @@ function useCreateAppForm() {
       name: '',
       avatar_path: ''
     },
-    resolver: zodResolver(
-      z.object({
-        name: z.string().min(1, 'Name is required'),
-        avatar_path: z.string().optional()
-      })
-    )
+    resolver: zodResolver(oauthApplicationFormSchema)
   })
 }
 

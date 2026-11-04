@@ -8,10 +8,15 @@ module Eventable
     has_many :notifications, through: :events
     after_create_commit :instrument_created_event
     after_update_commit :instrument_updated_event, unless: -> { respond_to?(:discarded?) && discarded? }
+    # Latch the discard at save time: a later save in the same transaction (e.g.
+    # Post#remove_from_version_tree's `update!`) overwrites the discarded_at dirty
+    # state, so the commit callback below can't reliably read it via
+    # `discarded_at_previously_changed?`. after_save sees each save's own changes.
+    after_save :flag_destroyed_event, if: -> { respond_to?(:discarded?) && discarded? && saved_change_to_attribute?(self.class.discard_column) }
     # Must use after_update_commit instead of after_discard to ensure that
     # transaction is committed and Event is available to ProcessEventJob
     # https://github.com/jhawthorn/discard/issues/73#issue-576101350
-    after_update_commit :instrument_destroyed_event, if: -> { respond_to?(:discarded?) && discarded? && discarded_at_previously_changed? }
+    after_update_commit :instrument_destroyed_event, if: -> { @destroyed_event_pending }
     delegate :display_name, to: :event_actor, prefix: true, allow_nil: true
     attr_accessor :skip_notifications
     alias_method :skip_notifications?, :skip_notifications
@@ -34,7 +39,12 @@ module Eventable
     ProcessEventJob.perform_async(event.id)
   end
 
+  def flag_destroyed_event
+    @destroyed_event_pending = true
+  end
+
   def instrument_destroyed_event
+    @destroyed_event_pending = false
     event = events.destroyed_action.create!(**event_attributes)
     ProcessEventJob.perform_async(event.id)
   end

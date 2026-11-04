@@ -6,6 +6,8 @@ module Api
       class FilesController < BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership, only: :create
+
         response model: FigmaFileSerializer, code: 201
         request_params do
           {

@@ -4,7 +4,7 @@ module MarkdownEnrichable
   extend ActiveSupport::Concern
 
   def markdown_to_html(text)
-    text.strip! if text.present?
+    text.presence&.strip!
 
     return "" if text.blank?
 

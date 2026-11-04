@@ -32,13 +32,13 @@ class Organization
     private
 
     def remove_existing_members
-      existing = @organization.members.where(email: @invitations.pluck(:email)).pluck(:email)
+      existing = @organization.members.where(email: @invitations.pluck(:email).map(&:downcase)).pluck(:email)
       @invitations = @invitations.filter { |i| existing.exclude?(i[:email]) }
     end
 
     def remove_existing_invitations
       existing = @organization.invitations
-        .where(email: @invitations.pluck(:email))
+        .where(email: @invitations.pluck(:email).map(&:downcase))
         .where("expires_at > ?", Time.current)
         .pluck(:email)
       @invitations = @invitations.filter { |i| existing.exclude?(i[:email]) }
@@ -46,13 +46,13 @@ class Organization
 
     def destroy_existing_expired_invitations
       @organization.invitations
-        .where(email: @invitations.pluck(:email))
+        .where(email: @invitations.pluck(:email).map(&:downcase))
         .where("expires_at <= ?", Time.current)
         .destroy_all
     end
 
     def find_existing_recipients(emails)
-      User.where(email: emails).index_by(&:email)
+      User.where(email: emails.map(&:downcase)).index_by(&:email)
     end
   end
 end

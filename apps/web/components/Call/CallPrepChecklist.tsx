@@ -112,7 +112,7 @@ function PermissionItem({ permissionState, requestPermission, title, description
               align='end'
               onOpenAutoFocus={(e) => e.preventDefault()}
             >
-              <div className='flex max-h-[--radix-popper-available-height] flex-col p-2'>
+              <div className='flex max-h-[var(--radix-popper-available-height)] flex-col p-2'>
                 <UIText size='text-sm'>You denied this permission. Enable from browser settings.</UIText>
               </div>
             </PopoverContent>

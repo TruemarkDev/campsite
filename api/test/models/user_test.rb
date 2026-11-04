@@ -4,6 +4,13 @@ require "test_helper"
 
 class UserTest < ActiveSupport::TestCase
   context "validations" do
+    test "requires at least 15 characters for a password" do
+      user = build(:user, password: "V7!qN2@rT9#xP4")
+
+      assert_not_predicate user, :valid?
+      assert_includes user.errors.full_messages, "Password is too short (minimum is 15 characters)"
+    end
+
     test "is invalid for a weak password" do
       user = build(:user, password: "password11")
 
@@ -130,6 +137,15 @@ class UserTest < ActiveSupport::TestCase
       assert_predicate user, :confirmed?
     end
 
+    test "matches an existing user when the provider email has different casing" do
+      user = create(:user, email: "harry@example.com", confirmed_at: Time.current, omniauth_provider: nil, omniauth_uid: nil)
+      @omni_auth.info.email = "HARRY@EXAMPLE.COM"
+
+      assert_no_difference -> { User.count } do
+        assert_equal user, User.from_omniauth(@omni_auth)
+      end
+    end
+
     test "updates an existing user's email from the provider" do
       create(:user, name: "Ron", omniauth_provider: "google_oauth2", omniauth_uid: "12")
 
@@ -235,6 +251,16 @@ class UserTest < ActiveSupport::TestCase
     end
   end
 
+  context "#likely_primary_work_organization" do
+    test "matches billing email domain suffix" do
+      organization = create(:organization, billing_email: "billing@example.com")
+      user = create(:user, email: "person@example.com")
+      create(:organization_membership, organization: organization, user: user)
+
+      assert_equal organization, user.send(:likely_primary_work_organization)
+    end
+  end
+
   context "#managed?" do
     test "returns true if the user is managed through omniauth" do
       user = build(:user, :omniauth)
@@ -277,7 +303,7 @@ class UserTest < ActiveSupport::TestCase
 
     test "returns an imgix formed url if avatar_path is a path" do
       user = build(:user, avatar_path: "/path/to/image.png")
-      assert_includes user.avatar_url, "http://campsite-test.imgix.net/path/to/image.png"
+      assert_includes user.avatar_url, "https://camp-cdn.polo-apps.test/cdn/path/to/image.png"
     end
 
     test "returns fallback if avatar_path is blank" do

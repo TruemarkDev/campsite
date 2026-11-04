@@ -1,0 +1,90 @@
+# syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
+
+FROM node:24.19.0-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS base
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+RUN corepack enable
+
+FROM base AS pruner
+WORKDIR /app
+COPY . .
+RUN pnpm dlx turbo@2.10.9 prune @campsite/web --docker
+
+FROM base AS builder
+WORKDIR /app
+RUN apt-get update -qq && \
+  apt-get install -y build-essential pkg-config python-is-python3 ca-certificates
+
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+
+RUN pnpm install --frozen-lockfile
+
+COPY --from=pruner /app/out/full/ .
+
+ARG NEXT_PUBLIC_WEB_URL
+ARG NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_SYNC_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SAME_ORIGIN_API
+ARG NEXT_PUBLIC_AUTH_URL
+ARG NEXT_PUBLIC_ADMIN_URL
+ARG NEXT_PUBLIC_CDN_URL
+ARG NEXT_PUBLIC_IMGIX_URL
+ARG NEXT_PUBLIC_OBJECT_STORAGE_URL
+ARG NEXT_PUBLIC_FIGMA_PLUGIN_URL
+ARG NEXT_PUBLIC_LINEAR_CLIENT_ID
+ARG NEXT_PUBLIC_LINEAR_APP_URL
+ARG NEXT_PUBLIC_PUSHER_KEY
+ARG NEXT_PUBLIC_PUSHER_CLUSTER
+ARG NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY
+ARG NEXT_PUBLIC_RELEASE_SHA
+
+ENV NEXT_PUBLIC_WEB_URL=$NEXT_PUBLIC_WEB_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV NEXT_PUBLIC_SYNC_URL=$NEXT_PUBLIC_SYNC_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_SAME_ORIGIN_API=$NEXT_PUBLIC_SAME_ORIGIN_API
+ENV NEXT_PUBLIC_AUTH_URL=$NEXT_PUBLIC_AUTH_URL
+ENV NEXT_PUBLIC_ADMIN_URL=$NEXT_PUBLIC_ADMIN_URL
+ENV NEXT_PUBLIC_CDN_URL=$NEXT_PUBLIC_CDN_URL
+ENV NEXT_PUBLIC_IMGIX_URL=$NEXT_PUBLIC_IMGIX_URL
+ENV NEXT_PUBLIC_OBJECT_STORAGE_URL=$NEXT_PUBLIC_OBJECT_STORAGE_URL
+ENV NEXT_PUBLIC_FIGMA_PLUGIN_URL=$NEXT_PUBLIC_FIGMA_PLUGIN_URL
+ENV NEXT_PUBLIC_LINEAR_CLIENT_ID=$NEXT_PUBLIC_LINEAR_CLIENT_ID
+ENV NEXT_PUBLIC_LINEAR_APP_URL=$NEXT_PUBLIC_LINEAR_APP_URL
+ENV NEXT_PUBLIC_PUSHER_KEY=$NEXT_PUBLIC_PUSHER_KEY
+ENV NEXT_PUBLIC_PUSHER_CLUSTER=$NEXT_PUBLIC_PUSHER_CLUSTER
+ENV NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY=$NEXT_PUBLIC_WEB_PUSH_PUBLIC_KEY
+ENV NEXT_PUBLIC_RELEASE_SHA=$NEXT_PUBLIC_RELEASE_SHA
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=production
+
+RUN pnpm turbo run build --filter=@campsite/web
+
+FROM node:24.19.0-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS runner
+WORKDIR /app/apps/web
+
+# The runtime only executes the standalone Next.js server. Remove the package
+# manager toolchain so its transitive packages are not part of the production
+# attack surface.
+RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack && \
+    rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /usr/local/bin/pnpm /usr/local/bin/pnpx
+
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
+
+RUN groupadd --system --gid 1001 nodejs && \
+    useradd --system --uid 1001 --gid nodejs nextjs
+
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone /app
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./.next/static
+
+USER nextjs
+EXPOSE 3000
+
+CMD ["node", "server.js"]

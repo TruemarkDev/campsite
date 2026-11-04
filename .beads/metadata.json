@@ -1,0 +1,7 @@
+{
+  "database": "dolt",
+  "backend": "dolt",
+  "dolt_mode": "embedded",
+  "dolt_database": "campsite",
+  "project_id": "c136ff9b-17d2-4adb-9408-49b06323687b"
+}

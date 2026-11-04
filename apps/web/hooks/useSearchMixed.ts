@@ -5,7 +5,7 @@ import { GetSearchMixedParams, SearchCall, SearchNote, SearchPost } from '@camps
 import { useScope } from '@/contexts/scope'
 import { apiClient } from '@/utils/queryClient'
 
-type Props = {
+interface Props {
   query: string
   focus: string
 }

@@ -13,6 +13,7 @@ import {
   ProjectIcon,
   RotateIcon,
   SignIcon,
+  SparklesIcon,
   UIText
 } from '@campsite/ui'
 
@@ -27,6 +28,7 @@ import { useScope } from '@/contexts/scope'
 import { useCurrentUserOrOrganizationHasFeature } from '@/hooks/useCurrentUserOrOrganizationHasFeature'
 import {
   isTimelineEventCreatedLinearIssueFromPost,
+  isTimelineEventNoteSuggestion,
   isTimelineEventPostReferencedInLinearExternalRecord,
   isTimelineEventPostResolved,
   isTimelineEventPostUnresolved,
@@ -38,6 +40,7 @@ import {
   isTimelineEventSubjectUnpinned,
   isTimelineEventSubjectUpdatedProject,
   TimelineEventCreatedLinearIssueFromPost,
+  TimelineEventNoteSuggestion,
   TimelineEventPostReferencedInLinearExternalRecord,
   TimelineEventPostResolved,
   TimelineEventPostUnresolved,
@@ -50,6 +53,29 @@ import {
   TimelineEventSubjectUnpinned,
   TimelineEventSubjectUpdatedProject
 } from '@/utils/timelineEvents/types'
+
+// ----------------------------------------------------------------------------
+
+function TimelineEventNoteSuggestionComponent({ timelineEvent }: { timelineEvent: TimelineEventNoteSuggestion }) {
+  const proposed = timelineEvent.action === 'note_suggestion_proposed'
+
+  return (
+    <TimelineEventContainer>
+      <TimelineEventAccessory>
+        <SparklesIcon />
+      </TimelineEventAccessory>
+      <TimelineEventParagraphContainer>
+        <TimelineEventMemberActor timelineEvent={timelineEvent} />{' '}
+        <UIText size='text-inherit' element='span' tertiary>
+          {proposed
+            ? `requested suggestions from ${timelineEvent.note_suggestion_actor_name || 'AI'}`
+            : `${timelineEvent.note_suggestion_resolution === 'reject' ? 'rejected' : 'accepted'} an AI suggestion`}
+        </UIText>
+        <TimelineEventCreatedAtText timelineEvent={timelineEvent} />
+      </TimelineEventParagraphContainer>
+    </TimelineEventContainer>
+  )
+}
 
 // ----------------------------------------------------------------------------
 
@@ -519,7 +545,9 @@ export function TimelineEventSubject({
   timelineEvent: TimelineEvent
   subjectType: TimelineEventSubjectType
 }) {
-  if (isTimelineEventSubjectTitleUpdated(timelineEvent)) {
+  if (isTimelineEventNoteSuggestion(timelineEvent)) {
+    return <TimelineEventNoteSuggestionComponent timelineEvent={timelineEvent} />
+  } else if (isTimelineEventSubjectTitleUpdated(timelineEvent)) {
     return <TimelineEventSubjectTitleUpdatedComponent subjectType={subjectType} timelineEvent={timelineEvent} />
   } else if (isTimelineEventPostResolved(timelineEvent)) {
     return <TimelineEventPostResolvedComponent timelineEvent={timelineEvent} />

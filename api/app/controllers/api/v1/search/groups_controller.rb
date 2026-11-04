@@ -74,7 +74,9 @@ module Api
             limit: 10,
           )
 
-          policy_scope(Call.in_order_of(:id, result.pluck(:id))).serializer_preload
+          ids = result.pluck(:id)
+          order = ids.each_with_index.to_h
+          policy_scope(Call.where(id: ids)).serializer_preload.to_a.sort_by { |call| order.fetch(call.id) }
         end
 
         def search_notes
@@ -86,7 +88,9 @@ module Api
             limit: 10,
           )
 
-          policy_scope(Note.in_order_of(:id, result.pluck(:id))).eager_load(member: OrganizationMembership::SERIALIZER_EAGER_LOAD)
+          ids = result.pluck(:id)
+          order = ids.each_with_index.to_h
+          policy_scope(Note.where(id: ids)).eager_load(member: OrganizationMembership::SERIALIZER_EAGER_LOAD).to_a.sort_by { |note| order.fetch(note.id) }
         end
 
         def search_posts
@@ -98,8 +102,10 @@ module Api
             limit: 10,
           )
 
+          ids = result.pluck(:id)
+          order = ids.each_with_index.to_h
           {
-            posts: policy_scope(Post.in_order_of(:id, result.pluck(:id)).includes(SearchPostSerializer::POST_INCLUDES)),
+            posts: policy_scope(Post.where(id: ids).includes(SearchPostSerializer::POST_INCLUDES)).to_a.sort_by { |post| order.fetch(post.id) },
             posts_total_count: result.total_count,
           }
         end

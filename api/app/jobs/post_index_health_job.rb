@@ -5,10 +5,10 @@ class PostIndexHealthJob < BaseJob
 
   def perform
     db_count = Post.all.count
-    es_count = Searchkick.client.perform_request("GET", Post.searchkick_index.name + "/_count").body["count"]
+    indexed_count = SearchDocument.where(resource_type: "Post").count
 
-    if (db_count - es_count).abs > 15
-      Sentry.capture_message("Post index health check failed", extra: { db_count: db_count, es_count: es_count })
+    if (db_count - indexed_count).abs > 15
+      Sentry.capture_message("Post index health check failed", extra: { db_count: db_count, indexed_count: indexed_count })
     end
   end
 end

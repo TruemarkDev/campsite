@@ -16,7 +16,7 @@ export function ScreenShareWithPeers() {
         <ScreenShare />
       </div>
 
-      <div className='hidden h-full min-w-[200px] max-w-[300px] flex-shrink-0 basis-[30%] sm:block'>
+      <div className='hidden h-full max-w-[300px] min-w-[200px] flex-shrink-0 basis-[30%] sm:block'>
         <Peers />
       </div>
     </div>

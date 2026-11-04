@@ -13,6 +13,16 @@ module Admin
       end
 
       context "#show" do
+        test "matches email prefixes without regard to case" do
+          user = create(:user, email: "person@example.com")
+          sign_in(@staff)
+
+          get feature_user_search_path("my_cool_feature", params: { q: "PERSON" }, xhr: true)
+
+          assert_response :ok
+          assert_includes response.body, user.email
+        end
+
         it "returns users with matching emails" do
           create(:user, email: "ryan@campsite.com")
           create(:user, email: "jesper@campsite.com")

@@ -1,5 +1,3 @@
-const path = require('path')
-
 /**
  * @type {import('next').NextConfig}
  */
@@ -8,6 +6,9 @@ const { withSentryConfig } = require('@sentry/nextjs')
 const withBundleAnalyzer = require('@next/bundle-analyzer')({
   enabled: process.env.ANALYZE === 'true'
 })
+
+const { deploymentImageDomains, deploymentOrigins, deploymentUrls } = require('./config/deployment')
+const { browserApiRewrites } = require('./config/browser-api')
 
 const cspResourcesByDirective = {
   'script-src': [
@@ -18,8 +19,7 @@ const cspResourcesByDirective = {
     'todesktop-internal:',
     'blob:',
     // unsafe-eval required in development for hot module reloading and in production for 100ms noise cancellation
-    "'unsafe-eval'",
-    process.env.NODE_ENV !== 'production' && 'https://cdn.vercel-insights.com'
+    "'unsafe-eval'"
   ],
   'style-src': [
     "'self'",
@@ -38,10 +38,8 @@ const cspResourcesByDirective = {
     'https://*.campsite.co',
     'wss://*.campsite.co',
     'https://*.campsite.com',
-    'https://*.polo-apps.com',
     'wss://*.campsite.com',
-    'wss://*.polo-apps.com',
-    'https://hel1.your-objectstorage.com',
+    ...deploymentOrigins,
     process.env.NODE_ENV !== 'production' && 'http://api.campsite.test:3001',
     process.env.NODE_ENV !== 'production' && 'ws://localhost:9000',
     'https://campsite-media.s3.amazonaws.com',
@@ -49,17 +47,14 @@ const cspResourcesByDirective = {
     process.env.NODE_ENV !== 'production' && 'd1tk25h31rf8pv.cloudfront.net', // campsite-hls-dev
     'd2m0evjsyl9ile.cloudfront.net', // campsite-hls
     'https://o1244295.ingest.sentry.io',
-    'https://vercel-vitals.axiom.co',
-    'https://cdn.vercel-insights.com',
-    'https://vitals.vercel-insights.com',
     'https://*.lottiefiles.com',
     'https://*.100ms.live',
     'wss://*.100ms.live',
     'https://*.pusher.com',
     'wss://*.pusher.com',
     'https://campsite.imgix.net',
-    'https://truecamp.imgix.net',
-    'https://camp-cdn.polo-apps.com',
+    deploymentUrls.imgix,
+    deploymentUrls.cdn,
     process.env.NODE_ENV !== 'production' && 'https://campsite-dev.imgix.net',
     'https://react-tweet.vercel.app', // for react-tweet embeds
     'https://media.tenor.com' // used for Tenor gifs
@@ -70,8 +65,8 @@ const cspResourcesByDirective = {
     'blob:',
     'data:',
     'https://campsite.imgix.net',
-    'https://truecamp.imgix.net',
-    'https://camp-cdn.polo-apps.com',
+    deploymentUrls.imgix,
+    deploymentUrls.cdn,
     'https://campsite.imgix.video',
     'https://campsite-api.imgix.net',
     'https://lh3.googleusercontent.com',
@@ -93,8 +88,8 @@ const cspResourcesByDirective = {
     'd2m0evjsyl9ile.cloudfront.net', // campsite-hls
     process.env.NODE_ENV !== 'production' && 'd1tk25h31rf8pv.cloudfront.net', // campsite-hls-dev
     'https://campsite.imgix.net',
-    'https://truecamp.imgix.net',
-    'https://camp-cdn.polo-apps.com',
+    deploymentUrls.imgix,
+    deploymentUrls.cdn,
     'https://campsite-api.imgix.net',
     'https://video.twimg.com', // used for Twitter videos
     process.env.NODE_ENV !== 'production' && 'https://campsite-dev.imgix.net',
@@ -112,9 +107,12 @@ const ContentSecurityPolicy = Object.keys(cspResourcesByDirective).reduce((prevP
 
 /** @type {import('next').NextConfig} */
 const moduleExports = {
+  ...(process.env.CAMPSITE_BROWSER_TEST === '1' && {
+    distDir: process.env.BROWSER_NEXT_DIST_DIR
+  }),
+  allowedDevOrigins: ['app.campsite.test', new URL(deploymentUrls.web).hostname],
+  output: 'standalone',
   experimental: {
-    // https://nextjs.org/docs/messages/import-esm-externals
-    esmExternals: 'loose',
     externalDir: true,
     clientRouterFilter: false
   },
@@ -129,23 +127,18 @@ const moduleExports = {
   reactStrictMode: true,
   images: {
     unoptimized: true,
-    domains: [
-      'camp.polo-apps.com',
+    remotePatterns: [
+      ...deploymentImageDomains,
       'app.campsite.design',
       'app.campsite.co',
       'app.campsite.com',
       'app.campsite.test',
       'avatars.slack-edge.com',
       'campsite.imgix.net',
-      'truecamp.imgix.net',
-      'camp-cdn.polo-apps.com',
       'campsite-dev.imgix.net',
       'lh3.googleusercontent.com',
-      'uploads.linear.app',
-      'camp-api.polo-apps.com',
-      'hel1.your-objectstorage.com',
-      'camp-cdn.polo-apps.com',
-    ]
+      'uploads.linear.app'
+    ].map((hostname) => ({ hostname }))
   },
   async redirects() {
     return [
@@ -217,6 +210,7 @@ const moduleExports = {
   },
   async rewrites() {
     return [
+      ...browserApiRewrites(deploymentUrls.api, process.env.NEXT_PUBLIC_SAME_ORIGIN_API),
       /**
        * @see https://posthog.com/docs/advanced/proxy/nextjs
        */
@@ -235,32 +229,7 @@ const moduleExports = {
     ]
   },
   // This is required to support PostHog trailing slash API requests
-  skipTrailingSlashRedirect: true,
-  webpack(config, { dev, isServer, webpack }) {
-    if (dev && !isServer) {
-      const originalEntry = config.entry
-
-      config.entry = async () => {
-        const wdrPath = path.resolve(__dirname, './wdyr.ts')
-        const entries = await originalEntry()
-
-        if (entries['main.js'] && !entries['main.js'].includes(wdrPath)) {
-          // Comment out this line if you are debugging Sentry issues locally
-          // Loading WDYR breaks Sentry debugging
-          entries['main.js'].push(wdrPath)
-        }
-        return entries
-      }
-    }
-
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        'process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA': JSON.stringify(process.env.NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA)
-      })
-    )
-
-    return config
-  }
+  skipTrailingSlashRedirect: true
 }
 
 const sentryWebpackPluginOptions = {
@@ -272,6 +241,7 @@ const sentryWebpackPluginOptions = {
   org: process.env.SENTRY_ORG,
   widenClientFileUpload: true,
   hideSourceMaps: true,
+  telemetry: false,
   debug: false,
   tunnelRoute: '/monitoring-tunnel'
 }

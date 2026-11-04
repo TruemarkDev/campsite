@@ -1,6 +1,10 @@
 # frozen_string_literal: true
 
 require "minitest/assertions"
+require "json-schema"
+
+# Opt out of MultiJSON, which json-schema 6 deprecates in favor of the stdlib JSON parser.
+JSON::Validator.use_multi_json = false
 
 module Minitest
   module Assertions
@@ -15,7 +19,13 @@ module Minitest
         raise "no schema defined for #{controller}##{action}[#{code}]"
       end
 
-      error_list = JSON::Validator.fully_validate(schema, response.body, string: false, version: :draft4, json: true)
+      # A bare `null` body is valid JSON, but the parser json-schema delegates to
+      # returns nil for it, which json-schema reports as a parse failure. Parse
+      # the body here and validate the resulting value so endpoints declared
+      # `nullable: true` can be checked against their schema.
+      data = response.body.blank? ? nil : JSON.parse(response.body)
+
+      error_list = JSON::Validator.fully_validate(schema, data, version: :draft4)
 
       assert_empty(error_list)
     end

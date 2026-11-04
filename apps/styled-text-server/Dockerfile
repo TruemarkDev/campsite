@@ -1,64 +1,40 @@
-# syntax = docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:87999aa3d42bdc6bea60565083ee17e86d1f3339802f543c0d03998580f9cb89
 
-FROM node:20-slim as base
+FROM node:24.19.0-bookworm-slim@sha256:3638d9a6fe4030bd716be989438248074489337ba3275657f93595428be4fc03 AS base
 
-# configure pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-ARG TIPTAP_PRIVATE_REGISTRY_KEY
-
-LABEL fly_launch_runtime="Node.js"
-
-# Throw-away build stage to reduce size of final image
-FROM base as builder
-# Install packages needed to build node modules
-RUN apt-get update -qq && \
-  apt-get install -y build-essential pkg-config python-is-python3 ca-certificates
+FROM base AS pruner
 WORKDIR /app
-RUN pnpm install turbo@2.0.9 --global
 COPY . .
-RUN turbo prune @campsite/styled-text-server --docker
+RUN pnpm dlx turbo@2.10.9 prune @campsite/styled-text-server --docker
+
+FROM base AS builder
 WORKDIR /app
+COPY --from=pruner /app/out/json/ .
+COPY --from=pruner /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
+RUN --mount=type=cache,id=campsite-styled-text-pnpm,target=/pnpm/store \
+  pnpm install --frozen-lockfile
 
-FROM base AS installer
-WORKDIR /app
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=pruner /app/out/full/ .
 
-RUN pnpm config set "@tiptap-pro:registry" https://registry.tiptap.dev/
-RUN pnpm config set "//registry.tiptap.dev/:_authToken" ${TIPTAP_PRIVATE_REGISTRY_KEY}
-RUN pnpm install
-
-COPY --from=builder /app/out/full/ .
-
-RUN npx turbo run build --filter=@campsite/styled-text-server
-
-RUN apt-get update -y && apt-get install -y ca-certificates
-
-RUN --mount=type=secret,id=SENTRY_AUTH_TOKEN \
---mount=type=secret,id=SENTRY_ORG \
---mount=type=secret,id=SENTRY_PROJECT \
-SENTRY_ORG=$(cat /run/secrets/SENTRY_ORG) \
-SENTRY_AUTH_TOKEN=$(cat /run/secrets/SENTRY_AUTH_TOKEN) \
-SENTRY_PROJECT=$(cat /run/secrets/SENTRY_PROJECT) \
-npx turbo run sentry:sourcemaps --filter=@campsite/styled-text-server
-
+RUN pnpm turbo run build --filter=@campsite/styled-text-server && \
+  CI=true pnpm install --prod --offline --frozen-lockfile
 
 FROM base AS runner
 
-# Set production environment
-ENV NODE_ENV="production"
+ENV NODE_ENV=production
+ENV PORT=9000
 
 WORKDIR /app/apps/styled-text-server
 
-# Copy built application
-COPY --from=installer /app /app
+COPY --from=builder --chown=node:node /app /app
 
-# Start the server by default, this can be overwritten at runtime
+USER node
+
 EXPOSE 9000
-ENV PORT 9000
 
-ENTRYPOINT [ "node", "dist/index.mjs" ]
+CMD ["node", "dist/index.mjs"]

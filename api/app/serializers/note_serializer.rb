@@ -18,6 +18,7 @@ class NoteSerializer < ApiSerializer
   api_field :description_state, nullable: true
 
   api_association :project, blueprint: ProjectSerializer, nullable: true
+  api_association :attachments, blueprint: AttachmentSerializer, is_array: true
   api_association :unshown_follow_ups, name: :follow_ups, blueprint: FollowUpSerializer, is_array: true
 
   api_normalize "note"

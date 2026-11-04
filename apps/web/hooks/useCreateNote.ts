@@ -6,7 +6,7 @@ import { Note, NotePage, OrganizationsOrgSlugNotesPostRequest } from '@campsite/
 import { useScope } from '@/contexts/scope'
 import { apiClient, setTypedInfiniteQueriesData } from '@/utils/queryClient'
 
-type Props = {
+interface Props {
   afterCreate?: (note: Note) => void
 }
 

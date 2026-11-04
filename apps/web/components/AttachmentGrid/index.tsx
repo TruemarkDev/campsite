@@ -193,7 +193,7 @@ export function AttachmentGrid({ postId, attachments, autoPlayVideo }: Attachmen
           />
         ))}
         {hasMore && (
-          <div className='absolute bottom-0 right-0'>
+          <div className='absolute right-0 bottom-0'>
             <button className='hover:underline' onClick={() => setSelectedPostAttachmentId(attachments[0].id)}>
               <AttachmentAccessory>+{extraCount} more&hellip;</AttachmentAccessory>
             </button>

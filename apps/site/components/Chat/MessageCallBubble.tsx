@@ -16,7 +16,7 @@ function ActiveMessageCall({ call, className }: { call: Call; className: string 
   return (
     <div
       className={cn(
-        'bg-primary dark:bg-gray-750 dark relative flex w-full max-w-sm flex-1 items-center p-3 text-left',
+        'bg-primary dark:bg-gray-750 dark relative flex w-full max-w-96 flex-1 items-center p-3 text-left',
         className
       )}
     >
@@ -36,7 +36,7 @@ function ActiveMessageCall({ call, className }: { call: Call; className: string 
         Join
       </Button>
 
-      <span className='absolute -right-24 top-6 hidden lg:flex'>
+      <span className='absolute top-6 -right-24 hidden lg:flex'>
         <svg
           width='49'
           className='text-quaternary opacity-50'
@@ -57,8 +57,8 @@ function ActiveMessageCall({ call, className }: { call: Call; className: string 
 
 function CompletedMessageCall({ call, className }: { call: Call; className: string }) {
   return (
-    <div className={cn('bg-primary dark:bg-gray-750 dark relative flex w-full max-w-sm flex-col p-3', className)}>
-      <div className='grid grid-cols-[40px,1fr] items-center gap-3'>
+    <div className={cn('bg-primary dark:bg-gray-750 dark relative flex w-full max-w-96 flex-col p-3', className)}>
+      <div className='grid grid-cols-[40px_1fr] items-center gap-3'>
         <div className='bg-quaternary rounded-full p-2'>
           <VideoCameraFilledIcon size={24} />
         </div>
@@ -77,7 +77,7 @@ function CompletedMessageCall({ call, className }: { call: Call; className: stri
         </div>
       </div>
 
-      <div className='mt-1 grid grid-cols-[40px,1fr] gap-3'>
+      <div className='mt-1 grid grid-cols-[40px_1fr] gap-3'>
         <div className='col-start-2 flex items-center gap-2'>
           <Button fullWidth variant='flat' round className='dark:hover:bg-quaternary'>
             Watch recording

@@ -29,6 +29,9 @@ class GenerateCallRecordingSummarySectionJobTest < ActiveJob::TestCase
     members.each do |member|
       create(:call_peer, call: @recording.call, organization_membership: member)
     end
+
+    Llm.stubs(:new).returns(stub(chat: "The meeting decides to have Krabby Patties."))
+    StyledText.any_instance.stubs(:markdown_to_html).returns("<p>The meeting decides to have Krabby Patties.</p>")
   end
 
   context "perform" do
@@ -38,9 +41,7 @@ class GenerateCallRecordingSummarySectionJobTest < ActiveJob::TestCase
 
       assert_predicate first_section, :pending?
 
-      VCR.use_cassette("jobs/generate_call_recording_summary_section") do
-        GenerateCallRecordingSummarySectionJob.new.perform(first_section.id)
-      end
+      GenerateCallRecordingSummarySectionJob.new.perform(first_section.id)
 
       assert_not first_section.reload.pending?
       assert_not first_section.failed?
@@ -56,9 +57,7 @@ class GenerateCallRecordingSummarySectionJobTest < ActiveJob::TestCase
 
       assert first_section.pending?
 
-      VCR.use_cassette("jobs/generate_call_recording_summary_section") do
-        GenerateCallRecordingSummarySectionJob.new.perform(first_section.id)
-      end
+      GenerateCallRecordingSummarySectionJob.new.perform(first_section.id)
 
       assert_equal [@recording.summary_html, @recording.call.links_shared_html].join, @recording.call.reload.summary
       assert_not_predicate @recording.call, :processing_generated_summary?

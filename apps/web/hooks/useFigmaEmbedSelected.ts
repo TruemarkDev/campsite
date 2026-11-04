@@ -2,7 +2,7 @@ import { Attachment } from '@campsite/types'
 
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
 
-type Props = {
+interface Props {
   attachment: Attachment | undefined
 }
 

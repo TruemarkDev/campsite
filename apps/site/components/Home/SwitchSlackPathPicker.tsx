@@ -31,7 +31,7 @@ export function SwitchSlackPathPicker() {
 
   return (
     <div className='w-full'>
-      <div className='bg-elevated dark:bg-secondary mx-auto w-auto rounded-t-xl border border-b-0 p-2 uppercase shadow-sm'>
+      <div className='bg-elevated dark:bg-secondary mx-auto w-auto rounded-t-xl border border-b-0 p-2 uppercase shadow-xs'>
         <UIText tertiary size='text-xs' className='tracking-wide'>
           Choose your path
         </UIText>
@@ -44,9 +44,9 @@ export function SwitchSlackPathPicker() {
       >
         <div className='grid divide-y sm:grid-cols-2 sm:divide-x sm:divide-y-0'>
           <Item level='fresh' active={level === 'fresh'}>
-            <div className='grid grid-rows-[1fr,32px]'>
-              <div className='grid grid-cols-[32px,1fr] gap-3'>
-                <div className='dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-sm'>
+            <div className='grid grid-rows-[1fr_32px]'>
+              <div className='grid grid-cols-[32px_1fr] gap-3'>
+                <div className='dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-xs'>
                   {level === 'fresh' && <div className='h-4 w-4 flex-none rounded-full bg-blue-500' />}
                 </div>
 
@@ -73,7 +73,7 @@ export function SwitchSlackPathPicker() {
                   </ul>
                 </div>
               </div>
-              <div className='grid grid-cols-[32px,1fr] gap-3'>
+              <div className='grid grid-cols-[32px_1fr] gap-3'>
                 {level === 'fresh' && (
                   <Button href='/start' variant='primary' fullWidth className='col-start-2'>
                     Start fresh
@@ -83,9 +83,9 @@ export function SwitchSlackPathPicker() {
             </div>
           </Item>
           <Item level='migrate' active={level === 'migrate'}>
-            <div className='grid grid-rows-[1fr,32px]'>
-              <div className='grid grid-cols-[32px,1fr] gap-3'>
-                <div className='bg-elevated dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-sm'>
+            <div className='grid grid-rows-[1fr_32px]'>
+              <div className='grid grid-cols-[32px_1fr] gap-3'>
+                <div className='bg-elevated dark:bg-gray-750 flex h-6 w-6 flex-none items-center justify-center rounded-full border p-1 shadow-xs'>
                   {level === 'migrate' && <div className='h-4 w-4 flex-none rounded-full bg-blue-500' />}
                 </div>
 
@@ -112,7 +112,7 @@ export function SwitchSlackPathPicker() {
                   </ul>
                 </div>
               </div>
-              <div className='grid grid-cols-[32px,1fr] gap-3'>
+              <div className='grid grid-cols-[32px_1fr] gap-3'>
                 {level === 'migrate' && (
                   <>
                     <Button
@@ -317,7 +317,7 @@ export function MigrateForm({
       {submitted && (
         <div className='flex flex-col items-center justify-center gap-6 p-12'>
           <CheckCircleFilledFlushIcon size={72} className='text-green-500' />
-          <UIText size='text-base' className='text-balance text-center'>
+          <UIText size='text-base' className='text-center text-balance'>
             We’re putting the finishing touches on our Slack migration assistant, we’ll be in touch soon.
           </UIText>
           <Button size='large' variant='primary' href='/start'>

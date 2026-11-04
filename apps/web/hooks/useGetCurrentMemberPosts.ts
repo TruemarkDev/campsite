@@ -5,7 +5,7 @@ import { GetMembersMeViewerPostsParams } from '@campsite/types'
 import { useScope } from '@/contexts/scope'
 import { apiClient } from '@/utils/queryClient'
 
-type Options = {
+interface Options {
   enabled?: boolean
   order?: GetMembersMeViewerPostsParams['order']
   query?: GetMembersMeViewerPostsParams['q']

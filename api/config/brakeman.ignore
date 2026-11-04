@@ -1,0 +1,98 @@
+{
+  "ignored_warnings": [
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "166d53546ff083838fba97f5857420d69a1e3b6cebd45a1aabd9d2d51b6b62bd",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "app/models/scheduled_notification.rb",
+      "line": 71,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "where(\"(#{\"(#{(\"#{\"CAST(#{\"((CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS DATE)\"} = CAST(#{\"((CAST(:end AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS DATE)\" or \"DATE(#{\"CONVERT_TZ(:now, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"}) = DATE(#{\"CONVERT_TZ(:end, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"})\")})\\nAND (scheduled_notifications.delivery_day IS NULL OR scheduled_notifications.delivery_day = #{(\"EXTRACT(DOW FROM #{\"((CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"})\" or \"DAYOFWEEK(#{\"CONVERT_TZ(:now, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"}) - 1\")})\\nAND #{\"scheduled_notifications.delivery_time\"} BETWEEN #{(\"CAST(#{\"((CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS TIME)\" or \"TIME(#{\"CONVERT_TZ(:now, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"})\")} AND #{(\"CAST(#{\"((CAST(:end AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS TIME)\" or \"TIME(#{\"CONVERT_TZ(:end, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"})\")}\\n\".squish}) OR (#{\"(#{(\"CAST(#{\"((CAST(:end AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS DATE) - #{\"CAST(#{\"((CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS DATE)\"} = 1\" or \"DATEDIFF(DATE(#{\"CONVERT_TZ(:end, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"}), DATE(#{\"CONVERT_TZ(:now, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"})) = 1\")})\\nAND (\\n  ((scheduled_notifications.delivery_day IS NULL OR scheduled_notifications.delivery_day = #{(\"EXTRACT(DOW FROM #{\"((CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"})\" or \"DAYOFWEEK(#{\"CONVERT_TZ(:now, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"}) - 1\")}) AND #{\"scheduled_notifications.delivery_time\"} >= #{(\"CAST(#{\"((CAST(:now AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS TIME)\" or \"TIME(#{\"CONVERT_TZ(:now, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"})\")})\\n  OR ((scheduled_notifications.delivery_day IS NULL OR scheduled_notifications.delivery_day = #{(\"EXTRACT(DOW FROM #{\"((CAST(:end AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"})\" or \"DAYOFWEEK(#{\"CONVERT_TZ(:end, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"}) - 1\")}) AND #{\"scheduled_notifications.delivery_time\"} <= #{(\"CAST(#{\"((CAST(:end AS timestamp) AT TIME ZONE 'UTC') AT TIME ZONE scheduled_notifications.time_zone) - (#{Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")} * INTERVAL '1 second')\"} AS TIME)\" or \"TIME(#{\"CONVERT_TZ(:end, '+00:00', scheduled_notifications.time_zone) - INTERVAL COALESCE(scheduled_notifications.delivery_offset, 0) SECOND\"})\")})\\n)\\n\".squish})\", :now => Time.current, :end => time.from_now)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "ScheduledNotification",
+        "method": "schedulable_in"
+      },
+      "user_input": "Arel.sql(\"COALESCE(scheduled_notifications.delivery_offset, 0)\")",
+      "confidence": "Medium",
+      "cwe_id": [
+        89
+      ],
+      "note": "Reviewed 2026-11-04: every interpolated SQL fragment is a fixed adapter-selected literal or composition of those literals. Time values use :now/:end bindings; time_zone and delivery_offset are database column references, never injected SQL identifiers or values."
+    },
+    {
+      "warning_type": "SQL Injection",
+      "warning_code": 0,
+      "fingerprint": "2a783afa62519c0fc643000143d5c5ddfbe651dcee6509129505607bd65e571a",
+      "check_name": "SQL",
+      "message": "Possible SQL injection",
+      "file": "lib/cursor_pagination.rb",
+      "line": 41,
+      "link": "https://brakemanscanner.org/docs/warning_types/sql_injection/",
+      "code": "options[:scope].where(({ :id => :asc } or if options[:order].is_a?(Symbol) then\n  { :id => options[:order] }\nelse\n  if options[:order].is_a?(Hash) then\n    options[:order]\n  else\n    raise(ArgumentError, \"Invalid order: #{options[:order].inspect}\")\n  end\nend).keys.first(index).index_with do\n cursor_record[column]\n end).where(\"(#{(\"#{qualified_column(column_name)} #{comparator(:order => order)} :value\" + \" OR #{qualified_column(column_name)} IS NULL\")})\", :value => cursor_record[column_name])",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "CursorPagination",
+        "method": "run"
+      },
+      "user_input": "qualified_column(column_name)",
+      "confidence": "Weak",
+      "cwe_id": [
+        89
+      ],
+      "note": "Reviewed 2026-11-04: validate_order! allows only schema column names and :asc/:desc directions; qualified_column adapter-quotes identifiers; comparator returns fixed operators; cursor values use :value bindings. No request string is interpolated into SQL."
+    },
+    {
+      "warning_type": "Redirect",
+      "warning_code": 18,
+      "fingerprint": "58b0577e7315ec88f1a76bf9fa552214483a77df66a02f11a1c0f9766cd3ea9e",
+      "check_name": "Redirect",
+      "message": "Possible unprotected redirect",
+      "file": "app/controllers/api/v1/data_export_downloads_controller.rb",
+      "line": 10,
+      "link": "https://brakemanscanner.org/docs/warning_types/redirect/",
+      "code": "redirect_to(DataExport.completed.find_by!(:public_id => params[:id]).presigned_download_url, :allow_other_host => true)",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Api::V1::DataExportDownloadsController",
+        "method": "show"
+      },
+      "user_input": "DataExport.completed.find_by!(:public_id => params[:id]).presigned_download_url",
+      "confidence": "Weak",
+      "cwe_id": [
+        601
+      ],
+      "note": "Reviewed 2026-11-04: completed export is Pundit-authorized before redirect. presigned_download_url is generated by the S3 SDK from the configured export bucket/endpoint and server-created zip path, not a user-supplied redirect destination. Cross-host redirect is required for object download."
+    },
+    {
+      "warning_type": "Cross-Site Scripting",
+      "warning_code": 4,
+      "fingerprint": "8b5a5821ad767204ff23c6cfcef2dc16b877a7ac68baaf34424f2c7a8029d5f0",
+      "check_name": "LinkToHref",
+      "message": "Potentially unsafe model attribute in `link_to` href",
+      "file": "app/models/concerns/mentionable.rb",
+      "line": 22,
+      "link": "https://brakemanscanner.org/docs/warning_types/link_to_href",
+      "code": "link_to(\"@#{OrganizationMembership.kept.where(:public_id => (Nokogiri::HTML.fragment(content).css(\"organization-membership-mention\").map do\n m.attr(\"data-id\")\n end)).eager_load(:user).group_by(&:public_id)[node.attr(\"data-id\")].first.username}\", OrganizationMembership.kept.where(:public_id => (Nokogiri::HTML.fragment(content).css(\"organization-membership-mention\").map do\n m.attr(\"data-id\")\n end)).eager_load(:user).group_by(&:public_id)[node.attr(\"data-id\")].first.url, :class => \"mention\")",
+      "render_path": null,
+      "location": {
+        "type": "method",
+        "class": "Mentionable",
+        "method": "replace_mentions_with_html_links"
+      },
+      "user_input": "OrganizationMembership.kept.where(:public_id => (Nokogiri::HTML.fragment(content).css(\"organization-membership-mention\").map do\n m.attr(\"data-id\")\n end)).eager_load(:user).group_by(&:public_id)[node.attr(\"data-id\")].first.url",
+      "confidence": "Weak",
+      "cwe_id": [
+        79
+      ],
+      "note": "Reviewed 2026-11-04: OrganizationMembership#url is synthesized from organization.url (trusted Campsite.app_url and organization path) plus the fixed people path and username. It is not a stored/request-supplied URL; link_to escapes the attribute and label."
+    }
+  ],
+  "updated": "2026-11-04",
+  "brakeman_version": "8.0.6"
+}

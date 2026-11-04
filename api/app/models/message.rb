@@ -10,7 +10,7 @@ class Message < ApplicationRecord
   FILE_LIMIT = 10
 
   DELETED_CONTENT = "<p><em>This message has been deleted.</em></p>"
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:created_at].freeze
 
   belongs_to :sender, class_name: "OrganizationMembership", optional: true
   belongs_to :integration, optional: true

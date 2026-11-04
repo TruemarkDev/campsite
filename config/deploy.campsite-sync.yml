@@ -1,0 +1,38 @@
+service: campsite-sync-staging
+image: truemarkdev/campsite-sync
+secrets_path: .kamal/campsite-secrets
+
+servers:
+  web:
+    - 192.168.10.32
+
+proxy:
+  ssl: false
+  hosts:
+    - sync.camp.home
+  app_port: 9000
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: builder.home:5555
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://prakash@builder.home
+  context: .
+  dockerfile: apps/sync-server/Dockerfile
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "9000"
+    API_BASE_URL: http://api.camp.home
+    STYLED_TEXT_API_URL: http://styled-text.camp.home
+    SYNC_REDIS_URL: redis://192.168.10.33:6379/3
+ssh:
+  user: prakash

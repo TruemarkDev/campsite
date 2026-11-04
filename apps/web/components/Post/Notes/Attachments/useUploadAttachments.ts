@@ -75,7 +75,7 @@ export function useUploadNoteAttachments({ noteId, enabled = true }: Props) {
 
   return useCallback(
     async ({ files, ...props }: UploadProps) => {
-      if (!enabled) return
+      if (!enabled || props.editor.isDestroyed) return
 
       const isMultipleFiles = files.length > 1
 
@@ -88,6 +88,8 @@ export function useUploadNoteAttachments({ noteId, enabled = true }: Props) {
       let galleryId = props.galleryId
 
       function updateAttachment(id: string, value: Partial<InlineAttachmentAttributes>) {
+        if (props.editor.isDestroyed) return
+
         if (isGallery) {
           props.editor.commands.updateGalleryItem(id, value)
         } else {
@@ -110,6 +112,8 @@ export function useUploadNoteAttachments({ noteId, enabled = true }: Props) {
         onAppend: (attachments) => {
           // seed the RQ cache with optimistic values
           attachments.forEach((attachment) => setOptimisticAttachment({ queryClient, scope, value: attachment }))
+
+          if (props.editor.isDestroyed) return
 
           if (isGallery) {
             if (props.galleryId) {

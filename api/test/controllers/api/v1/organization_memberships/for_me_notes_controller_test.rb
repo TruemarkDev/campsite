@@ -48,7 +48,7 @@ module Api
 
             sign_in @user
 
-            assert_query_count 15 do
+            assert_query_count 16 do
               get organization_membership_for_me_notes_path(@organization.slug)
             end
 

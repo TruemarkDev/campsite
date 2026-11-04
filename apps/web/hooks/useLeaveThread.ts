@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useScope } from '@/contexts/scope'
 import { useQueryNormalizer } from '@/utils/normy/QueryNormalizerProvider'
 import { removeFavorite } from '@/utils/optimisticFavorites'
-import { apiClient, setTypedQueriesData } from '@/utils/queryClient'
+import { apiClient, setTypedInfiniteQueriesData } from '@/utils/queryClient'
 import { createNormalizedOptimisticUpdate } from '@/utils/queryNormalization'
 
 const getThreads = apiClient.organizations.getThreads()
@@ -17,12 +17,15 @@ export function useLeaveThread({ threadId }: { threadId: string }) {
   return useMutation({
     mutationFn: (_data: {}) => deleteThreadsMyMembership.request(`${scope}`, threadId),
     onMutate: () => {
-      setTypedQueriesData(queryClient, getThreads.requestKey(`${scope}`), (old) => {
+      setTypedInfiniteQueriesData(queryClient, getThreads.requestKey({ orgSlug: `${scope}` }), (old) => {
         if (!old) return
 
         return {
           ...old,
-          threads: old.threads.filter((thread) => thread.id !== threadId)
+          pages: old.pages.map((page) => ({
+            ...page,
+            threads: page.threads.filter((thread) => thread.id !== threadId)
+          }))
         }
       })
       removeFavorite({ queryClient, scope, resourceId: threadId })

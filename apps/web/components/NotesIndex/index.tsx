@@ -158,9 +158,21 @@ function NotesIndexTabFilter({ fullWidth = false }: { fullWidth?: boolean }) {
 
   return (
     <>
-      <LayeredHotkeys keys='1' callback={() => setFilter('for-me')} />
-      <LayeredHotkeys keys='2' callback={() => setFilter('created')} />
-      <LayeredHotkeys keys='3' callback={() => setFilter('all')} />
+      <LayeredHotkeys
+        keys='1'
+        callback={() => setFilter('for-me')}
+        options={{ description: 'Show docs for me', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys='2'
+        callback={() => setFilter('created')}
+        options={{ description: 'Show docs I created', metadata: { category: 'View' } }}
+      />
+      <LayeredHotkeys
+        keys='3'
+        callback={() => setFilter('all')}
+        options={{ description: 'Show all docs', metadata: { category: 'View' } }}
+      />
 
       <Button
         size='sm'

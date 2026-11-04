@@ -26,7 +26,7 @@ export function NoteShareContent({ note, open, onOpenChange }: NoteShareContentP
         <Tabs.List className='flex overflow-hidden rounded-t-lg' aria-label='Manage your account'>
           <Tabs.Trigger
             className={cn(
-              'flex flex-1 items-center justify-center border-b border-r p-3 text-center text-sm font-medium',
+              'flex flex-1 items-center justify-center border-r border-b p-3 text-center text-sm font-medium',
               {
                 'text-primary border-b-transparent bg-transparent': tab === 'share',
                 'text-tertiary hover:text-secondary bg-secondary border-b-primary': tab === 'publish'

@@ -4,7 +4,7 @@ import { handleMentionClick, isAppMention } from '@campsite/ui/Link'
 
 import { useScope } from '@/contexts/scope'
 
-export function useMentionInteraction(ref: React.RefObject<HTMLElement>) {
+export function useMentionInteraction(ref: React.RefObject<HTMLElement | null>) {
   const { scope } = useScope()
   const [hoveredMention, setHoveredMention] = useState<HTMLElement | null>(null)
 

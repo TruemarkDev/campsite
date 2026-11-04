@@ -74,7 +74,7 @@ export function ZoomPane({ width, height, onClick, minZoom = 0.1, maxZoom = 8, c
     setInitialState({
       d3Zoom: d3ZoomInstance,
       d3Container: d3ContainerInstance,
-      viewport: { ...containerBox },
+      viewport: { width: containerBox.width, height: containerBox.height },
       transform: initialTransform,
       size: { width, height }
     })

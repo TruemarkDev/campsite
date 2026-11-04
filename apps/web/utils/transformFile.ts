@@ -47,7 +47,7 @@ export async function fileIsLottie(file: File): Promise<boolean> {
     const json = JSON.parse(text)
 
     return containsLottie(json)
-  } catch (error) {
+  } catch {
     return false
   }
 }

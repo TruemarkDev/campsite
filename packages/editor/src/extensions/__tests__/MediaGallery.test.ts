@@ -1,16 +1,22 @@
 import { Editor } from '@tiptap/core'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import { editorTestSetup } from '../../utils/editorTestSetup'
 import * as E from '../index'
 
 editorTestSetup()
 
+const editors: Editor[] = []
+
+afterEach(() => editors.splice(0).forEach((editor) => editor.destroy()))
+
 function setupEditor(content: string) {
-  return new Editor({
+  const editor = new Editor({
     extensions: [E.BlockDocument, E.Text, E.Paragraph, E.MediaGallery, E.MediaGalleryItem],
     content
   })
+  editors.push(editor)
+  return editor
 }
 
 describe('MediaGallery', () => {

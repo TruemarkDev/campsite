@@ -1,64 +1,75 @@
-import { defineConfig, devices } from 'next/experimental/testmode/playwright'
-import { APP_URL } from 'playwright/consts'
+import { createRequire } from 'node:module'
+import path from 'node:path'
+import { defineConfig, devices } from '@playwright/test'
 
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-// require('dotenv').config();
+import { APP_URL } from './playwright/consts'
 
-/**
- * See https://playwright.dev/docs/test-configuration.
- */
+if (process.env.CAMPSITE_BROWSER_TEST !== '1') throw new Error('Run browser tests with pnpm test:browser')
+const resolve = createRequire(__filename)
+const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`
+const node = quote(process.env.BROWSER_NODE!)
+const ruby = quote(process.env.BROWSER_RUBY!)
+const shutdown = { signal: 'SIGTERM' as const, timeout: 10_000 }
+
 export default defineConfig({
-  testDir: './tests',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
-  forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  testDir: './playwright',
+  fullyParallel: false,
+  forbidOnly: true,
+  retries: 0,
+  workers: 1,
+  reporter: 'list',
+  outputDir: path.join(process.env.BROWSER_TEST_OUTPUT!, 'artifacts'),
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: APP_URL,
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: {
-      mode: 'retain-on-failure',
-      screenshots: true
-    }
+    trace: 'off',
+    screenshot: 'off',
+    video: 'off',
+    actionTimeout: 15_000,
+    navigationTimeout: 45_000
   },
-
-  timeout: 10_000,
-  expect: {
-    timeout: 5_000
-  },
-
-  projects: [
-    // Authentication & other preflight tasks
-    { name: 'setup', testMatch: /.*\.setup\.ts/ },
-
-    {
-      name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-        storageState: 'playwright/.auth/user.json'
-      },
-      dependencies: ['setup']
-    }
-  ],
-
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'npx turbo run dev',
-    url: APP_URL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 10_000,
-    stdout: 'pipe'
-  }
+  timeout: 120_000,
+  expect: { timeout: 15_000 },
+  projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
+  webServer:
+    process.env.BROWSER_TEST_LIST === '1'
+      ? []
+      : [
+          {
+            name: 'api',
+            command: `${ruby} bin/rails server -b 127.0.0.1 -p 3101 --pid tmp/pids/browser-${process.env.BROWSER_TEST_RUN_ID}.pid`,
+            cwd: '../../api',
+            env: { BROWSER_TEST_SERVER: '1' },
+            url: 'http://127.0.0.1:3101/up',
+            timeout: 120_000,
+            reuseExistingServer: false,
+            gracefulShutdown: shutdown
+          },
+          {
+            name: 'styled-text',
+            command: `${node} dist/index.mjs`,
+            cwd: '../styled-text-server',
+            env: { PORT: '3102', AUTHTOKEN: process.env.BROWSER_STYLED_TEXT_TOKEN! },
+            url: 'http://127.0.0.1:3102/up',
+            reuseExistingServer: false,
+            gracefulShutdown: shutdown
+          },
+          {
+            name: 'sync',
+            command: `${node} dist/index.mjs`,
+            cwd: '../sync-server',
+            env: { PORT: '9100' },
+            url: 'http://127.0.0.1:9100/up',
+            reuseExistingServer: false,
+            gracefulShutdown: shutdown
+          },
+          {
+            name: 'web',
+            command: `${node} ${quote(resolve.resolve('next/dist/bin/next'))} dev -p 3100 --hostname 127.0.0.1`,
+            cwd: path.dirname(resolve.resolve('./package.json')),
+            url: APP_URL,
+            timeout: 180_000,
+            reuseExistingServer: false,
+            gracefulShutdown: shutdown
+          }
+        ]
 })

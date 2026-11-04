@@ -1,0 +1,4 @@
+schema: spec-driven
+created: 2026-08-26
+goal: Specify a read-only, source-faithful Beads Kanban board and honest channel
+  agent roster without weakening project authorization or Beads custody.

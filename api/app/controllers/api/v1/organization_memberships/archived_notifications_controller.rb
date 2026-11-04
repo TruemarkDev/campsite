@@ -6,6 +6,8 @@ module Api
       class ArchivedNotificationsController < BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership
+
         response model: NotificationPageSerializer, code: 200
         request_params do
           {

@@ -5,11 +5,10 @@ import 'styles/global.css' // web only
 import 'styles/prose.css'
 
 import { useEffect } from 'react'
-import { SpeedInsights } from '@vercel/speed-insights/next'
 import { NextWebVitalsMetric } from 'next/app'
 import { Inter } from 'next/font/google'
 
-import { IS_PRODUCTION, LAST_CLIENT_JS_BUILD_ID_LS_KEY } from '@campsite/config'
+import { LAST_CLIENT_JS_BUILD_ID_LS_KEY } from '@campsite/config'
 
 import { useClearEmptyDrafts } from '@/hooks/useClearEmptyDrafts'
 import { useStoredState } from '@/hooks/useStoredState'
@@ -20,7 +19,7 @@ const inter = Inter({
   variable: '--font-inter'
 })
 
-export default function App<T>({ Component, pageProps }: AppPropsWithLayout<T>): JSX.Element {
+export default function App<T>({ Component, pageProps }: AppPropsWithLayout<T>): React.ReactElement {
   const getProviders = Component.getProviders ?? ((page) => page)
   const [_, setLsLastChecked] = useStoredState<number | null>(LAST_CLIENT_JS_BUILD_ID_LS_KEY, null)
 
@@ -48,7 +47,6 @@ export default function App<T>({ Component, pageProps }: AppPropsWithLayout<T>):
       {getProviders(<Component {...pageProps} />, {
         ...pageProps
       })}
-      {IS_PRODUCTION && <SpeedInsights />}
     </>
   )
 }

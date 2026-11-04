@@ -1,8 +1,9 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import * as Sentry from '@sentry/nextjs'
 
-import { RAILS_API_URL, WEB_PUSH_PUBLIC_KEY } from '@campsite/config'
+import { WEB_PUSH_PUBLIC_KEY } from '@campsite/config'
 
+import { BROWSER_API_URL } from '@/utils/browserApiUrl'
 import { apiClient } from '@/utils/queryClient'
 
 interface ContextProps {
@@ -73,7 +74,7 @@ export const WebPushProvider: React.FC<Props> = ({ children }) => {
 
   useEffect(() => {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register(`/service_worker.js?API_URL=${RAILS_API_URL}`).then(
+      navigator.serviceWorker.register(`/service_worker.js?API_URL=${encodeURIComponent(BROWSER_API_URL)}`).then(
         (registration) => {
           if ('pushManager' in registration) {
             setPushManager(registration.pushManager)

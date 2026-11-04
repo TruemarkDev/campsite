@@ -3,6 +3,24 @@
 require "test_helper"
 
 class ProjectTest < ActiveSupport::TestCase
+  test "search_by matches project name text" do
+    project = create(:project, name: "Release Notes")
+
+    assert_includes Project.search_by("Release"), project
+    assert_empty Project.search_by("Missing")
+  end
+
+  test "recent project activity returns a numeric score per project" do
+    project = create(:project)
+    member = create(:organization_membership, organization: project.organization)
+    create(:post, project: project, member: member, organization: project.organization, created_at: 1.day.ago)
+
+    score = Project.viewer_recent_posts_count_async([project.id], member).value[project.id]
+
+    assert_kind_of Numeric, score
+    assert_operator score, :>, 0
+  end
+
   describe "#archived?" do
     test "returns true if project is archived" do
       project = build(:project, :archived)
@@ -218,6 +236,13 @@ class ProjectTest < ActiveSupport::TestCase
       result = Project.unread_for_viewer_async(@project.id, @organization_membership).value
 
       assert_equal expected, result
+    end
+
+    test "includes unread post with no sender membership" do
+      create(:post, project: @project, member: nil, created_at: 1.hour.ago)
+      create(:project_view, project: @project, organization_membership: @organization_membership, last_viewed_at: 2.hours.ago)
+
+      assert_equal({ @project.id => true }, Project.unread_for_viewer_async(@project.id, @organization_membership).value)
     end
 
     test "doesn't include project if user has read all posts in the project since last project view" do

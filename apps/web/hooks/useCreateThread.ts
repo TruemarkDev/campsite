@@ -5,7 +5,8 @@ import { Attachment, OrganizationsOrgSlugThreadsPostRequest } from '@campsite/ty
 import { usePusherSocketIdHeader } from '@/contexts/pusher'
 import { useScope } from '@/contexts/scope'
 import { apiErrorToast } from '@/utils/apiErrorToast'
-import { apiClient, setTypedQueriesData, setTypedQueryData } from '@/utils/queryClient'
+import { prependThreadToInbox } from '@/utils/prependThreadToInbox'
+import { apiClient, setTypedInfiniteQueriesData, setTypedQueryData } from '@/utils/queryClient'
 
 const postThreads = apiClient.organizations.postThreads()
 const getThreads = apiClient.organizations.getThreads()
@@ -39,14 +40,9 @@ export function useCreateThread() {
         { headers: pusherSocketIdHeader }
       ),
     onSuccess: (thread) => {
-      setTypedQueriesData(queryClient, getThreads.requestKey(`${scope}`), (old) => {
-        if (!old) return old
-
-        return {
-          ...old,
-          threads: [thread, ...old.threads]
-        }
-      })
+      setTypedInfiniteQueriesData(queryClient, getThreads.requestKey({ orgSlug: `${scope}` }), (old) =>
+        prependThreadToInbox(old, thread)
+      )
 
       const getMembersByUsername = apiClient.organizations.getMembersByUsername()
 

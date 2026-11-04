@@ -5,6 +5,8 @@ module Api
     class ResourceMentionsController < BaseController
       rescue_from URI::InvalidURIError, with: :render_unprocessable_entity
 
+      before_action :authorize_current_organization_membership, only: :show
+
       extend Apigen::Controller
 
       response model: ResourceMentionSerializer, code: 200
@@ -17,7 +19,7 @@ module Api
         result = ResourceMentionCollection.resource_mention_from_url(params[:url])
 
         if result.blank?
-          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_entity)
+          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_content)
         end
 
         resource = case result[:type]
@@ -34,7 +36,7 @@ module Api
           authorize(note, :show?)
           { note: note }
         else
-          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_entity)
+          return render(json: { error: "Invalid resource URL" }, status: :unprocessable_content)
         end
 
         render_json(ResourceMentionSerializer, resource.merge(url: params[:url]))

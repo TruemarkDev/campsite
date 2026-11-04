@@ -1,0 +1,102 @@
+name: Frontend and realtime
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: campsite-ruby40
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      NEXT_TELEMETRY_DISABLED: '1'
+      TEST_REDIS_URL: redis://redis:6379/15
+    services:
+      redis:
+        image: redis:7
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 24
+    steps:
+      # Must precede the checkout: git.home serves a certificate from Caddy's
+      # internal CA, which no public image trusts, so actions/checkout cannot
+      # clone over HTTPS without it. This is the same root forge carries at
+      # /usr/local/share/ca-certificates/caddy-home.crt (valid to 2036-07-01) —
+      # it is a public certificate, not a secret. Re-copy it here if the Caddy
+      # CA is ever rotated (see ansible/trust_forgejo_registry_ca.yml).
+      - name: Trust the homelab certificate authority
+        run: |
+          set -euo pipefail
+          install -d /usr/local/share/ca-certificates
+          cat > /usr/local/share/ca-certificates/caddy-home.crt <<'CERT'
+          -----BEGIN CERTIFICATE-----
+          MIIBozCCAUqgAwIBAgIRAOF2Ev87LWhNZmE59B8vZG0wCgYIKoZIzj0EAwIwMDEu
+          MCwGA1UEAxMlQ2FkZHkgTG9jYWwgQXV0aG9yaXR5IC0gMjAyNiBFQ0MgUm9vdDAe
+          Fw0yNjA4MjMxMzI5MDNaFw0zNjA3MDExMzI5MDNaMDAxLjAsBgNVBAMTJUNhZGR5
+          IExvY2FsIEF1dGhvcml0eSAtIDIwMjYgRUNDIFJvb3QwWTATBgcqhkjOPQIBBggq
+          hkjOPQMBBwNCAARfSePicKBkWIPAUU1v14KbqIx+cyqPBr5dCvBUP+2dPpru2V+y
+          fzU7XGyMds3/TnRCSyIrOvOWCLA1J5XDsuUUo0UwQzAOBgNVHQ8BAf8EBAMCAQYw
+          EgYDVR0TAQH/BAgwBgEB/wIBATAdBgNVHQ4EFgQU1RRhYAdlV3/nH7FjvOvKWs6S
+          EpEwCgYIKoZIzj0EAwIDRwAwRAIgXHoBqPxbEwKSvW1XdEiHhebTiZXn/tyGe1k2
+          vEBRUUACICxNWQzbpomVum19Q94mK+S1HCP05HGTwFbSlhlROkH9
+          -----END CERTIFICATE-----
+          CERT
+          sed -i 's/^          //' /usr/local/share/ca-certificates/caddy-home.crt
+          # The runner bind-mounts the system bundle; update-ca-certificates
+          # cannot atomically replace it. Use a job-owned bundle instead.
+          cat /etc/ssl/certs/ca-certificates.crt /usr/local/share/ca-certificates/caddy-home.crt > /tmp/campsite-ca-bundle.crt
+          openssl verify -CAfile /tmp/campsite-ca-bundle.crt /usr/local/share/ca-certificates/caddy-home.crt
+          {
+            echo "SSL_CERT_FILE=/tmp/campsite-ca-bundle.crt"
+            echo "CURL_CA_BUNDLE=/tmp/campsite-ca-bundle.crt"
+            echo "GIT_SSL_CAINFO=/tmp/campsite-ca-bundle.crt"
+            echo "NODE_EXTRA_CA_CERTS=/usr/local/share/ca-certificates/caddy-home.crt"
+          } >> "$GITHUB_ENV"
+
+      # node must exist before any JavaScript action runs (actions/checkout is
+      # one); the Ruby image the campsite-ruby40 label resolves to ships none.
+      - name: Install system packages the gems and asset build need
+        run: |
+          set -euo pipefail
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential default-libmysqlclient-dev libpq-dev pkg-config git curl ffmpeg xz-utils python3
+          # The official pinned binary avoids NodeSource's certificate-package
+          # postinstall rewriting the runner's bind-mounted system CA bundle.
+          node_archive=node-v24.19.0-linux-x64.tar.xz
+          curl --fail --silent --show-error --retry 3 "https://nodejs.org/dist/v24.19.0/$node_archive" -o "/tmp/$node_archive"
+          curl --fail --silent --show-error --retry 3 https://nodejs.org/dist/v24.19.0/SHASUMS256.txt -o /tmp/node-shasums.txt
+          cd /tmp
+          grep -F " $node_archive" node-shasums.txt | sha256sum --check --strict
+          tar -xJf "$node_archive" -C /usr/local --strip-components=1
+          test "$(node --version)" = v24.19.0
+          npm install --global pnpm@11.9.0
+
+      - name: Check out the committed source
+        uses: https://data.forgejo.org/actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile
+      # Shared packages export dist artifacts. Build the apps' dependency graph
+      # before direct tsc/unit checks, which do not invoke Turbo's ^build rule.
+      - name: Build shared workspace packages
+        run: pnpm exec turbo run build --filter='@campsite/web^...' --filter='@campsite/sync-server^...' --filter='@campsite/styled-text-server^...'
+      - name: Typecheck
+        run: |
+          pnpm -F @campsite/web exec tsc --noEmit --declaration false --declarationMap false
+          pnpm -F @campsite/sync-server exec tsc --noEmit --declaration false --declarationMap false
+          pnpm -F @campsite/styled-text-server exec tsc --noEmit --declaration false --declarationMap false
+      - name: Lint
+        run: |
+          pnpm -F @campsite/web lint
+          pnpm -F @campsite/styled-text-server lint
+      - name: Unit and realtime integration tests
+        # Include shared editor/config tests as well as every app test task.
+        run: pnpm exec turbo run test --force
+      - name: Production builds
+        run: pnpm exec turbo run build --filter=@campsite/web --filter=@campsite/sync-server --filter=@campsite/styled-text-server

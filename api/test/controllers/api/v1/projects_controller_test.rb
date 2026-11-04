@@ -230,7 +230,7 @@ module Api
           sign_in @user
 
           assert_difference -> { Project.count } do
-            assert_query_count 103 do
+            assert_query_count 102 do
               post organization_projects_path(@organization.slug),
                 params: { name: "big-project", description: "Best big project", add_everyone: true }
             end
@@ -260,7 +260,7 @@ module Api
           sign_in @user
 
           assert_difference -> { Project.count } do
-            assert_query_count 39 do
+            assert_query_count 38 do
               post organization_projects_path(@organization.slug),
                 params: { name: "big-project", description: "Best big project", chat_format: "true" }
             end

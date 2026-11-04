@@ -7,6 +7,7 @@ import { useRouter } from 'next/router'
 import { isMacOs } from 'react-device-detect'
 import toast from 'react-hot-toast'
 
+import { RAILS_ADMIN_URL } from '@campsite/config'
 import {
   OrganizationMember,
   PublicOrganization,
@@ -16,6 +17,7 @@ import {
 } from '@campsite/types'
 import {
   AccessIcon,
+  ArrowLeftIcon,
   Avatar,
   Badge,
   ChatBubbleIcon,
@@ -30,6 +32,7 @@ import {
   GearIcon,
   HomeIcon,
   InboxIcon,
+  KeyboardShortcut,
   LayeredHotkeys,
   LinkIcon,
   LockIcon,
@@ -74,6 +77,8 @@ import { useSyncedMessageThreads } from '@/hooks/useSyncedMessageThreads'
 import { useSyncedProjects } from '@/hooks/useSyncedProjects'
 import { flattenInfiniteData } from '@/utils/flattenInfiniteData'
 
+import { KeyboardShortcutReference } from './KeyboardShortcutReference'
+
 type NavigateFn = (destination: Url) => void
 
 interface DialogState {
@@ -84,6 +89,7 @@ interface DialogState {
 export function LocalCommandMenu() {
   const [open, setOpen] = useAtom(commandMenuAtom)
   const [query, setQuery] = useState('')
+  const [page, setPage] = useState<'commands' | 'shortcuts'>('commands')
   const [dialogState, setDialogState] = useState<DialogState>({
     'create-channel': false,
     'create-chat': false
@@ -103,7 +109,7 @@ export function LocalCommandMenu() {
 
   const toggleMenu = () => {
     if (open) {
-      setOpen(false)
+      close()
       return
     }
 
@@ -117,7 +123,20 @@ export function LocalCommandMenu() {
   function close() {
     setOpen(false)
 
-    setTimeout(() => setQuery(''), 300)
+    setTimeout(() => {
+      setPage('commands')
+      setQuery('')
+    }, 300)
+  }
+
+  function showCommands() {
+    setPage('commands')
+    setQuery('')
+  }
+
+  function showShortcutReference() {
+    setPage('shortcuts')
+    setQuery('')
   }
 
   function navigate(destination: Url) {
@@ -132,7 +151,13 @@ export function LocalCommandMenu() {
       <LayeredHotkeys
         keys={`${modKey}+k`}
         callback={toggleMenu}
-        options={{ enableOnContentEditable: true, enableOnFormTags: true, enabled: !isOnboarding }}
+        options={{
+          description: 'Open command menu',
+          enableOnContentEditable: true,
+          enableOnFormTags: true,
+          enabled: !isOnboarding,
+          metadata: { category: 'View' }
+        }}
       />
 
       <CreateProjectDialog
@@ -157,15 +182,16 @@ export function LocalCommandMenu() {
         <RadixDialog.Portal>
           <RadixDialog.Overlay className='data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out fixed inset-0 bg-black/10 dark:bg-black/60' />
           <RadixDialog.Content
-            className='data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out fixed left-1/2 top-16 w-full max-w-[calc(100%_-_16px)] origin-[50%] -translate-x-1/2 transition-all md:max-w-3xl'
+            className='data-[state=open]:animate-fade-in data-[state=closed]:animate-fade-out fixed top-16 left-1/2 w-full max-w-[calc(100%_-_16px)] origin-[50%] -translate-x-1/2 transition-all md:max-w-3xl'
             onOpenAutoFocus={(e) => {
               e.preventDefault()
               inputRef.current?.focus()
             }}
             onKeyDownCapture={(evt) => {
               if (evt.key === 'Escape') {
+                evt.preventDefault()
                 evt.stopPropagation()
-                close()
+                page === 'shortcuts' ? showCommands() : close()
               }
             }}
           >
@@ -180,6 +206,11 @@ export function LocalCommandMenu() {
                   }
 
                   if (e.key === 'Backspace' && !query.length) {
+                    if (page === 'shortcuts') {
+                      showCommands()
+                      return
+                    }
+
                     ref.current?.bounce()
                     return
                   }
@@ -187,40 +218,66 @@ export function LocalCommandMenu() {
               >
                 <Command.Input
                   ref={inputRef}
-                  placeholder='Type a command or search...'
+                  placeholder={page === 'shortcuts' ? 'Search keyboard shortcuts...' : 'Type a command or search...'}
                   onValueChange={setQuery}
                   value={query}
                   className='w-full border-0 bg-transparent px-4 py-3 text-[15px] placeholder-gray-400 outline-none focus:border-black focus:border-black/5 focus:ring-0'
                 />
 
-                <Command.List className='scrollbar-hide scroll-pb-2 overflow-y-auto overflow-x-hidden px-2 pb-2 outline-none'>
-                  <Home navigate={navigate} />
+                <Command.List className='scrollbar-hide scroll-pb-2 overflow-x-hidden overflow-y-auto px-2 pb-2 outline-none'>
+                  {page === 'shortcuts' ? (
+                    <>
+                      <Command.Group>
+                        <Item onSelect={showCommands} value='Back to commands'>
+                          <ArrowLeftIcon />
+                          Back to commands
+                        </Item>
+                      </Command.Group>
+                      <KeyboardShortcutReference />
+                    </>
+                  ) : (
+                    <>
+                      <Home navigate={navigate} />
 
-                  <Command.Group>
-                    {isSearching && memberships && memberships.length > 1 && (
-                      <Organizations organizations={memberships.map((m) => m.organization)} navigate={navigate} />
-                    )}
-                    {!isCommunity && isSearching && <Threads threads={threads} navigate={navigate} />}
-                    {isSearching && <Projects projects={projects} navigate={navigate} />}
-                  </Command.Group>
+                      <Command.Group>
+                        {isSearching && memberships && memberships.length > 1 && (
+                          <Organizations organizations={memberships.map((m) => m.organization)} navigate={navigate} />
+                        )}
+                        {!isCommunity && isSearching && <Threads threads={threads} navigate={navigate} />}
+                        {isSearching && <Projects projects={projects} navigate={navigate} />}
+                      </Command.Group>
 
-                  <Create close={close} setDialogState={setDialogState} />
+                      <Create close={close} setDialogState={setDialogState} />
 
-                  <Item
-                    value='Share feedback or report a bug'
-                    keywords={['report', 'crash', 'bug', 'feedback']}
-                    onSelect={() => {
-                      close()
-                      setTimeout(() => setFeedbackDialogOpen(true), 100)
-                    }}
-                  >
-                    <QuestionMarkCircleIcon />
-                    Share feedback or report a bug
-                  </Item>
+                      <Command.Group>
+                        <Item
+                          value='Keyboard shortcuts'
+                          keywords={['hotkeys', 'keybindings', 'help']}
+                          onSelect={showShortcutReference}
+                        >
+                          <CodeIcon />
+                          Keyboard shortcuts
+                          <ChevronRightIcon className='text-quaternary ml-auto' />
+                        </Item>
 
-                  <SearchPageItem query={query} navigate={navigate} />
+                        <Item
+                          value='Share feedback or report a bug'
+                          keywords={['report', 'crash', 'bug', 'feedback']}
+                          onSelect={() => {
+                            close()
+                            setTimeout(() => setFeedbackDialogOpen(true), 100)
+                          }}
+                        >
+                          <QuestionMarkCircleIcon />
+                          Share feedback or report a bug
+                        </Item>
+                      </Command.Group>
 
-                  <StaffTools close={close} query={query} />
+                      <SearchPageItem query={query} navigate={navigate} />
+
+                      <StaffTools close={close} query={query} />
+                    </>
+                  )}
                 </Command.List>
               </Command>
             </DismissibleLayer>
@@ -236,10 +293,7 @@ function Home({ navigate }: { navigate: NavigateFn }) {
   const { data: currentUser } = useGetCurrentUser()
   const isStaff = useCurrentUserIsStaff()
   const hasSidebarChat = useCurrentUserOrOrganizationHasFeature('sidebar_dms')
-  const ffUrl =
-    !process.env.NODE_ENV || process.env.NODE_ENV === 'development'
-      ? 'http://admin.campsite.test:3001/admin/features/'
-      : 'https://admin.campsite.com/admin/features'
+  const ffUrl = `${RAILS_ADMIN_URL}/admin/features/`
   const { data: organization } = useGetCurrentOrganization()
 
   return (
@@ -247,28 +301,43 @@ function Home({ navigate }: { navigate: NavigateFn }) {
       <Item onSelect={() => navigate(`/${scope}/inbox/${defaultInboxView}`)}>
         <InboxIcon />
         Inbox
+        <span className='ml-auto'>
+          <KeyboardShortcut shortcut={['g', 'i']} />
+        </span>
       </Item>
 
       {hasSidebarChat && (
         <Item onSelect={() => navigate(`/${scope}/chat`)}>
           <ChatBubbleIcon />
           Messages
+          <span className='ml-auto'>
+            <KeyboardShortcut shortcut={['g', 'm']} />
+          </span>
         </Item>
       )}
 
       <Item onSelect={() => navigate(`/${scope}/posts`)}>
         <HomeIcon />
         Home
+        <span className='ml-auto'>
+          <KeyboardShortcut shortcut={['g', 'h']} />
+        </span>
       </Item>
 
       <Item onSelect={() => navigate(`/${scope}/notes`)}>
         <NoteIcon />
         Docs
+        <span className='ml-auto'>
+          <KeyboardShortcut shortcut={['g', 'd']} />
+        </span>
       </Item>
 
       <Item onSelect={() => navigate(`/${scope}/calls`)}>
         <VideoCameraIcon />
         Calls
+        <span className='ml-auto'>
+          <KeyboardShortcut shortcut={['g', 'c']} />
+        </span>
       </Item>
 
       <DraftPageItem navigate={navigate} />
@@ -277,6 +346,9 @@ function Home({ navigate }: { navigate: NavigateFn }) {
         <Item onSelect={() => navigate(`/${scope}/projects`)}>
           <ProjectIcon />
           Channels
+          <span className='ml-auto'>
+            <KeyboardShortcut shortcut={['g', 'p']} />
+          </span>
         </Item>
       )}
 
@@ -284,6 +356,9 @@ function Home({ navigate }: { navigate: NavigateFn }) {
         <Item onSelect={() => navigate(`/${scope}/people`)}>
           <UserCircleIcon />
           People
+          <span className='ml-auto'>
+            <KeyboardShortcut shortcut={['g', 'e']} />
+          </span>
         </Item>
       )}
 
@@ -516,7 +591,7 @@ function ProjectItem({ navigate, project }: { navigate: NavigateFn; project: Syn
       )}
       {project.name}
       {project.private && (
-        <div className='text-quaternary h-5.5 w-5.5 flex items-center justify-center'>
+        <div className='text-quaternary flex h-5.5 w-5.5 items-center justify-center'>
           <LockIcon size={16} strokeWidth='2' />
         </div>
       )}

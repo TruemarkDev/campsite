@@ -6,7 +6,7 @@ import { apiClient, setTypedInfiniteQueriesData, setTypedQueryData } from '@/uti
 
 import { useUpdateBadgeCount } from './useGetUnreadNotificationsCount'
 
-type Props = {
+interface Props {
   noteId: string
 }
 

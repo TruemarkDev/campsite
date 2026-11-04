@@ -17,7 +17,7 @@ import { BreadcrumbLabel, BreadcrumbTitlebar } from '../Titlebar/BreadcrumbTitle
 
 export function ThreadInbox() {
   const isRefetching = useAtomValue(refetchingChatAtom)
-  const { data: inbox } = useGetThreads()
+  const { data: inbox, hasNextPage, fetchNextPage, isFetchingNextPage } = useGetThreads()
   const { threads } = inbox || {}
   const [createDialogOpen, setCreateDialogOpen] = useState(false)
   const hasSidebarDms = useCurrentUserOrOrganizationHasFeature('sidebar_dms')
@@ -42,6 +42,11 @@ export function ThreadInbox() {
         <RefetchingPageIndicator isRefetching={isRefetching} />
 
         <ThreadInboxList threads={threads} />
+        {hasNextPage && (
+          <Button disabled={isFetchingNextPage} onClick={() => fetchNextPage()}>
+            {isFetchingNextPage ? 'Loading…' : 'Load more conversations'}
+          </Button>
+        )}
       </ScrollableContainer>
     </div>
   )

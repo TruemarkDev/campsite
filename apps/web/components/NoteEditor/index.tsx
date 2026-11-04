@@ -29,10 +29,9 @@ export function NoteEditor({ note, quickNote }: Props) {
   const titleRef = useRef<HTMLTextAreaElement>(null)
   const reactionsRef = useRef<HTMLDivElement>(null)
 
-  const [provider, syncState, syncError] = useEditorSync({
+  const [provider, syncState, syncError, hasSynced] = useEditorSync({
     resourceId: note.id,
-    resourceType: 'Note',
-    initialState: note.description_state
+    resourceType: 'Note'
   })
 
   const showConnectionIssues = useHasConnectionIssue(syncState)
@@ -152,9 +151,9 @@ export function NoteEditor({ note, quickNote }: Props) {
           <NoteContent
             ref={editorRef}
             note={note}
-            provider={provider}
+            provider={hasSynced ? provider : null}
             editable={editable}
-            isSyncError={!!syncError}
+            isSyncError={!hasSynced || !!syncError}
             content={note?.description_html || EMPTY_HTML}
             onBlurAtTop={focusTitle}
             autofocus={canAutofocusDescription}
@@ -198,7 +197,7 @@ const NoteTitle = forwardRef<HTMLTextAreaElement, NoteTitleProps>(function NoteT
   return (
     <TitleTextField
       ref={ref}
-      className='mx-auto w-full max-w-[44rem] text-[clamp(2rem,_4vw,_2.5rem)] font-bold leading-[1.2]'
+      className='mx-auto w-full max-w-[44rem] text-[clamp(2rem,_4vw,_2.5rem)] leading-[1.2] font-bold'
       placeholder={note ? 'Untitled' : undefined}
       value={formTitle}
       onChange={(value) => {

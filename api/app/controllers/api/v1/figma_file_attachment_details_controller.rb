@@ -7,6 +7,8 @@ module Api
 
       rescue_from Faraday::TimeoutError, with: :render_unprocessable_entity
 
+      before_action :authorize_current_organization_membership, only: :create
+
       request_params do
         {
           figma_file_url: { type: :string, required: true },

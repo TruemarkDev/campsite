@@ -33,10 +33,10 @@ module Api
 
           assert_equal "Foo Bar", @org.general_project.name
           assert_equal "📈", @org.general_project.accessory
-          assert_equal "Project 1", @org.projects[1].name
-          assert_equal "🏕️", @org.projects[1].accessory
-          assert_equal "Project 2", @org.projects[2].name
-          assert_equal "🧑‍🍳", @org.projects[2].accessory
+          created_projects = @org.projects.where.not(id: @org.general_project.id).index_by(&:name)
+          assert_equal ["Project 1", "Project 2"], created_projects.keys.sort
+          assert_equal "🏕️", created_projects.fetch("Project 1").accessory
+          assert_equal "🧑‍🍳", created_projects.fetch("Project 2").accessory
         end
 
         test "return 403 for a random user" do

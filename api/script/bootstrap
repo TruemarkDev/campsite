@@ -82,9 +82,9 @@ bundle config build.mysql2 --with-opt-dir=$(brew --prefix zstd)
 bundle install --local
 echo "\033[1;32mDone installing gems!\033[0m"
 
-echo "\nInstalling yarn dependendies...\n============================================================"
-yarn install --offline
-echo "\033[1;32mDone installing yarn deps!\033[0m"
+echo "\nInstalling javascript dependencies...\n============================================================"
+corepack enable && pnpm install --frozen-lockfile
+echo "\033[1;32mDone installing javascript deps!\033[0m"
 
 echo "\nAdding *campsite.com addresses to your /etc/hosts file...\n============================================================"
 script/hostnames

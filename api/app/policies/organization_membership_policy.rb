@@ -21,6 +21,10 @@ class OrganizationMembershipPolicy < ApplicationPolicy
     confirmed_user? && org_admin?
   end
 
+  def manage_self?
+    @record.user_id == @user&.id
+  end
+
   def bulk_update_project_memberships?
     confirmed_user? && org_admin?
   end

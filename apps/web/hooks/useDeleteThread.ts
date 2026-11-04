@@ -17,7 +17,7 @@ export function useDeleteThread() {
   return useMutation({
     mutationFn: (id: string) => deleteThreadsById.request(`${scope}`, id),
     onSuccess: (_, id) => {
-      queryClient.invalidateQueries({ queryKey: getThreads.requestKey(`${scope}`) })
+      queryClient.invalidateQueries({ queryKey: getThreads.requestKey({ orgSlug: `${scope}` }) })
       queryClient.invalidateQueries({ queryKey: getFavorites.requestKey(`${scope}`) })
       queryClient.removeQueries({ queryKey: getThreadsById.requestKey(`${scope}`, id) })
       queryClient.removeQueries({ queryKey: getMessages.requestKey({ orgSlug: `${scope}`, threadId: id }) })

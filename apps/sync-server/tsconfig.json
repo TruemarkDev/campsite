@@ -4,6 +4,7 @@
   "exclude": ["node_modules", "dist"],
   "compilerOptions": {
     "allowJs": true,
+    "types": ["vitest/globals"],
     "outDir": "./dist",
     "sourceMap": true,
     "inlineSources": true,

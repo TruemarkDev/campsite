@@ -14,6 +14,7 @@ module Api
           skip_before_action :require_authenticated_user, only: :create
           skip_before_action :require_authenticated_organization_membership, only: :create
           before_action :ensure_valid_passcode
+          before_action :skip_authorization, only: :create
           rescue_from InvalidPasscodeError, with: :render_unprocessable_entity
 
           def create

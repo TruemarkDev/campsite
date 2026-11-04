@@ -47,7 +47,7 @@ function ActiveMessageCall({
     <button
       onClick={() => joinCall()}
       className={cn(
-        'bg-primary dark:bg-elevated dark relative flex w-full max-w-sm flex-1 items-center p-3 text-left',
+        'bg-primary dark:bg-elevated dark relative flex w-full max-w-96 flex-1 items-center p-3 text-left',
         className
       )}
       disabled={!canJoin}
@@ -100,7 +100,7 @@ function CompletedMessageCall({
 
   return (
     <>
-      <div className={cn('bg-primary dark:bg-elevated dark relative flex w-full max-w-sm flex-col p-3', className)}>
+      <div className={cn('bg-primary dark:bg-elevated dark relative flex w-full max-w-96 flex-col p-3', className)}>
         <Tooltip
           align={message.viewer_is_sender ? 'end' : 'start'}
           label={longTimestamp(message.created_at, { month: 'short' })}
@@ -108,7 +108,7 @@ function CompletedMessageCall({
           <div className='absolute inset-0 z-0' />
         </Tooltip>
 
-        <div className='grid grid-cols-[40px,1fr] items-center gap-3'>
+        <div className='grid grid-cols-[40px_1fr] items-center gap-3'>
           <div className='bg-quaternary rounded-full p-2'>
             <VideoCameraFilledIcon size={24} />
           </div>
@@ -128,7 +128,7 @@ function CompletedMessageCall({
         </div>
 
         {!!call.recordings.length && (
-          <div className='mt-2 grid grid-cols-[40px,1fr] gap-3'>
+          <div className='mt-2 grid grid-cols-[40px_1fr] gap-3'>
             <div className='col-start-2 flex flex-col gap-1'>
               {call.summary_html && (
                 <HTMLRenderer

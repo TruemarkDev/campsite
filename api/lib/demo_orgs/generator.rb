@@ -66,11 +66,11 @@ module DemoOrgs
     private
 
     def employee_email(name)
-      name.downcase.gsub(" ", ".") + "@demo.campsite.com"
+      name.downcase.tr(" ", ".") + "@demo.campsite.com"
     end
 
     def employee_username(name)
-      name.downcase.gsub(" ", "_")
+      name.downcase.tr(" ", "_")
     end
 
     def data(name)
@@ -217,7 +217,7 @@ module DemoOrgs
     def create_posts
       Rails.logger.debug("-- Creating posts --")
 
-      posts_data.reverse.each do |p|
+      posts_data.reverse_each do |p|
         post = create_post(
           org: @org,
           title: p["title"],
@@ -278,7 +278,7 @@ module DemoOrgs
     def create_projects
       Rails.logger.debug("-- Creating projects --")
 
-      projects_data.reverse.each do |p|
+      projects_data.reverse_each do |p|
         project = @org.projects.create!(
           name: p["name"],
           description: p["description"],
@@ -318,7 +318,7 @@ module DemoOrgs
     def create_threads
       Rails.logger.debug("-- Creating threads --")
 
-      threads_data.reverse.each do |t|
+      threads_data.reverse_each do |t|
         owner = locate_member(@org, t["owner"])
         members = t["members"].map { |name| locate_member(@org, name) }.compact
 
@@ -347,7 +347,7 @@ module DemoOrgs
     def create_notes
       Rails.logger.debug("-- Creating notes --")
 
-      notes_data.reverse.each do |n|
+      notes_data.reverse_each do |n|
         member = locate_member(@org, n["member"])
 
         note = member.notes.create!(
@@ -388,7 +388,7 @@ module DemoOrgs
     def create_calls
       Rails.logger.debug("-- Creating calls --")
 
-      calls_data.reverse.each do |c|
+      calls_data.reverse_each do |c|
         members = c["peers"].map { |name| locate_member(@org, name) }.compact
         creator = members.first
 

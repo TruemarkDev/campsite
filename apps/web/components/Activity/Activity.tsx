@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, type ReactElement } from 'react'
 import { useSetAtom } from 'jotai'
 import Router from 'next/router'
 import { useInView } from 'react-intersection-observer'
@@ -29,7 +29,7 @@ export function useTrackActivityView(isLoading: boolean = false) {
   return ref
 }
 
-export function Activity() {
+export function Activity(): ReactElement {
   const getNotifications = useGetNotifications({ filter: 'activity' })
   const notifications = useMemo(() => flattenInfiniteData(getNotifications.data), [getNotifications.data])
   const hasNotifications = !!notifications?.length
@@ -50,7 +50,7 @@ export function Activity() {
                   setActivityOpen(false)
                 }}
                 className={cn(
-                  'text-primary group relative -mx-1 flex flex-none cursor-pointer select-none scroll-m-2 scroll-mt-12 items-start gap-3 rounded-lg px-2.5 py-3 text-[15px] outline-none ease-in-out will-change-[background,_color] focus-within:border-none focus-within:outline-none focus-within:ring-0 focus:border-none focus:outline-none focus:ring-0',
+                  'text-primary group relative -mx-1 flex flex-none cursor-pointer scroll-m-2 scroll-mt-12 items-start gap-3 rounded-lg px-2.5 py-3 text-[15px] ease-in-out will-change-[background,_color] outline-none select-none focus-within:border-none focus-within:ring-0 focus-within:outline-none focus:border-none focus:ring-0 focus:outline-none',
                   {
                     'bg-blue-500/10 dark:bg-blue-500/20': !n.activity_seen,
                     'hover:bg-blue-500/15 aria-selected:bg-blue-500/15 dark:hover:bg-blue-500/25 dark:aria-selected:bg-blue-500/25':

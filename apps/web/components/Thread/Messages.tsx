@@ -88,15 +88,12 @@ function insertTimestampsBetweenGroups(groups: MessageGroup[], hasNextPage: bool
       const nextGroupDay = dateToGroupDay(nextGroupDate)
 
       if (nextGroupDay !== thisGroupDay) {
-        let dayLabel = ''
-
-        if (todayGroupDay === nextGroupDay) {
-          dayLabel = 'Today'
-        } else if (yesterdayGroupDay === nextGroupDay) {
-          dayLabel = 'Yesterday'
-        } else {
-          dayLabel = nextGroupDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
-        }
+        const dayLabel =
+          todayGroupDay === nextGroupDay
+            ? 'Today'
+            : yesterdayGroupDay === nextGroupDay
+              ? 'Yesterday'
+              : nextGroupDate.toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })
 
         groupsWithTimestamps.push({ day: dayLabel })
       }
@@ -260,7 +257,7 @@ function TimestampHeader({ timestamp, editMode }: { timestamp: Date; editMode: b
 function DayHeader({ day }: { day: string }) {
   return (
     <div className='bg-quaternary dark:bg-tertiary -mx-3 my-8 flex h-px items-center justify-center lg:-mx-4 lg:px-4'>
-      <div className='bg-elevated sticky top-4 flex items-center justify-center rounded-full border border-gray-200 px-4 pb-[5px] pt-1.5 shadow-sm dark:border-0 dark:shadow-[inset_0px_1px_0px_rgba(255,255,255,0.04),_0px_2px_12px_rgba(0,0,0,0.4),_0px_0px_0px_1px_rgba(0,0,0,0.8)]'>
+      <div className='bg-elevated sticky top-4 flex items-center justify-center rounded-full border border-gray-200 px-4 pt-1.5 pb-[5px] shadow-xs dark:border-0 dark:shadow-[inset_0px_1px_0px_rgba(255,255,255,0.04),_0px_2px_12px_rgba(0,0,0,0.4),_0px_0px_0px_1px_rgba(0,0,0,0.8)]'>
         <UIText size='text-[11px]' secondary className='uppercase' weight='font-bold'>
           {day}
         </UIText>

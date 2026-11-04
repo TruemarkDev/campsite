@@ -6,6 +6,8 @@ module Api
       class SessionsController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: :destroy
 
+        before_action :authorize_current_user, only: :destroy
+
         extend Apigen::Controller
 
         response code: 200

@@ -62,7 +62,6 @@ module Api
             create(:post, organization: @organization, title: "Needle in a haystack")
             create(:post, organization: @organization, description_html: "<p>This description has a needle in it</p>")
 
-            Post.reindex
 
             sign_in @user
 

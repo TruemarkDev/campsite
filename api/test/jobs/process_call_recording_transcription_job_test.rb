@@ -58,6 +58,9 @@ class ProcessCallRecordingTranscriptionJobTest < ActiveJob::TestCase
   end
 
   def stub_downloaded_transcript(content)
-    Down.expects(:download).with("#{Rails.application.credentials.imgix.url}/prefix/<transcript-srt-address>.srt").returns(stub(read: content))
+    # Derive the URL from the record rather than rebuilding it here: the CDN
+    # host moved when media URLs were repointed at the homelab, and a
+    # hand-assembled URL silently stops matching what the job downloads.
+    Down.expects(:download).with(@recording.transcript_srt_url).returns(stub(read: content))
   end
 end

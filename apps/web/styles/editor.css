@@ -1,4 +1,41 @@
+@reference './global.css';
+
 .ProseMirror {
+  .tableWrapper {
+    @apply my-4 max-w-full overflow-x-auto;
+  }
+
+  table {
+    @apply w-full border-collapse;
+  }
+
+  th,
+  td {
+    @apply border-primary relative min-w-24 border px-3 py-2 align-top;
+  }
+
+  th {
+    @apply bg-secondary font-semibold;
+  }
+
+  td > :first-child,
+  th > :first-child {
+    @apply mt-0;
+  }
+
+  td > :last-child,
+  th > :last-child {
+    @apply mb-0;
+  }
+
+  .column-resize-handle {
+    @apply pointer-events-none absolute -right-0.5 bottom-0 top-0 w-1 bg-blue-500;
+  }
+
+  &.resize-cursor {
+    @apply cursor-col-resize;
+  }
+
   p.is-editor-empty:first-child:not(:has(post-search))::before {
     @apply text-quaternary pointer-events-none float-left h-0 content-[attr(data-placeholder)];
     content: attr(data-placeholder);

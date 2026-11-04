@@ -21,6 +21,14 @@ class SetContentUpdatedAtJobTest < ActiveJob::TestCase
   end
 
   context "#perform" do
+    test "PostgreSQL predicates use named binds instead of jsonb operator placeholders" do
+      source = File.read(SetContentUpdatedAtJob.instance_method(:perform).source_location.first)
+
+      assert_includes source, "jsonb_exists(metadata, 'subject_previous_changes')"
+      assert_includes source, "ARRAY[:fields]::text[]"
+      assert_includes source, "fields: allowlisted_fields.map(&:to_s)"
+    end
+
     test "sets content_updated_at to the most recent allowed event" do
       Timecop.freeze do
         SetContentUpdatedAtJob.new.perform(@note_allowed_update.id)

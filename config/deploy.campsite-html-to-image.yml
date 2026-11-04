@@ -1,0 +1,36 @@
+service: campsite-html-to-image-staging
+image: truemarkdev/campsite-html-to-image
+secrets_path: .kamal/campsite-secrets
+
+servers:
+  web:
+    - 192.168.10.32
+
+proxy:
+  ssl: false
+  hosts:
+    - html-to-image.camp.home
+  app_port: 9222
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: builder.home:5555
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://prakash@builder.home
+  context: html-to-image
+  dockerfile: html-to-image/Dockerfile
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: "9222"
+
+ssh:
+  user: prakash

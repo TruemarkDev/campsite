@@ -197,7 +197,7 @@ function Bubble({ message, position }: BubbleProps) {
     >
       <div
         className={cn(
-          'chat-prose relative flex select-text flex-col whitespace-pre-wrap break-words px-3.5 py-2 text-sm lg:px-3',
+          'chat-prose relative flex flex-col px-3.5 py-2 text-sm break-words whitespace-pre-wrap select-text lg:px-3',
           roundedClasses,
           {
             'bg-quaternary text-primary': !viewerIsSender,
@@ -256,7 +256,7 @@ function Composer() {
         autoFocus={!isMobile}
         additionalClasses='dark:bg-neutral-700 border-0 focus:outline-none focus:ring-0 rounded-[18px] py-2 pl-3 pr-12'
       />
-      <div className='absolute bottom-1.5 right-1.5 flex h-6 w-6 items-center justify-center'>
+      <div className='absolute right-1.5 bottom-1.5 flex h-6 w-6 items-center justify-center'>
         <Button
           round
           variant='plain'

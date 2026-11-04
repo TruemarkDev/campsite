@@ -2,6 +2,14 @@
 
 This is an open source version of the [Campsite](https://www.campsite.com/) app. This codebase is available **as-is** and is not actively maintained by the Campsite team. We will only consider pull requests and issues regarding self-hosting or critical fixes. The codebase is provided as a reference for those interested in learning how Campsite works. We welcome forks of this repository for use in non-commercial projects.
 
+This fork is actively developed for a private homelab. The GitHub fork is
+`TruemarkDev/campsite`; Forgejo is the review and deployment repository. See
+[agent instructions](AGENTS.md) for the supported toolchain and
+[homelab deployment](docs/deployment/homelab-production.md) for the current
+service state and acceptance gaps. Application search uses PostgreSQL; see
+[search operations](docs/deployment/postgresql-search.md). The former
+Elasticsearch server and volume have not been verified as retired.
+
 ## Local dev setup
 
 To get started, run this command from the workspace root:
@@ -75,7 +83,7 @@ There are many other services we use to power Campsite features. Create accounts
 - `postmark` - sending emails via the [Postmark API](https://postmarkapp.com/developer)
 - `sentry` - bug reports, just need the DSN
 - `slack` - Campsite Slack app
-- `vercel.revalidate_static_cache` - generate your own key to safely revalidate cached docs (ISR)
+- `REVALIDATE_STATIC_CACHE_TOKEN` - generate your own token to safely revalidate cached docs (ISR)
 - `webpush_vapid` - VAPID keys necessary to send web push notifications ([docs](https://github.com/pushpad/web-push#generating-vapid-keys))
 - `zapier` - The Campsite Zapier app
 - `tenor` - GIF search ([docs](https://tenor.com/gifapi))
@@ -92,65 +100,24 @@ Our [Procfile](https://github.com/campsite/campsite/blob/main/Procfile) defines 
 
 ## Running the web app
 
-1. Install npm packages
+Install dependencies and run the core development processes from the workspace root:
 
 ```shell
 pnpm install
+pnpm dev:core
 ```
 
-2. Connect Vercel
-
-```shell
-pnpm i -g vercel
-```
-
-3. Sign in to your Vercel account
-
-```shell
-npx vercel login
-```
-
-4. Link the apps to Vercel
-
-```shell
-npx vercel link --repo
-? Set up and develop “~/<your_path_to_campsite>”? [Y/n] y
-? Which scope should contain your project? Campsite
-? Found project “campsite/campsite”. Link to it? [Y/n] y
-🔗  Linked to campsite/campsite (created .vercel)
-```
-
-5. Pull environment variables from Vercel
-
-```shell
-cd apps/web && npx vercel env pull
-```
-
-6. Run the app
-
-```shell
-npx vercel dev
-```
-
-5. Open the app at `http://app.campsite.test:3000` — you will be redirected to the auth page with user credentials pre-filled.
+Open the app at `http://app.campsite.test:3000` — you will be redirected to the auth page with user credentials pre-filled.
 
 ## Running the marketing site
 
-1. Follow the steps above to connect the `apps/site` repo to the `campsite-site` project on Vercel.
-
-2. Pull environment variables from Vercel
-
-```shell
-cd apps/site && npx vercel env pull
-```
-
-3. Run the site
+Run the site from the workspace root:
 
 ```shell
 pnpm -F @campsite/site dev
 ```
 
-4. Open the app at `http://localhost:3003`
+Open the app at `http://localhost:3003`.
 
 ## Running Storybook
 
@@ -173,6 +140,8 @@ pnpm -F @campsite/web i lodash
 ```
 
 To find an app or package name, navigate to the `package.json` for each `app/` or `package/` directory.
+
+When adding a Tiptap node, mark, extension, or editor UI control, follow the [editor component integration checklist](docs/editor-component-integration.md).
 
 ## Running the Desktop App locally
 

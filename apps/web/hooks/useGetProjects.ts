@@ -5,7 +5,7 @@ import { apiClient, setTypedQueryData } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getProjects()
 
-type Props = {
+interface Props {
   query?: string
   archived?: boolean
   enabled?: boolean

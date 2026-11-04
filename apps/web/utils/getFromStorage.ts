@@ -6,7 +6,7 @@ export function getFromStorage<T>(storage: Storage | undefined, key: string, ini
       return initialValue
     }
     return JSON.parse(item)
-  } catch (error) {
+  } catch {
     return initialValue
   }
 }

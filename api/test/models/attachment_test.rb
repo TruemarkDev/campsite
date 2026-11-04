@@ -3,6 +3,55 @@
 require "test_helper"
 
 class AttachmentTest < ActiveSupport::TestCase
+  test "latest_commenters returns distinct members ordered by their latest comment" do
+    attachment = create(:attachment)
+    organization = attachment.subject.organization
+    first_member = create(:organization_membership, organization: organization)
+    later_member = create(:organization_membership, organization: organization)
+    create(:comment, attachment: attachment, member: first_member, created_at: 2.minutes.ago)
+    create(:comment, attachment: attachment, member: later_member, created_at: 1.minute.ago)
+    create(:comment, attachment: attachment, member: first_member, created_at: Time.current)
+
+    assert_equal [first_member, later_member], Attachment.latest_commenters(attachment.public_id).to_a
+  end
+
+  context "transcription" do
+    test "audio attachments enqueue transcription and become pending" do
+      TranscribeAttachmentJob.expects(:perform_async).returns("job-123")
+
+      attachment = create(:attachment, file_type: "audio/webm", file_path: "/path/voice.webm")
+
+      assert_equal "pending", attachment.reload.transcription_job_status
+      assert_equal "job-123", attachment.transcription_job_id
+    end
+
+    test "non-audio attachments do not enqueue transcription" do
+      TranscribeAttachmentJob.expects(:perform_async).never
+
+      attachment = create(:attachment, :lottie)
+
+      assert_nil attachment.transcription_job_status
+    end
+
+    test "transcript strips VTT metadata and timings" do
+      attachment = build(:attachment, transcription_vtt: <<~VTT)
+        WEBVTT
+
+        00:00:00.000 --> 00:00:01.500
+        Hello there.
+
+        00:00:01.500 --> 00:00:03.000
+        This is a voice note.
+      VTT
+
+      assert_equal "Hello there. This is a voice note.", attachment.transcript
+    end
+
+    test "transcript is nil without VTT" do
+      assert_nil build(:attachment, transcription_vtt: nil).transcript
+    end
+  end
+
   context "validations" do
     test "is valid" do
       file = build(:attachment, file_path: "/path/x.png", file_type: "image/png")

@@ -44,7 +44,7 @@ export function useAVPermissionState(type: 'camera' | 'microphone') {
 
         stream.getTracks().forEach((track) => track.stop())
         setPermissionState('granted')
-      } catch (error) {
+      } catch {
         setPermissionState('denied')
       }
     }

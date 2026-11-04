@@ -253,7 +253,7 @@ export function NewOrganizationForm() {
             </div>
           </div>
 
-          <div className='mb-2 mt-3 h-px border-b' />
+          <div className='mt-3 mb-2 h-px border-b' />
 
           <div className='flex flex-col'>
             <RequiredLabel label='What is your role?' forId='select-role' />

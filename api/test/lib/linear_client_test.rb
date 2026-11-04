@@ -33,7 +33,7 @@ class LinearClientTest < ActiveSupport::TestCase
     it "raises a ConnectionFailedError when the service is unavailable" do
       Faraday::Connection.any_instance.expects(:post).raises(Faraday::ConnectionFailed)
       assert_raises LinearClient::ConnectionFailedError do
-        LinearClient.new(Rails.application.credentials&.dig(:linear, :token)).send("nope")
+        LinearClient.new(Rails.application.credentials&.dig(:linear, :token)).send(:nope)
       end
     end
 

@@ -19,8 +19,9 @@ const POST_QUERY = `*[_type == "glossary" && slug.current == $slug][0]`
 
 const options = { next: { revalidate: 30 } }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const post = await client.fetch<SanityDocument>(POST_QUERY, params, options)
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const resolvedParams = await params
+  const post = await client.fetch<SanityDocument>(POST_QUERY, resolvedParams, options)
 
   if (!post) notFound()
 
@@ -53,8 +54,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 }
 
-export default async function PostPage({ params }: { params: { slug: string } }) {
-  const post = await client.fetch<SanityDocument>(POST_QUERY, params, options)
+export default async function PostPage({ params }: { params: Promise<{ slug: string }> }) {
+  const resolvedParams = await params
+  const post = await client.fetch<SanityDocument>(POST_QUERY, resolvedParams, options)
 
   const jsonLd: WithContext<BlogPosting> = {
     '@context': 'https://schema.org',

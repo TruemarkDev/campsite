@@ -73,10 +73,10 @@ module Api
           end
 
           test "returns query results" do
-            post_1 = create(:post, :reindex, title: "Needle in a haystack", organization: @organization, project: @project, last_activity_at: 1.day.ago)
-            post_2 = create(:post, :reindex, description_html: "<p>This post has a needle in it</p>", organization: @organization, last_activity_at: Time.current, parent: create(:post, organization: @organization), project: @project)
-            create(:post, :reindex, :from_integration, last_activity_at: 1.month.ago, organization: @organization, project: @project)
-            create(:post, :reindex, :from_oauth_application, organization: @organization, project: @project, last_activity_at: 1.day.ago)
+            post_1 = create(:post, :search_document, title: "Needle in a haystack", organization: @organization, project: @project, last_activity_at: 1.day.ago)
+            post_2 = create(:post, :search_document, description_html: "<p>This post has a needle in it</p>", organization: @organization, last_activity_at: Time.current, parent: create(:post, organization: @organization), project: @project)
+            create(:post, :search_document, :from_integration, last_activity_at: 1.month.ago, organization: @organization, project: @project)
+            create(:post, :search_document, :from_oauth_application, organization: @organization, project: @project, last_activity_at: 1.day.ago)
 
             sign_in @user
             get organization_project_posts_path(@organization.slug, @project.public_id),

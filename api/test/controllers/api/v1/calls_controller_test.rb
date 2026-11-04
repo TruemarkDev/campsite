@@ -143,7 +143,6 @@ module Api
           create(:call_peer, organization_membership: create(:organization_membership, organization: @organization), call: @call_1)
           create(:call_peer, organization_membership: create(:organization_membership, organization: @organization), call: @call_1)
 
-          Call.reindex
 
           sign_in(@member.user)
 
@@ -161,7 +160,6 @@ module Api
           create(:call_peer, organization_membership: create(:organization_membership, organization: @organization), call: @call_1)
           create(:call_peer, organization_membership: create(:organization_membership, organization: @organization), call: @call_1)
 
-          Call.reindex
 
           sign_in(@member.user)
 
@@ -303,7 +301,8 @@ module Api
         test "call participant can set title and summary" do
           sign_in(@member.user)
 
-          assert_query_count 19 do
+          # Includes the transactional PostgreSQL search-document refresh.
+          assert_query_count 23 do
             put organization_call_path(@organization.slug, @call.public_id), params: { title: @new_title, summary: @new_summary }
           end
 

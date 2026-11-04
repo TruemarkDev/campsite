@@ -12,9 +12,13 @@ import { getVideoThumbnailAndDuration } from '@/utils/getVideoThumbnailAndDurati
 import { fileIsLottie, generateImageValues } from '@/utils/transformFile'
 import { urlToHlsUrl } from '@/utils/urlToHlsUrl'
 
-type Upload = { file: File; attachment: Attachment; thumbnail?: File }
+interface Upload {
+  file: File
+  attachment: Attachment
+  thumbnail?: File
+}
 
-type RemappedFileResult = {
+interface RemappedFileResult {
   type: 'gif' | 'heic' | 'image' | 'video' | 'audio' | 'origami' | 'principle' | 'stitch' | 'lottie' | 'other'
   file: File
 }
@@ -57,6 +61,8 @@ export function createOptimisticAttachment(value: Partial<Attachment>): Attachme
       comments_count: 0,
       type_name: 'attachment',
       no_video_track: false,
+      transcript: null,
+      transcription_job_status: null,
       gallery_id: null
     },
     ...value
@@ -190,7 +196,7 @@ function partitionAllowedFiles(files: File[], maxFileSize: number) {
   return { allowedSizeFiles, rejectedSizeFiles }
 }
 
-type Props = {
+interface Props {
   files: File[]
   maxFileSize: number
   scope: string

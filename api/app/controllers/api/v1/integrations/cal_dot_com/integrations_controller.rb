@@ -9,6 +9,8 @@ module Api
 
           skip_before_action :require_authenticated_organization_membership, only: [:show]
 
+          before_action :authorize_current_user, only: :show
+
           response model: CalDotComIntegrationSerializer, code: 200
           def show
             render_json(CalDotComIntegrationSerializer, current_user)

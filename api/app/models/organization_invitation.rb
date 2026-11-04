@@ -61,7 +61,7 @@ class OrganizationInvitation < ApplicationRecord
 
   def accept!(user)
     raise AcceptError, "The invitation has expired" if expired?
-    if user.email != email
+    if user.email.to_s.casecmp?(email.to_s) == false
       raise AcceptError, "Your email does not match the email of the invitation. Please sign in or sign up with the correct email."
     end
 

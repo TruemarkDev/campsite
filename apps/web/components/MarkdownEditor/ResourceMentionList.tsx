@@ -70,7 +70,7 @@ function InnerResourceMentionList({ editor }: Pick<Props, 'editor'>) {
         <SuggestionItem
           editor={editor}
           value={query}
-          className='text-tertiary pointer-events-none cursor-none select-none px-3'
+          className='text-tertiary pointer-events-none cursor-none px-3 select-none'
           // eslint-disable-next-line no-empty-function
           onSelect={() => {}}
         >
@@ -221,7 +221,7 @@ function ResourceMentionItem({
     >
       <ResourceMentionIcon type={type} size={24} />
       <div className='flex min-w-0 flex-col'>
-        <span className='overflow-hidden text-ellipsis whitespace-nowrap text-sm'>{title}</span>
+        <span className='overflow-hidden text-sm text-ellipsis whitespace-nowrap'>{title}</span>
         <span className='text-quaternary text-xs'>
           {projectName ?? 'Private'} <RelativeTime time={created_at} />
         </span>

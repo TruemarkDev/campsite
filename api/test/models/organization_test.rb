@@ -350,7 +350,7 @@ class OrganizationTest < ActiveSupport::TestCase
 
     test "returns an imgix formed url if avatar_path is a path" do
       org = build(:organization, avatar_path: "/path/to/image.png")
-      assert_includes org.avatar_url, "http://campsite-test.imgix.net/path/to/image.png"
+      assert_includes org.avatar_url, "https://camp-cdn.polo-apps.test/cdn/path/to/image.png"
     end
 
     test "returns nil if avatar_path is blank" do

@@ -20,9 +20,21 @@ export function CustomReactionsPacks() {
     )
   }
 
+  const availablePacks = packs?.filter((pack) => pack.items.length > 0) ?? []
+
+  if (availablePacks.length === 0) {
+    return (
+      <div className='p-4'>
+        <UIText tertiary>Emoji packs are not available in this environment.</UIText>
+      </div>
+    )
+  }
+
   return (
     <div className='divide-secondary flex flex-col divide-y'>
-      {packs?.map((pack) => <Pack key={pack.name} pack={pack} />)}
+      {availablePacks.map((pack) => (
+        <Pack key={pack.name} pack={pack} />
+      ))}
     </div>
   )
 }
@@ -32,7 +44,7 @@ function Pack({ pack }: { pack: CustomReactionsPack }) {
 
   return (
     <div className='flex flex-col'>
-      <div key={pack.name} className='grid grid-cols-[32px,1fr] items-center gap-3 p-3'>
+      <div key={pack.name} className='grid grid-cols-[32px_1fr] items-center gap-3 p-3'>
         <Button
           variant='plain'
           accessibilityLabel={expanded ? 'Collapse' : 'Expand'}
@@ -55,7 +67,7 @@ function Pack({ pack }: { pack: CustomReactionsPack }) {
         </div>
       </div>
       {expanded && (
-        <div className='grid grid-cols-[32px,1fr] gap-3'>
+        <div className='grid grid-cols-[32px_1fr] gap-3'>
           <div />
           <div className='flex flex-wrap gap-2 p-3 pt-0'>
             {pack.items.map((item) => (

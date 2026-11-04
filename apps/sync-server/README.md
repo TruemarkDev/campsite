@@ -1,18 +1,25 @@
 # sync-server
 
-## Troubleshooting
+The production image is deployed with Kamal using one of the repository-level
+sync-server configurations:
 
-To test the Docker build locally, run the following command in your terminal (from the repo root):
+- `config/deploy.sync-server.yml` for `camp-sync.polo-apps.com`
+- `config/deploy.campsite-sync.yml` for `camp-sync.tokdio.com`
 
-```
-docker build -f apps/sync-server/Dockerfile . --build-arg SENTRY_AUTH_TOKEN=<xxx>
+Render a configuration before deploying:
+
+```sh
+mise exec -- kamal config -c config/deploy.campsite-sync.yml
 ```
 
-> [!Note]
-> Be sure to replace `<xxx>` with the auth token on the Fly instance. You can get this easily like so:
+To test the production image locally, run this command from the repository root:
 
+```sh
+docker build --tag campsite-sync-server --file apps/sync-server/Dockerfile .
+docker run --rm --publish 9000:9000 \
+  --env API_BASE_URL=https://camp-api.tokdio.com \
+  --env NODE_ENV=production \
+  campsite-sync-server
 ```
-cd apps/sync-server
-fly ssh console
-echo $SENTRY_AUTH_TOKEN
-```
+
+The Kamal proxy checks `GET /up` on port 9000. A healthy server returns HTTP 200.

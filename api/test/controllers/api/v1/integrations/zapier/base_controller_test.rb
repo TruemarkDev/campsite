@@ -44,6 +44,39 @@ module Api
             assert_response :unauthorized
           end
 
+          should "return unauthorized for a user-owned oauth token" do
+            user = @organization.creator
+            token = create(:access_token, application: @token.application, resource_owner: user, scopes: "read_organization")
+
+            get zapier_integration_projects_path, headers: zapier_oauth_request_headers(token.plaintext_token)
+
+            assert_response :unauthorized
+          end
+
+          should "return unauthorized for a token issued to a non-Zapier application" do
+            token = create(:access_token, resource_owner: @organization, scopes: "read_organization")
+
+            get zapier_integration_projects_path, headers: zapier_oauth_request_headers(token.plaintext_token)
+
+            assert_response :unauthorized
+          end
+
+          should "return unauthorized when the token lacks the required read scope" do
+            token = create(:access_token, :zapier, resource_owner: @organization, scopes: "write_organization")
+
+            get zapier_integration_projects_path, headers: zapier_oauth_request_headers(token.plaintext_token)
+
+            assert_response :unauthorized
+          end
+
+          should "return unauthorized when the OAuth application is discarded" do
+            @token.application.discard
+
+            get zapier_integration_projects_path, headers: zapier_oauth_request_headers(@token.plaintext_token)
+
+            assert_response :unauthorized
+          end
+
           should "return unauthorized if a token is missing" do
             get zapier_integration_projects_path
             assert_response :unauthorized

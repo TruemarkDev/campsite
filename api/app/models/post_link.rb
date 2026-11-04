@@ -30,10 +30,10 @@ class PostLink < ApplicationRecord
   # eg. so taking "https://campsite-software.slack.com/archives/C03J9D4TQKS/p1662845204796459",
   # we first string match with the following regex /p\d+/ then insert a "." after the 10th digit
   def slack_message_ts
-    url.scan(SLACK_TS_REGEX)[0]&.gsub("p", "")&.insert(10, ".")
+    url.scan(SLACK_TS_REGEX)[0]&.delete("p")&.insert(10, ".")
   end
 
   def slack_channel_id
-    url.scan(SLACK_CHANNEL_REGEX)[0]&.gsub("/", "")
+    url.scan(SLACK_CHANNEL_REGEX)[0]&.delete("/")
   end
 end

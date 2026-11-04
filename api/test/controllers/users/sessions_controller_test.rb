@@ -41,6 +41,27 @@ module Users
         assert_nil flash[:alert]
       end
 
+      test "shares an iPhone login session with the API subdomain" do
+        user = create(:user, password: "mypasswordisverystrong!", password_confirmation: "mypasswordisverystrong!")
+        iphone_user_agent = "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 Mobile/15E148 CriOS/128.0.0.0"
+
+        host! "auth.camp.home"
+        https!
+        post user_session_path,
+          params: { user: { email: user.email, password: "mypasswordisverystrong!" } },
+          headers: { "HTTP_USER_AGENT" => iphone_user_agent }
+
+        assert_response :redirect
+        assert_includes Array(response.headers["Set-Cookie"]).join("; "), "domain=camp.home"
+
+        host! "api.camp.home"
+        get current_user_path, headers: { "HTTP_USER_AGENT" => iphone_user_agent }
+
+        assert_response :ok
+        assert_equal user.public_id, json_response["id"]
+        assert json_response["logged_in"]
+      end
+
       test "redirects to app.campsite.com if user is on campsite.com" do
         host! "auth.campsite.com"
         user = create(:user, password: "mypasswordisverystrong!", password_confirmation: "mypasswordisverystrong!")
@@ -57,7 +78,7 @@ module Users
         post user_session_path, params: { user: { email: user.email, password: "mypasswordisverystrong!" } }
 
         assert_response :redirect
-        assert_equal(user.id, controller.session[:otp_user_id])
+        assert_equal user, TwoFactorChallenge.user(controller.session)
         assert_includes response.redirect_url, sign_in_otp_path
       end
 
@@ -107,12 +128,17 @@ module Users
       end
 
       test "authenticates a user with valid params" do
-        get desktop_session_path, params: { user: { email: @user.email, token: @user.login_token } }
+        login_token = @user.login_token
+        get desktop_session_path, params: { user: { email: @user.email, token: login_token } }
 
         assert_response :redirect
         warden = controller.session["warden.user.user.key"]
         assert_equal(warden.first.first, @user.id)
         assert_nil flash[:alert]
+        assert_nil @user.reload.login_token
+
+        get desktop_session_path, params: { user: { email: @user.email, token: login_token } }
+        assert_response :ok
       end
 
       test "does not authenticates a user with invalid params" do

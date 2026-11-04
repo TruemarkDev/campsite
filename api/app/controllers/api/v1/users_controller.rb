@@ -6,6 +6,9 @@ module Api
       skip_before_action :require_authenticated_user, only: :me
       skip_before_action :require_authenticated_organization_membership, only: [:me, :update, :onboard, :send_email_confirmation, :avatar_presigned_fields, :cover_photo_presigned_fields]
 
+      before_action :skip_authorization, only: :me
+      before_action :authorize_current_user, except: :me
+
       extend Apigen::Controller
 
       response model: CurrentUserSerializer, code: 200

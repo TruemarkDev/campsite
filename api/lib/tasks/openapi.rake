@@ -15,7 +15,7 @@ namespace :openapi do
   task generate_json: [:environment] do |_t|
     out = ENV["OUT"] || Rails.root.join("gen/schema_openapi.json")
 
-    @schema = JSON.parse(File.read(Rails.root.join("gen/schema_swagger.json").to_s))
+    @schema = JSON.parse(File.read(ENV.fetch("SWAGGER_SCHEMA", Rails.root.join("gen/schema_swagger.json").to_s)))
     @schema_keys = Set.new
 
     filter_paths
@@ -44,6 +44,7 @@ namespace :openapi do
       document.errors.each do |error|
         puts "  - #{error.message}"
       end
+      raise "Generated OpenAPI schema is invalid"
     end
   end
 

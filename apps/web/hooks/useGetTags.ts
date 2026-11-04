@@ -3,7 +3,7 @@ import { keepPreviousData, useInfiniteQuery, useQueryClient } from '@tanstack/re
 import { useScope } from '@/contexts/scope'
 import { apiClient, setTypedQueryData } from '@/utils/queryClient'
 
-type Options = {
+interface Options {
   query?: string
 }
 

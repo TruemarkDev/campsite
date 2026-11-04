@@ -1,3 +1,5 @@
+import type { ReactElement } from 'react'
+
 import { Attachment } from '@campsite/types'
 import { FigmaIcon, PhotoIcon, ToggleGroup } from '@campsite/ui'
 
@@ -8,7 +10,7 @@ interface Props {
   attachment: Attachment
 }
 
-export function FigmaToggleButton({ attachment }: Props) {
+export function FigmaToggleButton({ attachment }: Props): ReactElement | null {
   const figmaEmbedSelected = useFigmaEmbedSelected({ attachment })
   const { mutate: updateUserPreference } = useUpdatePreference()
 

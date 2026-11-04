@@ -9,7 +9,7 @@ class Organization < ApplicationRecord
   include MediaUrlBuilder
   include Tokenable
 
-  COVER_PHOTO_MAX_FILE_SIZE = 5.megabyte
+  COVER_PHOTO_MAX_FILE_SIZE = 5.megabytes
   SLUG_MAX_LENGTH = 32
   TRIAL_DURATION = 14.days
 
@@ -264,7 +264,7 @@ class Organization < ApplicationRecord
     # destroy any pending requests
     membership_requests.where(user: user).destroy_all
     # destroy any pending invitations
-    invitations.where(email: user.email).destroy_all
+    invitations.where(email: user.email.to_s.downcase).destroy_all
 
     membership
   end
@@ -277,7 +277,7 @@ class Organization < ApplicationRecord
     return if member?(user)
 
     if confirmed || email_domain_matches?(user)
-      if (invitation = invitations.find_by(email: user.email))
+      if (invitation = invitations.find_by(email: user.email.to_s.downcase))
         role_name = invitation.role
       end
 
@@ -400,7 +400,12 @@ class Organization < ApplicationRecord
 
   def update_setting(key, value)
     setting = settings.find_or_initialize_by(key: key)
-    setting.update(value: value)
+    serialized_value = case value
+    when true then "1"
+    when false then "0"
+    else value
+    end
+    setting.update(value: serialized_value)
     setting
   end
 

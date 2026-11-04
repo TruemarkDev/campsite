@@ -9,9 +9,6 @@ dist
 # testing
 coverage
 
-# vercel
-.vercel
-
 # next.js
 .next/
 out/
@@ -21,6 +18,9 @@ build
 .DS_Store
 *.pem
 .npmrc
+mise.local.toml
+mise.deploy.toml
+/.kamal/secrets*
 
 # debug
 npm-debug.log*
@@ -31,6 +31,8 @@ yarn-error.log*
 # local env files
 .env
 .env.local
+.env.local-*
+.env.local.*
 .env.development.local
 .env.test.local
 .env.production.local
@@ -98,3 +100,16 @@ dump.rdb
 # PostHog migrations and backups
 posthog_migration
 posthog_migration_batches
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key
+.beads/proxieddb/
+
+# bd (beads) inter-process lock — runtime state, never committed
+.beads.gate.lock
+
+# Python operator-script bytecode
+__pycache__/
+*.py[cod]

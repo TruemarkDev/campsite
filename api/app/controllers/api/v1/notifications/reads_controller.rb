@@ -6,6 +6,8 @@ module Api
       class ReadsController < BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership
+
         response code: 201
         def create
           notification.notifications_for_same_member_and_target.update_all(read_at: Time.current)

@@ -6,6 +6,7 @@ module Api
       skip_before_action :require_authenticated_user, only: :ack
       skip_before_action :require_authenticated_organization_membership, only: :ack
       before_action :validate_request, only: :ack
+      before_action :skip_authorization, only: :ack
 
       extend Apigen::Controller
       include SlackEventRequestValidatable

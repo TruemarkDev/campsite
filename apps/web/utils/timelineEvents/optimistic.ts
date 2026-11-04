@@ -74,7 +74,11 @@ export function createOptimisticTimelineEvent(
         comment_reference: null,
         comment_reference_subject_type: null,
         comment_reference_subject_title: null,
-        note_reference: null
+        note_reference: null,
+        note_suggestion_batch_id: null,
+        note_suggestion_actor_name: null,
+        note_suggestion_instruction: null,
+        note_suggestion_resolution: null
       } satisfies TimelineEventSubjectTitleUpdated
     case 'post_resolved':
       return {
@@ -91,7 +95,11 @@ export function createOptimisticTimelineEvent(
         comment_reference: null,
         comment_reference_subject_type: null,
         comment_reference_subject_title: null,
-        note_reference: null
+        note_reference: null,
+        note_suggestion_batch_id: null,
+        note_suggestion_actor_name: null,
+        note_suggestion_instruction: null,
+        note_suggestion_resolution: null
       } satisfies TimelineEventPostResolved
     case 'post_unresolved':
       return {
@@ -108,7 +116,11 @@ export function createOptimisticTimelineEvent(
         comment_reference: null,
         comment_reference_subject_type: null,
         comment_reference_subject_title: null,
-        note_reference: null
+        note_reference: null,
+        note_suggestion_batch_id: null,
+        note_suggestion_actor_name: null,
+        note_suggestion_instruction: null,
+        note_suggestion_resolution: null
       } satisfies TimelineEventPostUnresolved
     case 'subject_pinned':
       return {
@@ -125,7 +137,11 @@ export function createOptimisticTimelineEvent(
         comment_reference: null,
         comment_reference_subject_type: null,
         comment_reference_subject_title: null,
-        note_reference: null
+        note_reference: null,
+        note_suggestion_batch_id: null,
+        note_suggestion_actor_name: null,
+        note_suggestion_instruction: null,
+        note_suggestion_resolution: null
       } satisfies TimelineEventSubjectPinned
     case 'subject_unpinned':
       return {
@@ -142,7 +158,11 @@ export function createOptimisticTimelineEvent(
         comment_reference: null,
         comment_reference_subject_type: null,
         comment_reference_subject_title: null,
-        note_reference: null
+        note_reference: null,
+        note_suggestion_batch_id: null,
+        note_suggestion_actor_name: null,
+        note_suggestion_instruction: null,
+        note_suggestion_resolution: null
       } satisfies TimelineEventSubjectUnpinned
     default:
       return undefined

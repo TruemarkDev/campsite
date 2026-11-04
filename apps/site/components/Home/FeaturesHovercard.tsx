@@ -24,7 +24,7 @@ export function FeaturesHovercard({ onOpenChange }: { onOpenChange: (open: boole
           href='/features/posts'
           className='bg-tertiary group/lm hover:bg-quaternary dark:bg-secondary dark:hover:bg-tertiary flex flex-col justify-end rounded-l-xl rounded-r p-3'
         >
-          <PostFilledIcon size={32} className='-ml-1 mb-2' />
+          <PostFilledIcon size={32} className='mb-2 -ml-1' />
           <UIText size='text-base' weight='font-semibold'>
             Posts
           </UIText>
@@ -44,7 +44,7 @@ export function FeaturesHovercard({ onOpenChange }: { onOpenChange: (open: boole
             href='/features/calls'
             className='bg-tertiary text-secondary hover:text-primary dark:bg-secondary dark:hover:bg-tertiary group/link hover:bg-quaternary flex flex-1 flex-col justify-end rounded rounded-tr-xl p-3 lg:rounded-tr'
           >
-            <VideoCameraFilledIcon size={24} className='-ml-0.5 mb-1 text-green-500' />
+            <VideoCameraFilledIcon size={24} className='mb-1 -ml-0.5 text-green-500' />
             <UIText weight='font-medium' inherit>
               Calls
             </UIText>
@@ -55,7 +55,7 @@ export function FeaturesHovercard({ onOpenChange }: { onOpenChange: (open: boole
             href='/features/dms'
             className='bg-tertiary text-secondary hover:text-primary dark:bg-secondary dark:hover:bg-tertiary group/link hover:bg-quaternary flex flex-1 flex-col justify-end rounded p-3'
           >
-            <ChatBubbleFilledIcon size={24} className='-ml-0.5 mb-1 text-rose-500' />
+            <ChatBubbleFilledIcon size={24} className='mb-1 -ml-0.5 text-rose-500' />
             <UIText weight='font-medium' inherit>
               DMs
             </UIText>
@@ -66,7 +66,7 @@ export function FeaturesHovercard({ onOpenChange }: { onOpenChange: (open: boole
             href='/features/docs'
             className='bg-tertiary text-secondary hover:text-primary dark:bg-secondary dark:hover:bg-tertiary group/link hover:bg-quaternary flex flex-1 flex-col justify-end rounded p-3'
           >
-            <NoteFilledIcon size={24} className='-ml-0.5 mb-1 text-blue-500' />
+            <NoteFilledIcon size={24} className='mb-1 -ml-0.5 text-blue-500' />
             <UIText weight='font-medium' inherit>
               Docs
             </UIText>
@@ -75,7 +75,7 @@ export function FeaturesHovercard({ onOpenChange }: { onOpenChange: (open: boole
         </div>
       </div>
       <div className='col-span-2 flex flex-col gap-1 px-1.5 py-2 lg:col-span-1 lg:pl-0'>
-        <UIText weight='font-medium' size='text-[11px]' quaternary className='mb-2 mt-3 px-2.5 uppercase tracking-wide'>
+        <UIText weight='font-medium' size='text-[11px]' quaternary className='mt-3 mb-2 px-2.5 tracking-wide uppercase'>
           More
         </UIText>
         <Link
@@ -146,7 +146,7 @@ export function FeaturesHovercard({ onOpenChange }: { onOpenChange: (open: boole
         <Link
           onClick={() => onOpenChange(false)}
           href='/features/api'
-          className='text-tertiary group/link hover:text-primary hover:bg-tertiary dark:hover:bg-secondary flex items-center gap-2 rounded rounded-bl-xl rounded-br-xl px-2 py-1.5 lg:rounded-bl'
+          className='text-tertiary group/link hover:text-primary hover:bg-tertiary dark:hover:bg-secondary flex items-center gap-2 rounded rounded-br-xl rounded-bl-xl px-2 py-1.5 lg:rounded-bl'
         >
           <CodeIcon />
           <UIText inherit>API</UIText>

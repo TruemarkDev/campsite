@@ -19,7 +19,7 @@ module EventProcessors
         iteration.publish!
         event = iteration.events.published_action.first!
 
-        assert_query_count 35 do
+        assert_query_count 34 do
           event.process!
         end
 
@@ -130,7 +130,7 @@ module EventProcessors
 
         event = post.events.published_action.first!
 
-        assert_query_count 31 do
+        assert_query_count 30 do
           event.process!
         end
 
@@ -192,7 +192,7 @@ module EventProcessors
         post.publish!
         event = post.events.published_action.first!
 
-        assert_query_count 25 do
+        assert_query_count 24 do
           event.process!
         end
 
@@ -211,7 +211,7 @@ module EventProcessors
         post.publish!
         event = post.events.published_action.first!
 
-        assert_query_count 30 do
+        assert_query_count 29 do
           event.process!
         end
 

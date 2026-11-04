@@ -88,7 +88,7 @@ module Api
             assert_equal post.title, json_response["title"]
             assert_equal post.description_html, json_response["description_html"]
             assert_equal post.status, json_response["status"]
-            assert_equal post.tags.pluck(:public_id), json_response["tags"].pluck("id")
+            assert_equal post.tags.pluck(:public_id).sort, json_response["tags"].pluck("id").sort
             assert_equal post.poll.description, json_response["poll"]["description"]
             assert_equal post.poll.options.count, json_response["poll"]["options"].count
             assert_equal 0, json_response["attachments"].count
@@ -132,7 +132,8 @@ module Api
 
             sign_in post.member.user
 
-            assert_query_count 93 do
+            # Includes transactional search refreshes for the new version and its tags.
+            assert_query_count 114 do
               post organization_post_versions_path(@organization.slug, post.public_id)
             end
 

@@ -7,6 +7,7 @@ import { cn } from '@campsite/ui/utils'
 import { BreadcrumbProjectCallButton } from '@/components/Projects/ProjectCallButton'
 import { ProjectOverflowMenu } from '@/components/Projects/ProjectOverflowMenu'
 import { ProjectSidebarAbout } from '@/components/Projects/ProjectSidebar/ProjectSidebarAbout'
+import { ProjectSidebarBeadsSource } from '@/components/Projects/ProjectSidebar/ProjectSidebarBeadsSource'
 import { ProjectSidebarBookmarks } from '@/components/Projects/ProjectSidebar/ProjectSidebarBookmarks'
 import { ProjectSidebarMembers } from '@/components/Projects/ProjectSidebar/ProjectSidebarMembers'
 import { ProjectSidebarNotifications } from '@/components/Projects/ProjectSidebar/ProjectSidebarNotifications'
@@ -39,6 +40,7 @@ export function ProjectSidebar({ project }: ProjectSidebarProps) {
         <ProjectSidebarAbout project={project} />
         {!project.personal && <ProjectSidebarMembers project={project} />}
         <ProjectSidebarBookmarks project={project} />
+        {!project.personal && <ProjectSidebarBeadsSource project={project} />}
         {!project.personal && <ProjectSidebarNotifications project={project} />}
       </div>
     </div>
@@ -54,7 +56,7 @@ export function ProjectMobileSidebar({ project }: ProjectSidebarProps) {
         initial={{ opacity: 0 }}
         animate={{ opacity: isMobileProjectSidebarOpen ? 1 : 0 }}
         transition={{ duration: 0.2 }}
-        className={cn('fixed inset-0 z-20 bg-black bg-opacity-20 lg:hidden dark:bg-opacity-50', {
+        className={cn('fixed inset-0 z-20 bg-black/20 lg:hidden dark:bg-black/50', {
           'pointer-events-none': !isMobileProjectSidebarOpen
         })}
         onClick={() => setIsMobileProjectSidebarOpen((prev) => !prev)}
@@ -67,7 +69,7 @@ export function ProjectMobileSidebar({ project }: ProjectSidebarProps) {
             animate={{ width: PROJECT_DETAILS_WIDTH }}
             exit={{ width: 0 }}
             transition={{ duration: 0.1 }}
-            className='bg-elevated fixed bottom-0 right-0 top-0 z-20 lg:hidden'
+            className='bg-elevated fixed top-0 right-0 bottom-0 z-20 lg:hidden'
           >
             <ProjectSidebar project={project} />
           </m.div>

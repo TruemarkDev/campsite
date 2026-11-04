@@ -8,6 +8,13 @@ class PostTagging < ApplicationRecord
   validate :uniquess_of_post_tagging
   validate :ensure_post_tag_limit
 
+  after_save :refresh_post_search_document
+  after_destroy :refresh_post_search_document
+
+  def refresh_post_search_document
+    post.refresh_search_document if post && !post.destroyed?
+  end
+
   private
 
   def uniquess_of_post_tagging

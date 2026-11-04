@@ -5,7 +5,6 @@ require "test_helper"
 class CallTest < ActiveSupport::TestCase
   context ".scoped_search" do
     def setup
-      Searchkick.enable_callbacks
       @thread = create(:message_thread, :dm)
       @member = @thread.organization_memberships.first
       @org = @member.organization
@@ -16,12 +15,8 @@ class CallTest < ActiveSupport::TestCase
       @call = create(:call, room: @call_room, title: @title, summary: @summary)
       @peer = create(:call_peer, call: @call, organization_membership: @member)
       @recording = create(:call_recording, call: @call, transcription_vtt: @transcription_vtt)
-      Call.search_index.refresh
     end
 
-    def teardown
-      Searchkick.disable_callbacks
-    end
 
     test "search title" do
       results = Call.scoped_search(query: @title, organization: @org)
@@ -55,7 +50,6 @@ class CallTest < ActiveSupport::TestCase
 
     test "does not match calls without recordings" do
       @call.recordings.destroy_all
-      Call.search_index.refresh
 
       results = Call.scoped_search(query: @title, organization: @org)
 
@@ -94,7 +88,6 @@ class CallTest < ActiveSupport::TestCase
 
     test "works when there are no calls" do
       Call.destroy_all
-      Call.reindex
 
       results = Call.scoped_search(query: @title, organization: @org)
 

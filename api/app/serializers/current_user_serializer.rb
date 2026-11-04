@@ -15,6 +15,7 @@ class CurrentUserSerializer < ApiSerializer
   api_field :created_at, nullable: true
 
   api_field :preferred_timezone, name: :timezone, nullable: true
+  api_field :voice_id, nullable: true
   api_field :confirmed?, name: :email_confirmed, type: :boolean
   api_field :managed?, name: :managed, type: :boolean
   api_field :otp_enabled?, name: :two_factor_enabled, type: :boolean, nullable: true

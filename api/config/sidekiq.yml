@@ -1,12 +1,11 @@
-:concurrency: 1
+:concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 1) %>
 production:
-  :concurrency: 5
+  :concurrency: <%= ENV.fetch("SIDEKIQ_CONCURRENCY", 5) %>
 :queues:
   - critical
   - default
   - background
   - within_30_minutes
-  - searchkick
   - backfill
 :scheduler:
   :schedule:
@@ -25,7 +24,7 @@ production:
     post_index_health_job:
       class: 'PostIndexHealthJob'
       cron: '14 * * * *' # every hour with some slop
-      description: 'Checks that posts are indexed in Elasticsearch'
+      description: 'Checks that posts are indexed in PostgreSQL'
       queue: background
       enabled: true
     call_health_job:

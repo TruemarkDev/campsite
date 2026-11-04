@@ -50,7 +50,7 @@ export default function ChangelogPageComponent(props: Props) {
         </div>
       </WidthContainer>
 
-      <WidthContainer className='flex max-w-3xl flex-col gap-12 pb-16 pt-16 lg:pb-24'>
+      <WidthContainer className='flex max-w-3xl flex-col gap-12 pt-16 pb-16 lg:pb-24'>
         {props.children}
         <ChangelogPagination {...props} />
       </WidthContainer>

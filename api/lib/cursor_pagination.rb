@@ -19,31 +19,27 @@ class CursorPagination
       raise ArgumentError, "Invalid order: #{options[:order].inspect}"
     end
     @order[:id] ||= :asc
+    validate_order!
     @limit = options[:limit] || DEFAULT_PER_PAGE
   end
 
   def run
     @results = if cursor_record
       where_parts = @order.map.with_index do |(column_name, order), index|
-        if index == 0
-          next @scope.where(
-            "#{table_name}.#{column_name} #{comparator(order: order)} (:cursor_record_value)",
-            cursor_record_value: cursor_record[column_name],
-          )
+        prefix = @order.keys.first(index).index_with { |column| cursor_record[column] }
+        relation = @scope.where(prefix)
+        value = cursor_record[column_name]
+        comparison = comparator(order: order)
+
+        # MySQL sorts NULL before non-NULL values. Include the NULL tail when
+        # walking descending results, and allow cursors within that tail.
+        if value.nil?
+          comparison == ">" ? relation.where.not(column_name => nil) : relation.none
+        else
+          condition = "#{qualified_column(column_name)} #{comparison} :value"
+          condition += " OR #{qualified_column(column_name)} IS NULL" if comparison == "<"
+          relation.where("(#{condition})", value: value)
         end
-
-        previous_column_name = @order.keys[index - 1]
-        previous_order = @order[previous_column_name]
-
-        @scope.where(
-          <<~SQL.squish,
-            (#{table_name}.#{previous_column_name} #{comparator(order: previous_order)}= (:cursor_record_previous_column_value) OR
-              #{table_name}.#{previous_column_name} <=> (:cursor_record_previous_column_value)) AND
-            #{table_name}.#{column_name} #{comparator(order: order)} (:cursor_record_value)
-          SQL
-          cursor_record_previous_column_value: cursor_record[previous_column_name],
-          cursor_record_value: cursor_record[column_name],
-        )
       end
 
       where_parts.reduce(&:or)
@@ -52,7 +48,11 @@ class CursorPagination
     end
 
     @order.each do |(column_name, order)|
-      @results = @results.order("#{table_name}.#{column_name} #{order == :asc ? "asc" : "desc"}")
+      ordering = @scope.klass.arel_table[column_name].public_send(order)
+      if @scope.connection.adapter_name == "PostgreSQL"
+        ordering = ordering.public_send(order == :asc ? :nulls_first : :nulls_last)
+      end
+      @results = @results.order(ordering)
     end
 
     # load an additional item to see if there is a next page
@@ -70,12 +70,19 @@ class CursorPagination
 
     # remove the overflow item from the results page
     start_index = @direction == :before && @has_more ? 1 : 0
-    @results = @results[start_index...per_page] || []
+    @results = @results[start_index, per_page] || []
 
     self
   end
 
   attr_reader :results
+
+  def hydrate!(scope)
+    ids = @results.map(&:id)
+    records_by_id = scope.where(id: ids).to_a.index_by(&:id)
+    @results = ids.filter_map { |id| records_by_id[id] }
+    self
+  end
 
   delegate :table_name, to: :@scope
 
@@ -115,5 +122,23 @@ class CursorPagination
 
   def total_count
     @scope.size
+  end
+
+  private
+
+  def qualified_column(column_name)
+    [
+      @scope.connection.quote_table_name(table_name),
+      @scope.connection.quote_column_name(column_name),
+    ].join(".")
+  end
+
+  def validate_order!
+    valid_columns = @scope.klass.column_names
+
+    @order.each do |column_name, direction|
+      raise ArgumentError, "Invalid order column: #{column_name.inspect}" unless column_name.to_s.in?(valid_columns)
+      raise ArgumentError, "Invalid order direction: #{direction.inspect}" unless direction.in?([:asc, :desc])
+    end
   end
 end

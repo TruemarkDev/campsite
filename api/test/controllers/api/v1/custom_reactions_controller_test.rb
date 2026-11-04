@@ -77,7 +77,7 @@ module Api
             assert_response_gen_schema
 
             assert_equal "party_blob", json_response["name"]
-            assert_equal "http://campsite-test.imgix.net/party_blob", json_response["file_url"]
+            assert_equal "https://camp-cdn.polo-apps.test/cdn/party_blob", json_response["file_url"]
 
             custom_reaction = CustomReaction.last
             assert_equal @member, custom_reaction.creator
@@ -100,7 +100,7 @@ module Api
             assert_response_gen_schema
 
             assert_equal "party_blob", json_response["name"]
-            assert_equal "http://campsite-test.imgix.net/party_blob", json_response["file_url"]
+            assert_equal "https://camp-cdn.polo-apps.test/cdn/party_blob", json_response["file_url"]
 
             custom_reaction = CustomReaction.last
             assert_equal org_member, custom_reaction.creator
@@ -125,7 +125,7 @@ module Api
           test "query count" do
             sign_in create(:organization_membership, :member, organization: @organization).user
 
-            assert_query_count 8 do
+            assert_query_count 7 do
               post organization_custom_reactions_path(@organization.slug),
                 params: { name: "party_blob", file_path: "/party_blob", file_type: "image/png" },
                 as: :json

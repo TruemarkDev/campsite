@@ -2,19 +2,22 @@
 
 module Campsite
   DEV_APP_URL = URI.parse(ENV.fetch("DEV_APP_URL", "http://app.campsite.test:3000"))
-  PROD_DOT_COM_APP_URL = URI.parse("https://camp.polo-apps.com")
+  PROD_DOT_COM_APP_URL = URI.parse(ENV.fetch("APP_URL", "https://camp.polo-apps.com"))
 
   DEV_DESKTOP_APP_PROTOCOL = "campsite-dev://"
   PROD_DESKTOP_APP_PROTOCOL = "campsite://"
 
-  DEV_STYLED_TEXT_API_URL = URI.parse("http://localhost:3002")
-  PROD_STYLED_TEXT_API_URL = URI.parse("https://camp-styled-text.polo-apps.com")
+  DEV_STYLED_TEXT_API_URL = URI.parse(ENV.fetch("DEV_STYLED_TEXT_API_URL", "http://localhost:3002"))
+  PROD_STYLED_TEXT_API_URL = URI.parse(ENV.fetch("STYLED_TEXT_API_URL", "https://camp-styled-text.polo-apps.com"))
 
   DEV_HTML_TO_IMAGE_URL = URI.parse("http://localhost:9222")
-  PROD_HTML_TO_IMAGE_URL = URI.parse("https://camp-html-to-image.polo-apps.com")
+  PROD_HTML_TO_IMAGE_URL = URI.parse(ENV.fetch("HTML_TO_IMAGE_URL", "https://camp-html-to-image.polo-apps.com"))
+
+  DEV_SYNC_SERVER_URL = URI.parse(ENV.fetch("DEV_SYNC_SERVER_URL", "http://localhost:9000"))
+  PROD_SYNC_SERVER_URL = URI.parse(ENV.fetch("SYNC_SERVER_URL", "https://camp-sync.polo-apps.com"))
 
   DEV_MARKETING_SITE_URL = URI.parse("http://localhost:3003")
-  PROD_MARKETING_SITE_URL = URI.parse("https://campsite.com")
+  PROD_MARKETING_SITE_URL = URI.parse(ENV.fetch("MARKETING_SITE_URL", "https://campsite.com"))
 
   BRAND_ORANGE_HEX_CODE = "#f97316"
 
@@ -43,7 +46,7 @@ module Campsite
   end
 
   def self.admin_subdomain
-    "admin"
+    ENV.fetch("ADMIN_SUBDOMAIN", "admin")
   end
 
   def self.desktop_app_protocol
@@ -66,6 +69,12 @@ module Campsite
     return PROD_HTML_TO_IMAGE_URL if Rails.env.production?
 
     DEV_HTML_TO_IMAGE_URL
+  end
+
+  def self.base_sync_server_url
+    return PROD_SYNC_SERVER_URL if Rails.env.production?
+
+    DEV_SYNC_SERVER_URL
   end
 
   def self.user_settings_path

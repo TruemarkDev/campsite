@@ -28,7 +28,8 @@ module Api
         if params[:q].present?
           results = Call.scoped_search(query: params[:q], organization: current_organization)
           ids = results&.pluck(:id) || []
-          scope = Call.in_order_of(:id, ids)
+          order = ids.each_with_index.to_h
+          scope = Call.where(id: ids)
 
           if params[:filter] == JOINED_FILTER
             scope = scope.with_peer_member_id(current_organization_membership.id)
@@ -36,7 +37,7 @@ module Api
 
           render_json(
             CallPageSerializer,
-            { results: policy_scope(scope.completed.recorded.serializer_preload) },
+            { results: policy_scope(scope.completed.recorded.serializer_preload).to_a.sort_by { |call| order.fetch(call.id) } },
           )
         else
           scope = case params[:filter]

@@ -65,6 +65,21 @@ module Api
               assert_equal "Zapier", rendered_post[:member][:user][:display_name]
             end
 
+            test "rejects an oauth token without the write scope" do
+              token = create(:access_token, :zapier, resource_owner: @organization, scopes: "read_organization")
+
+              assert_no_difference -> { Post.count } do
+                post(
+                  zapier_integration_posts_path,
+                  as: :json,
+                  headers: zapier_oauth_request_headers(token.plaintext_token),
+                  params: { content: "Test content" },
+                )
+              end
+
+              assert_response :unauthorized
+            end
+
             test "creates a new post in the general project if no project is specified" do
               create(:integration, :zapier, owner: @organization)
               create(:project, organization: @organization, is_general: true)

@@ -10,11 +10,11 @@ FactoryBot.define do
       discarded_at { 5.minutes.ago }
     end
 
-    # NOTE: This should be the last trait in the list so `reindex` is called
+    # NOTE: This should be the last trait in the list so `refresh_search_document` is called
     # after all the other callbacks complete.
-    trait :reindex do
+    trait :search_document do
       after(:create) do |record|
-        record.reindex(refresh: true)
+        record.refresh_search_document
       end
     end
   end

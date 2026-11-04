@@ -47,7 +47,7 @@ class GenerateCallRecordingSummarySectionJob < BaseJob
       call = section.call_recording.call
       call.update_summary_from_recordings! if call.summary.blank?
       call.trigger_stale
-      call.reindex(mode: :async)
+      call.refresh_search_document
     end
   end
 end

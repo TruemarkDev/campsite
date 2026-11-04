@@ -2,7 +2,9 @@ import { createContext, useContext, useEffect, useState } from 'react'
 import Pusher from 'pusher-js'
 import Ajax from 'pusher-js/types/src/core/http/ajax'
 
-import { PUSHER_APP_CLUSTER, PUSHER_KEY, RAILS_API_URL } from '@campsite/config'
+import { PUSHER_APP_CLUSTER, PUSHER_KEY } from '@campsite/config'
+
+import { BROWSER_API_URL } from '@/utils/browserApiUrl'
 
 const PusherContext = createContext<Pusher | null>(null)
 
@@ -24,7 +26,7 @@ export const PusherProvider: React.FC<Props> = ({ children }) => {
 
     const connection = new Pusher(PUSHER_KEY, {
       cluster: PUSHER_APP_CLUSTER,
-      channelAuthorization: { endpoint: `${RAILS_API_URL}/v1/pusher/auth`, transport: 'ajax' }
+      channelAuthorization: { endpoint: `${BROWSER_API_URL}/v1/pusher/auth`, transport: 'ajax' }
     })
 
     setPusher(connection)

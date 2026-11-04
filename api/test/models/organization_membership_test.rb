@@ -3,6 +3,13 @@
 require "test_helper"
 
 class OrganizationMembershipTest < ActiveSupport::TestCase
+  test "search_by matches username, name, and email text" do
+    membership = create(:organization_membership, user: create(:user, name: "Example Person", username: "example_person", email: "person@example.com"))
+
+    assert_includes OrganizationMembership.search_by("Example"), membership
+    assert_includes OrganizationMembership.search_by("Person"), membership
+  end
+
   include ActiveJob::TestHelper
 
   context "#kept_published_posts" do

@@ -30,7 +30,7 @@ export async function getChangelog(): Promise<Changelog[]> {
     })
 
     return data.map(cleanRelease).filter(filterChangelogs)
-  } catch (e) {
+  } catch {
     return []
   }
 }

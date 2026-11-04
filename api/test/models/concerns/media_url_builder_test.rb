@@ -3,30 +3,46 @@
 require "test_helper"
 
 class MediaUrlBuilderTest < ActiveSupport::TestCase
+  MEDIA_ENV_KEYS = ["MEDIA_PROVIDER", "MEDIA_CDN_URL", "MEDIA_FOLDER_CDN_URL", "MEDIA_VIDEO_CDN_URL"].freeze
+
   class TestClass
     include MediaUrlBuilder
   end
 
   setup do
     @test_instance = TestClass.new
+    @original_media_env = ENV.to_h.slice(*MEDIA_ENV_KEYS)
+    MEDIA_ENV_KEYS.each { |key| ENV.delete(key) }
+  end
+
+  teardown do
+    MEDIA_ENV_KEYS.each { |key| ENV.delete(key) }
+    @original_media_env.each { |key, value| ENV[key] = value }
   end
 
   context "cdn_provider" do
     test "returns :cloudflare when media provider is set to cloudflare" do
       Rails.application.credentials.stubs(:dig).with(:media, :provider).returns("cloudflare")
-      
+
       assert_equal :cloudflare, @test_instance.cdn_provider
     end
 
     test "returns :imgix when media provider is set to imgix" do
       Rails.application.credentials.stubs(:dig).with(:media, :provider).returns("imgix")
-      
+
       assert_equal :imgix, @test_instance.cdn_provider
     end
 
     test "defaults to :cloudflare when media provider is not set" do
       Rails.application.credentials.stubs(:dig).with(:media, :provider).returns(nil)
-      
+
+      assert_equal :cloudflare, @test_instance.cdn_provider
+    end
+
+    test "runtime media provider overrides encrypted credentials" do
+      ENV["MEDIA_PROVIDER"] = "cloudflare"
+      Rails.application.credentials.stubs(:dig).with(:media, :provider).returns("imgix")
+
       assert_equal :cloudflare, @test_instance.cdn_provider
     end
   end
@@ -35,29 +51,29 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
     test "returns a fallback avatar URL with color based on name" do
       @test_instance.stubs(:cdn_provider).returns(:cloudflare)
       Rails.application.credentials.stubs(:dig).with(:cloudflare, :cdn_url).returns("https://cdn.example.com")
-      
+
       url = @test_instance.fallback_avatar("John")
-      
+
       assert_match %r{https://cdn.example.com/cdn/static/avatars/J.png}, url
-      assert_match %r{blend-color=}, url
+      assert_match(/blend-color=/, url)
     end
 
     test "returns blank avatar for empty name" do
       @test_instance.stubs(:cdn_provider).returns(:cloudflare)
       Rails.application.credentials.stubs(:dig).with(:cloudflare, :cdn_url).returns("https://cdn.example.com")
-      
+
       url = @test_instance.fallback_avatar("")
-      
+
       assert_match %r{static/avatars/blank.png}, url
     end
 
     test "generates consistent color for same name" do
       @test_instance.stubs(:cdn_provider).returns(:cloudflare)
       Rails.application.credentials.stubs(:dig).with(:cloudflare, :cdn_url).returns("https://cdn.example.com")
-      
+
       url1 = @test_instance.fallback_avatar("Alice")
       url2 = @test_instance.fallback_avatar("Alice")
-      
+
       assert_equal url1, url2
     end
   end
@@ -69,10 +85,18 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
 
     test "builds basic Cloudflare CDN URL" do
       Rails.application.credentials.stubs(:dig).with(:cloudflare, :cdn_url).returns("https://cdn.polo-apps.com")
-      
+
       url = @test_instance.build_media_url("images/photo.jpg")
 
       assert_equal "https://cdn.polo-apps.com/cdn/images/photo.jpg", url
+    end
+
+    test "runtime CDN URL overrides encrypted credentials" do
+      ENV["MEDIA_CDN_URL"] = "http://cdn.camp.home"
+
+      url = @test_instance.build_media_url("images/photo.jpg")
+
+      assert_equal "http://cdn.camp.home/cdn/images/photo.jpg", url
     end
   end
 
@@ -83,7 +107,7 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
 
     test "builds basic Imgix URL" do
       Rails.application.credentials.stubs(:dig).with(:imgix, :url).returns("https://polo-apps.imgix.net")
-      
+
       url = @test_instance.build_media_url("images/photo.jpg")
 
       assert_equal "https://polo-apps.imgix.net/images/photo.jpg", url
@@ -112,6 +136,14 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
 
       assert_match %r{https://cdn.polo-apps.com}, url
     end
+
+    test "runtime main CDN URL overrides an encrypted folder URL" do
+      ENV["MEDIA_CDN_URL"] = "http://cdn.camp.home"
+
+      url = @test_instance.build_media_folder_url("folders/image.jpg")
+
+      assert_equal "http://cdn.camp.home/cdn/folders/image.jpg", url
+    end
   end
 
   context "build_media_folder_url with Imgix" do
@@ -122,7 +154,7 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
     test "builds folder URL using imgix_folder url if available" do
       Rails.application.credentials.stubs(:dig).with(:imgix_folder, :url).returns("https://folder.polo-apps.imgix.net")
       Rails.application.credentials.stubs(:dig).with(:imgix, :url).returns("https://polo-apps.imgix.net")
-      
+
       url = @test_instance.build_media_folder_url("folders/image.jpg")
 
       assert_equal "https://folder.polo-apps.imgix.net/folders/image.jpg", url
@@ -174,13 +206,13 @@ class MediaUrlBuilderTest < ActiveSupport::TestCase
       url = @test_instance.build_media_video_url("videos/clip.mp4", { "video-generate": "thumbnail" })
 
       assert_match %r{https://video.polo-apps.imgix.net/videos/clip.mp4}, url
-      assert_match %r{video-generate=thumbnail}, url
+      assert_match(/video-generate=thumbnail/, url)
     end
 
     test "falls back to main imgix url if video url not available" do
       Rails.application.credentials.stubs(:dig).with(:imgix_video, :url).returns(nil)
       Rails.application.credentials.stubs(:dig).with(:imgix, :url).returns("https://polo-apps.imgix.net")
-      
+
       url = @test_instance.build_media_video_url("videos/clip.mp4")
 
       assert_equal "https://polo-apps.imgix.net/videos/clip.mp4", url

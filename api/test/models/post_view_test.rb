@@ -133,6 +133,25 @@ class PostViewTest < ActiveSupport::TestCase
 
       assert_equal 1, post.reload.views_count
     end
+
+    test "updating the same member and post in separate batches keeps one view" do
+      post = create(:post)
+      member = create(:organization_membership, organization: post.organization)
+      first_timestamp = 10.minutes.ago.to_i
+      latest_timestamp = Time.current.to_i
+
+      PostView.upsert_post_views(views: [
+        { member_id: member.public_id, post_id: post.public_id, read: true, log_ts: first_timestamp, dwell_time: 2 },
+      ])
+      PostView.upsert_post_views(views: [
+        { member_id: member.public_id, post_id: post.public_id, read: true, log_ts: latest_timestamp, dwell_time: 3 },
+      ])
+
+      view = PostView.find_by!(post_id: post.id, organization_membership_id: member.id)
+      assert_equal 1, PostView.where(post_id: post.id, organization_membership_id: member.id).count
+      assert_equal latest_timestamp, view.read_at.to_i
+      assert_equal 5, view.dwell_time_total
+    end
   end
 
   context "#upsert_post_views" do

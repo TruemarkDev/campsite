@@ -44,7 +44,8 @@ const HTTP_PREFIX_RE = {
 export const Link = TiptapLink.extend<LinkOptions>({
   inclusive: false,
   addOptions() {
-    const parent = this.parent?.()
+    // this.parent is always defined when extending a concrete extension
+    const parent = this.parent!()
 
     return {
       ...parent,

@@ -9,6 +9,8 @@ module Api
 
           skip_before_action :require_authenticated_organization_membership, only: [:show, :update]
 
+          before_action :authorize_current_user, only: [:show, :update]
+
           response code: 204
           request_params do
             {

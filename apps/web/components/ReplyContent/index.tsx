@@ -5,6 +5,7 @@ import { Button, CloseIcon, UIText } from '@campsite/ui'
 
 import { EMPTY_HTML } from '@/atoms/markdown'
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
+import { sanitizeHtml } from '@/utils/sanitizeHtml'
 
 export function ReplyContent({
   content,
@@ -24,7 +25,7 @@ export function ReplyContent({
   const replyTo = replyToIsViewer ? 'your message' : author.display_name
 
   return (
-    <div className='bg-tertiary flex items-center gap-2 rounded-[18px] pb-2 pl-4 pr-2 pt-2'>
+    <div className='bg-tertiary flex items-center gap-2 rounded-[18px] pt-2 pr-2 pb-2 pl-4'>
       <div className='flex flex-1 flex-col'>
         <div className='text-secondary flex items-center gap-1'>
           <UIText inherit size='text-[13px]' className='line-clamp-1'>
@@ -33,7 +34,7 @@ export function ReplyContent({
         </div>
         <div className='text-tertiary chat-prose line-clamp-1 text-sm'>
           {replyHasContent ? (
-            <div dangerouslySetInnerHTML={{ __html: content }} />
+            <div dangerouslySetInnerHTML={{ __html: sanitizeHtml(content) }} />
           ) : (
             <p>
               {attachments.length} {pluralize('attachment', attachments.length)}

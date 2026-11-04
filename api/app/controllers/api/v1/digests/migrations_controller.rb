@@ -6,6 +6,8 @@ module Api
       class MigrationsController < V1::BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership, only: :show
+
         response model: PostDigestNoteMigrationSerializer, code: 200
         def show
           note = current_organization.notes.find_by(original_digest_id: current_digest.id)

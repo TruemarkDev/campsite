@@ -6,6 +6,8 @@ module Api
       class SlackNotificationPreferencesController < V1::BaseController
         extend Apigen::Controller
 
+        before_action :authorize_current_organization_membership
+
         response code: 200 do
           { enabled: { type: :boolean } }
         end

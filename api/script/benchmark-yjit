@@ -1,0 +1,87 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "json"
+
+if ENV["CAMPSITE_YJIT_BENCHMARK_CHILD"] == "1"
+  require "active_support/core_ext/hash"
+  require "active_support/core_ext/string/inflections"
+  require "commonmarker"
+
+  payload = {
+    organization: { id: "org_123", name: "Campsite" },
+    posts: Array.new(40) do |index|
+      { id: "post_#{index}", title: "YJIT API benchmark #{index}", tags: %w[rails ruby api], published: index.even? }
+    end,
+  }
+  markdown = ("## API update\n\nThis is **representative** markdown with [links](https://example.com).\n\n" * 20).freeze
+  iterations = Integer(ENV.fetch("CAMPSITE_YJIT_BENCHMARK_ITERATIONS", "2000"))
+
+  # Warm both gem and application-library call sites before measuring.
+  100.times do
+    JSON.parse(JSON.generate(payload))
+    Commonmarker.to_html(markdown)
+    payload.deep_stringify_keys
+    "api_dependency_upgrade".camelize
+  end
+
+  checksum = 0
+  started_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
+  iterations.times do
+    encoded = JSON.generate(payload)
+    checksum += JSON.parse(encoded).fetch("posts").length
+    checksum += Commonmarker.to_html(markdown).bytesize
+    checksum += payload.deep_stringify_keys.fetch("posts").length
+    checksum += "api_dependency_upgrade".camelize.bytesize
+  end
+  elapsed = Process.clock_gettime(Process::CLOCK_MONOTONIC) - started_at
+
+  puts JSON.generate(
+    ruby: RUBY_DESCRIPTION,
+    yjit: defined?(RubyVM::YJIT) && RubyVM::YJIT.enabled?,
+    iterations: iterations,
+    seconds: elapsed,
+    iterations_per_second: iterations / elapsed,
+    checksum: checksum,
+  )
+  exit
+end
+
+require "open3"
+require "rbconfig"
+
+runs = Integer(ENV.fetch("CAMPSITE_YJIT_BENCHMARK_RUNS", "5"))
+abort "CAMPSITE_YJIT_BENCHMARK_RUNS must be positive" unless runs.positive?
+
+results = { "interpreter" => [], "yjit" => [] }
+runs.times do
+  results.each_key do |mode|
+    ruby_args = [RbConfig.ruby]
+    ruby_args << "--yjit" if mode == "yjit"
+    stdout, stderr, status = Open3.capture3(
+      { "CAMPSITE_YJIT_BENCHMARK_CHILD" => "1" },
+      *ruby_args,
+      __FILE__,
+    )
+    abort "#{mode} benchmark failed: #{stderr}" unless status.success?
+
+    results.fetch(mode) << JSON.parse(stdout)
+  end
+end
+
+checksums = results.values.flatten.map { |result| result.fetch("checksum") }.uniq
+abort "Benchmark modes produced different results" unless checksums.one?
+
+medians = results.transform_values do |mode_results|
+  sorted = mode_results.map { |result| result.fetch("iterations_per_second") }.sort
+  sorted.fetch(sorted.length / 2)
+end
+
+puts JSON.pretty_generate(
+  ruby: RUBY_DESCRIPTION,
+  runs_per_mode: runs,
+  iterations_per_run: results.fetch("interpreter").first.fetch("iterations"),
+  median_iterations_per_second: medians.transform_values { |value| value.round(2) },
+  yjit_speedup_percent: (((medians.fetch("yjit") / medians.fetch("interpreter")) - 1) * 100).round(2),
+  raw_results: results.transform_values { |mode_results| mode_results.map { |result| result.fetch("seconds").round(4) } },
+)

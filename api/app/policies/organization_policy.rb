@@ -15,7 +15,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def list_members?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def list_invitations?
@@ -27,7 +27,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def list_projects?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def list_membership_requests?
@@ -71,11 +71,11 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def create_oauth_access_grant?
-    confirmed_user? && org_member?
+    confirmed_user? && org_member? && organization_membership.role_has_permission?(resource: Role::OAUTH_APPLICATION_RESOURCE, permission: Role::CREATE_ACTION)
   end
 
   def list_posts?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def list_notes?
@@ -155,7 +155,7 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def create_thread?
-    org_member? || org_token?
+    org_token? || org_member?
   end
 
   def create_attachments?
@@ -197,7 +197,9 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def org_member?
-    @record.members.include?(@user)
+    return @record.members.include?(@user) if @record.association(:members).loaded?
+
+    organization_membership.present?
   end
 
   def org_token?
@@ -205,6 +207,8 @@ class OrganizationPolicy < ApplicationPolicy
   end
 
   def organization_membership
-    @record.kept_memberships.find_by!(user_id: @user.id)
+    return @organization_membership if defined?(@organization_membership)
+
+    @organization_membership = @record.kept_memberships.find_by(user_id: @user&.id)
   end
 end

@@ -7,11 +7,19 @@ interface Props {
   html: string
 }
 
+function escapeJsxSlackText(value: string) {
+  return value.replaceAll('<', '&lt;').replaceAll('>', '&gt;')
+}
+
 const Html = ({ html }: Props) => {
   // Replace <br> with <br/> so cheerio knows they are self-closing.
   html = html.replaceAll('<br>', '<br/>').replaceAll('<hr>', '<hr/>')
 
   const $ = cheerio.load(`<Root>${html}</Root>`, { xmlMode: true })
+
+  // Derived representations expose effective/accepted note content only.
+  $('[data-suggestion-delete]').remove()
+  $('[data-suggestion-insert]').replaceWith((_, el) => $(el).contents())
 
   const stripElements = ['label', 'div', 'u', 'details']
 
@@ -43,6 +51,24 @@ const Html = ({ html }: Props) => {
   })
 
   $('blockquote hr').replaceWith('<p>────────────────────</p>')
+
+  // Slack blocks do not support HTML tables. Preserve their contents as
+  // readable, pipe-delimited rows before handing the tree to jsx-slack.
+  $('table').replaceWith((_, table) => {
+    const rows = $(table)
+      .find('tr')
+      .map((_, row) => {
+        return $(row)
+          .find('th, td')
+          .map((_, cell) => $(cell).text().trim().replace(/\s+/g, ' '))
+          .get()
+          .join(' | ')
+      })
+      .get()
+      .filter(Boolean)
+
+    return rows.length > 0 ? `<Section>${rows.map(escapeJsxSlackText).join('<br/>')}</Section>` : ''
+  })
 
   $('Root > blockquote').wrap('<Section></Section>')
   $('Root > p').replaceWith((_, el) => '<Section>' + $(el).html() + '</Section>')
@@ -140,6 +166,12 @@ const Html = ({ html }: Props) => {
       if (typeof content !== 'symbol') blocks.push(content)
     }
   }
+
+  blocks.forEach((block) => {
+    if (typeof block?.text?.text === 'string') {
+      block.text.text = block.text.text.replaceAll('&amp;', '&')
+    }
+  })
 
   return blocks
 }

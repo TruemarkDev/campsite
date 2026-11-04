@@ -26,7 +26,8 @@ module Api
 
             sign_in(@member.user)
 
-            assert_query_count 20 do
+            # Includes removal of recorded-call content from PostgreSQL search.
+            assert_query_count 30 do
               delete organization_call_all_recordings_path(@organization.slug, @call.public_id)
             end
 

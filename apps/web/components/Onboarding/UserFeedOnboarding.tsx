@@ -38,7 +38,7 @@ export function UserFeedOnboarding() {
             className='overflow-hidden'
           >
             <div className='bg-secondary dark:bg-primary relative mb-4 flex-none overflow-hidden border-b p-6 lg:p-8'>
-              <div className='mx-auto flex w-full max-w-[--feed-width] flex-col gap-4'>
+              <div className='mx-auto flex w-full max-w-[var(--feed-width)] flex-col gap-4'>
                 <DesktopAppUpsell />
                 <PWAUpsell />
               </div>

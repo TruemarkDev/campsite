@@ -1,8 +1,9 @@
 import { InfiniteData, QueryClient, QueryKey } from '@tanstack/react-query'
 
-import { RAILS_API_URL, RAILS_AUTH_URL } from '@campsite/config'
+import { RAILS_AUTH_URL } from '@campsite/config'
 import { Api, ApiError, DataTag } from '@campsite/types'
 
+import { BROWSER_API_URL } from './browserApiUrl'
 import { ApiErrorResponse } from './types'
 
 interface UrlProps {
@@ -138,7 +139,7 @@ export const queryClient = () =>
   })
 
 export const apiClient = new Api({
-  baseUrl: RAILS_API_URL,
+  baseUrl: BROWSER_API_URL,
   baseApiParams: {
     credentials: 'include',
     headers: { 'Content-Type': 'application/json' },

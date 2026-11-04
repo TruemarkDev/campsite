@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+# Read-only search check from the currently running staging API on Quill.
+set -euo pipefail
+ssh -o BatchMode=yes -o ConnectTimeout=10 prakash@192.168.10.32 'python3 - <<'"'"'PY'"'"'
+import subprocess, sys
+names = subprocess.check_output(["docker", "ps", "--format", "{{.Names}}"], text=True).splitlines()
+names = [n for n in names if n.startswith("campsite-api-staging-web-")]
+if len(names) != 1:
+    sys.exit("Expected exactly one running staging API container")
+code = r"""
+require "timeout"
+Timeout.timeout(90) do
+  [Post, Note, Call].each do |model|
+    indexed = SearchDocument.where(resource_type: model.name).count
+    expected = model.count
+    puts "#{model.name}: indexed=#{indexed} database=#{expected}"
+    raise "Index count mismatch" unless indexed == expected
+  end
+  [Post, Note].each do |model|
+    record = model.kept.where.not(title: [nil, ""]).first
+    raise "No titled record available for search verification" unless record
+    org = model == Post ? record.organization : record.member.organization
+    ids = model.scoped_search(query: record.title, organization: org, limit: 250).pluck(:id).map(&:to_s)
+    raise "Known record missing from search" unless ids.include?(record.id.to_s)
+    puts "#{model.name}: known-record search passed"
+  end
+  puts "Search health passed"
+end
+"""
+result = subprocess.run(["docker", "exec", "-i", "-e", "OTEL_SDK_DISABLED=true", names[0], "bin/rails", "runner", "-"], input=code, text=True)
+sys.exit(result.returncode)
+PY'

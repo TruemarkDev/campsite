@@ -57,7 +57,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     res.setHeader('Cache-Control', 's-maxage=2592000') // cache for one month (30 days)
     res.status(200).json(metadata)
-  } catch (err) {
+  } catch {
     res.status(401).json({ error: `Unable to get information about "${targetUrl}".` })
   }
 }

@@ -64,6 +64,7 @@ Rails.application.configure do
   config.active_record.verbose_query_logs = true
 
   config.active_record.async_query_executor = :global_thread_pool
+  config.active_record.global_executor_concurrency = Integer(ENV.fetch("RAILS_MAX_ASYNC_QUERIES", 4))
 
   # Suppress logger output for asset requests.
   config.assets.quiet = true

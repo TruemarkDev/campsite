@@ -18,13 +18,9 @@ module Devise
         resource = mapping.to.find_for_database_authentication(authentication_hash)
         resource&.unauthenticated_message = :token_invalid
 
-        if validate(resource) { resource.valid_login_token?(token) }
-          if resource.login_token_expired?
-            fail!(:token_invalid)
-          else
-            remember_me(resource)
-            success!(resource)
-          end
+        if validate(resource) { resource.consume_login_token!(token) }
+          remember_me(resource)
+          success!(resource)
         end
 
         unless resource

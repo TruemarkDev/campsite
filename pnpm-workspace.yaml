@@ -1,255 +1,407 @@
 packages:
   - apps/*
   - packages/*
+
+# Migrated from package.json "pnpm" field (pnpm 10+ reads these here, not there).
+overrides:
+  # Pin exactly: a range here resolves to multiple copies (18.2.74 + 18.3.31),
+  # which breaks cross-package type inference ("cannot be named without a
+  # reference to .pnpm/@types+react@...").
+  '@types/react': 19.2.18
+  # Emotion 11.10's JSX types are not compatible with React 19's ReactNode.
+  '@emotion/react': 11.14.0
+  # Uses Zod public schema APIs that remain compatible in v4, but its published
+  # manifest still pins Zod 3. (@sanity/codegen deliberately keeps its own Zod 3:
+  # it calls ZodError.errors, which v4 removed.)
+  '@team-plain/typescript-sdk>zod': 4.4.3
+  # Hocuspocus 4.6.0 embeds Tiptap 3.29.2. Pin every package in the editor graph
+  # because later ranges can resolve the incomplete 3.30.2 release.
+  '@tiptap/core': 3.30.1
+  '@tiptap/extension-blockquote': 3.30.1
+  '@tiptap/extension-bold': 3.30.1
+  '@tiptap/extension-bubble-menu': 3.30.1
+  '@tiptap/extension-bullet-list': 3.30.1
+  '@tiptap/extension-code': 3.30.1
+  '@tiptap/extension-code-block': 3.30.1
+  '@tiptap/extension-collaboration': 3.30.1
+  '@tiptap/extension-collaboration-caret': 3.30.1
+  '@tiptap/extension-details': 3.30.1
+  '@tiptap/extension-document': 3.30.1
+  '@tiptap/extension-dropcursor': 3.30.1
+  '@tiptap/extension-floating-menu': 3.30.1
+  '@tiptap/extension-gapcursor': 3.30.1
+  '@tiptap/extension-hard-break': 3.30.1
+  '@tiptap/extension-heading': 3.30.1
+  '@tiptap/extension-history': 3.30.1
+  '@tiptap/extension-horizontal-rule': 3.30.1
+  '@tiptap/extension-italic': 3.30.1
+  '@tiptap/extension-link': 3.30.1
+  '@tiptap/extension-list': 3.30.1
+  '@tiptap/extension-list-item': 3.30.1
+  '@tiptap/extension-list-keymap': 3.30.1
+  '@tiptap/extension-ordered-list': 3.30.1
+  '@tiptap/extension-paragraph': 3.30.1
+  '@tiptap/extension-placeholder': 3.30.1
+  '@tiptap/extension-strike': 3.30.1
+  '@tiptap/extension-table': 3.30.1
+  '@tiptap/extension-table-of-contents': 3.30.1
+  '@tiptap/extension-task-item': 3.30.1
+  '@tiptap/extension-task-list': 3.30.1
+  '@tiptap/extension-text': 3.30.1
+  '@tiptap/extension-text-style': 3.30.1
+  '@tiptap/extension-typography': 3.30.1
+  '@tiptap/extension-underline': 3.30.1
+  '@tiptap/extensions': 3.30.1
+  '@tiptap/html': 3.30.1
+  '@tiptap/pm': 3.30.1
+  '@tiptap/react': 3.30.1
+  '@tiptap/starter-kit': 3.30.1
+  # Turbopack's server dependency tracer cannot follow the re-exported
+  # node:crypto SubtleCrypto binding in 2.2.0. Use the upstream patch release
+  # that exports the Node crypto bindings explicitly.
+  universal-github-app-jwt: 2.2.2
+  # Security floors for vulnerable transitive release lines. Keep each override
+  # within the dependency's existing major so production consumers do not cross
+  # compatibility boundaries during stewardship maintenance.
+  'braces@<3.0.3': 3.0.3
+  'fast-uri@>=3.0.0 <3.1.6': 3.1.6
+  'form-data@>=4.0.0 <4.0.6': 4.0.6
+  'js-yaml@>=3.0.0 <3.15.1': 3.15.1
+  'picomatch@<2.3.2': 2.3.2
+  re2: 1.26.1
+  'tar@>=7.0.0 <7.5.21': 7.5.22
+  'undici@>=7.0.0 <7.29.0': 7.29.0
+  'ws@>=7.0.0 <7.5.11': 7.5.11
+  'ws@>=8.0.0 <8.21.0': 8.21.3
+  # Temporary: newest releases are younger than the minimumReleaseAge supply-chain
+  # policy allows. Remove once the pins age out.
+  'terser@>5.49.2': 5.49.2
+  'electron-to-chromium@>1.5.403': 1.5.403
+# pnpm 11 errors on un-acknowledged dependency build scripts. Each entry is an
+# explicit decision: true = run the build (native binaries), false = skip it
+# (funding/no-op postinstalls). Derived from the lockfile — confirm against
+# pnpm's "Ignored build scripts" output on the next CI `pnpm install` and add
+# any packages it still reports.
+allowBuilds:
+  esbuild: true
+  '@sentry/cli': true
+  sharp: true
+  re2: true
+  fsevents: true
+  core-js: false
+  core-js-pure: false
+  # native watcher used by @tailwindcss/cli --watch; same posture as fsevents
+  '@parcel/watcher': true
+
 catalog:
-  '@100mslive/hms-noise-cancellation': ^0.0.1
-  '@100mslive/hms-video-store': ^0.12.21
-  '@100mslive/react-sdk': ^0.10.21
-  '@babel/plugin-transform-react-jsx': ^7.22.5
-  '@create-figma-plugin/build': ^2.6.1
-  '@create-figma-plugin/tsconfig': ^2.6.1
-  '@create-figma-plugin/ui': ^2.6.1
-  '@create-figma-plugin/utilities': ^2.6.1
-  '@emoji-mart/data': ^1.1.2
-  '@figma/plugin-typings': 1.74.0
-  '@flydotio/dockerfile': ^0.4.11
-  '@hocuspocus/extension-database': ^2.13.5
-  '@hocuspocus/extension-logger': ^2.13.5
-  '@hocuspocus/provider': ^2.13.5
-  '@hocuspocus/server': ^2.13.5
-  '@hocuspocus/transformer': ^2.13.5
-  '@hookform/resolvers': ^3.3.1
-  '@ianvs/prettier-plugin-sort-imports': ^4.2.1
-  '@mdx-js/loader': ^3.0.1
-  '@mdx-js/react': ^3.0.1
-  '@next/bundle-analyzer': ^14.2.5
-  '@next/mdx': ^14.2.5
-  '@octokit/auth-app': ^7.1.0
-  '@octokit/core': ^6.1.2
-  '@playwright/test': ^1.43.1
-  '@radix-ui/react-accordion': ^1.2.0
-  '@radix-ui/react-context-menu': ^2.2.1
-  '@radix-ui/react-dialog': ^1.1.1
-  '@radix-ui/react-dropdown-menu': ^2.1.1
-  '@radix-ui/react-hover-card': ^1.1.1
-  '@radix-ui/react-popover': ^1.1.1
-  '@radix-ui/react-portal': ^1.1.1
-  '@radix-ui/react-radio-group': ^1.2.0
-  '@radix-ui/react-select': ^2.1.1
-  '@radix-ui/react-slider': ^1.2.0
-  '@radix-ui/react-popper': ^1.2.0
-  '@radix-ui/react-slot': ^1.1.0
-  '@radix-ui/react-switch': ^1.1.0
-  '@radix-ui/react-tabs': ^1.1.0
-  '@radix-ui/react-toggle-group': ^1.1.0
-  '@radix-ui/react-tooltip': ^1.1.2
-  '@radix-ui/react-visually-hidden': ^1.1.0
-  '@sanity/eslint-config-studio': ^4.0.0
-  '@sanity/vision': ^3.59.0
-  '@sentry/cli': ^2.30.1
-  '@sentry/nextjs': ^8.17.0
-  '@sentry/node': ^7.106.1
-  '@shopify/react-shortcuts': ^5.2.0
-  '@storybook/addon-docs': ^8.0.0-beta.3
-  '@storybook/addon-essentials': ^8.0.0-beta.3
-  '@storybook/addon-interactions': ^8.0.0-beta.3
-  '@storybook/addon-links': ^8.0.0-beta.3
-  '@storybook/blocks': ^8.0.0-beta.3
-  '@storybook/nextjs': ^8.0.0-beta.3
-  '@storybook/react': ^8.0.0-beta.3
-  '@storybook/test': ^8.0.0-beta.3
-  '@storybook/types': ^8.0.0-beta.3
-  '@swc-jotai/react-refresh': ^0.0.7
+  '@100mslive/hms-noise-cancellation': ^0.1.1
+  '@100mslive/hms-video-store': ^0.14.7
+  '@100mslive/react-sdk': ^0.12.7
+  '@babel/plugin-transform-react-jsx': ^8.0.1
+  '@create-figma-plugin/build': ^4.0.3
+  '@create-figma-plugin/tsconfig': ^4.0.3
+  '@create-figma-plugin/ui': ^4.0.3
+  '@create-figma-plugin/utilities': ^4.0.3
+  '@emoji-mart/data': ^1.2.1
+  '@figma/plugin-typings': 1.134.0
+  '@hocuspocus/extension-database': ^4.6.0
+  '@hocuspocus/extension-logger': ^4.6.0
+  '@hocuspocus/extension-redis': 4.6.0
+  '@hocuspocus/provider': ^4.6.0
+  '@hocuspocus/server': ^4.6.0
+  '@hocuspocus/transformer': ^4.6.0
+  '@hookform/resolvers': ^5.9.1
+  '@ianvs/prettier-plugin-sort-imports': ^4.7.1
+  '@mdx-js/loader': ^3.1.1
+  '@mdx-js/react': ^3.1.1
+  '@next/bundle-analyzer': ^16.3.1
+  '@next/mdx': ^16.3.1
+  '@octokit/auth-app': ^8.3.0
+  '@octokit/core': ^7.0.7
+  '@playwright/test': ^1.62.1
+  '@radix-ui/react-accordion': ^1.2.20
+  '@radix-ui/react-context-menu': ^2.3.7
+  '@radix-ui/react-dialog': ^1.1.23
+  '@radix-ui/react-dropdown-menu': ^2.1.24
+  '@radix-ui/react-hover-card': ^1.1.23
+  '@radix-ui/react-popover': ^1.1.23
+  '@radix-ui/react-portal': ^1.1.17
+  '@radix-ui/react-radio-group': ^1.4.7
+  '@radix-ui/react-select': ^2.3.7
+  '@radix-ui/react-slider': ^1.4.7
+  '@radix-ui/react-popper': ^1.3.7
+  '@radix-ui/react-slot': ^1.3.3
+  '@radix-ui/react-switch': ^1.3.7
+  '@radix-ui/react-tabs': ^1.1.21
+  '@radix-ui/react-toggle-group': ^1.1.19
+  '@radix-ui/react-tooltip': ^1.2.16
+  '@radix-ui/react-visually-hidden': ^1.2.11
+  '@sanity/eslint-config-studio': ^7.0.0
+  '@sanity/vision': ^6.9.2
+  '@sentry/cli': ^3.6.2
+  '@sentry/nextjs': ^10.70.0
+  '@sentry/node': ^10.70.0
+  '@sentry/react': ^10.70.0
+  '@storybook/addon-docs': ^10.5.8
+  '@storybook/addon-links': ^10.5.8
+  '@storybook/nextjs': ^10.5.8
+  '@storybook/react': ^10.5.8
   '@tailwindcss/container-queries': ^0.1.1
-  '@tailwindcss/forms': ^0.5.2
-  '@tailwindcss/typography': ^0.5.9
-  '@tanstack/eslint-plugin-query': ^4.34.1
-  '@tanstack/react-query': ^5.56.2
-  '@tanstack/react-query-devtools': ^5.56.2
-  '@tanstack/react-virtual': ^3.5.0
-  '@team-plain/typescript-sdk': ^3.3.0
-  '@testing-library/react': ^15.0.7
-  '@tiptap-pro/extension-details': ^2.10.11
-  '@tiptap-pro/extension-details-content': ^2.10.11
-  '@tiptap-pro/extension-details-summary': ^2.10.11
-  '@tiptap/core': ^2.6.4
-  '@tiptap/extension-blockquote': ^2.6.4
-  '@tiptap/extension-bold': ^2.6.4
-  '@tiptap/extension-bullet-list': ^2.6.4
-  '@tiptap/extension-code': ^2.6.4
-  '@tiptap/extension-code-block': ^2.6.4
-  '@tiptap/extension-collaboration': ^2.6.4
-  '@tiptap/extension-collaboration-cursor': ^2.6.4
-  '@tiptap/extension-document': ^2.6.4
-  '@tiptap/extension-dropcursor': ^2.6.4
-  '@tiptap/extension-hard-break': ^2.6.4
-  '@tiptap/extension-heading': ^2.6.4
-  '@tiptap/extension-history': ^2.6.4
-  '@tiptap/extension-horizontal-rule': ^2.6.4
-  '@tiptap/extension-italic': ^2.6.4
-  '@tiptap/extension-link': ^2.6.4
-  '@tiptap/extension-list-item': ^2.6.4
-  '@tiptap/extension-list-keymap': ^2.6.4
-  '@tiptap/extension-ordered-list': ^2.6.4
-  '@tiptap/extension-paragraph': ^2.6.4
-  '@tiptap/extension-placeholder': ^2.6.4
-  '@tiptap/extension-strike': ^2.6.4
-  '@tiptap/extension-task-item': ^2.6.4
-  '@tiptap/extension-task-list': ^2.6.4
-  '@tiptap/extension-text': ^2.6.4
-  '@tiptap/extension-typography': ^2.6.4
-  '@tiptap/extension-underline': ^2.6.4
-  '@tiptap/html': ^2.6.4
-  '@tiptap/pm': ^2.6.4
-  '@tiptap/react': ^2.6.4
-  '@todesktop/client-core': ^1.10.0
+  '@tailwindcss/cli': ^4.3.3
+  '@tailwindcss/forms': ^0.5.11
+  '@tailwindcss/postcss': ^4.3.3
+  '@tailwindcss/typography': ^0.5.20
+  '@tanstack/eslint-plugin-query': ^5.101.4
+  # Newer 5.x mutation callbacks require application changes; stewardship keeps
+  # the last source-compatible resolutions until a dedicated migration.
+  '@tanstack/react-query': 5.101.4
+  '@tanstack/react-query-devtools': 5.101.4
+  '@tanstack/react-virtual': ^3.14.9
+  '@team-plain/typescript-sdk': ^5.12.1
+  '@testing-library/react': ^16.3.2
+  # Hocuspocus 4.6.0 embeds Tiptap 3.29.2, while the incomplete 3.30.2
+  # release references packages that were not published. Keep one editor graph.
+  '@tiptap/core': 3.30.1
+  '@tiptap/extension-blockquote': 3.30.1
+  '@tiptap/extension-bold': 3.30.1
+  '@tiptap/extension-bullet-list': 3.30.1
+  '@tiptap/extension-code': 3.30.1
+  '@tiptap/extension-code-block': 3.30.1
+  '@tiptap/extension-collaboration': 3.30.1
+  '@tiptap/extension-collaboration-caret': 3.30.1
+  '@tiptap/extension-details': 3.30.1
+  '@tiptap/extensions': 3.30.1
+  '@tiptap/extension-document': 3.30.1
+  '@tiptap/extension-dropcursor': 3.30.1
+  '@tiptap/extension-hard-break': 3.30.1
+  '@tiptap/extension-heading': 3.30.1
+  '@tiptap/extension-history': 3.30.1
+  '@tiptap/extension-horizontal-rule': 3.30.1
+  '@tiptap/extension-italic': 3.30.1
+  '@tiptap/extension-link': 3.30.1
+  '@tiptap/extension-list-item': 3.30.1
+  '@tiptap/extension-list-keymap': 3.30.1
+  '@tiptap/extension-ordered-list': 3.30.1
+  '@tiptap/extension-paragraph': 3.30.1
+  '@tiptap/extension-placeholder': 3.30.1
+  '@tiptap/extension-strike': 3.30.1
+  '@tiptap/extension-task-item': 3.30.1
+  '@tiptap/extension-task-list': 3.30.1
+  '@tiptap/extension-table': 3.30.1
+  '@tiptap/extension-table-of-contents': 3.30.1
+  '@tiptap/extension-text': 3.30.1
+  '@tiptap/extension-typography': 3.30.1
+  '@tiptap/extension-underline': 3.30.1
+  '@tiptap/html': 3.30.1
+  '@tiptap/pm': 3.30.1
+  '@tiptap/react': 3.30.1
+  '@todesktop/client-core': ^1.20.0
   '@types/body-parser': ^1.19.5
-  '@types/d3-selection': ^3.0.3
-  '@types/d3-transition': ^3.0.3
-  '@types/d3-zoom': ^3.0.3
-  '@types/diff': ^5.0.5
+  '@types/d3-selection': ^3.0.11
+  '@types/d3-transition': ^3.0.9
+  '@types/d3-zoom': ^3.0.8
+  '@types/diff': ^8.0.0
   '@types/express': ^4.17.21
-  '@types/jsdom': ^21.1.6
-  '@types/markdown-it': ^13.0.7
-  '@types/mdx': ^2.0.13
+  '@types/jsdom': ^30.0.0
+  '@types/markdown-it': ^14.2.0
+  '@types/mdx': ^2.0.14
   '@types/morgan': ^1.9.9
-  '@types/node': ^20.12.4
-  '@types/pluralize': ^0.0.30
-  '@types/react': ^18.2.74
-  '@types/react-dom': ^18.2.24
-  '@types/react-timeago': ^4.1.3
+  '@types/node': ^26.2.0
+  '@types/pluralize': ^0.0.33
+  '@types/react': ^19.2.18
+  '@types/react-dom': ^19.2.4
   '@types/supertest': ^6.0.2
-  '@types/uuid': ^9.0.4
-  '@typescript-eslint/eslint-plugin': ^7.11.0
-  '@typescript-eslint/parser': ^7.11.0
-  '@vercel/og': ^0.6.2
-  '@vercel/speed-insights': ^1.0.10
-  '@vitejs/plugin-react': ^4.3.0
-  '@welldone-software/why-did-you-render': ^7.0.1
-  autoprefixer: ^10.4.8
+  '@typescript-eslint/eslint-plugin': ^8.67.0
+  '@typescript-eslint/parser': ^8.67.0
+  '@vitest/coverage-v8': ^4.1.10
+  '@vitejs/plugin-react': ^6.0.5
+  autoprefixer: ^10.5.4
   babel-plugin-jsx-pragmatic: ^1.0.2
   body-parser: ^1.20.1
   cheerio: ^1.0.0-rc.12
-  class-variance-authority: ^0.7.0
-  clsx: ^1.2.1
+  class-variance-authority: ^0.7.1
+  clsx: ^2.1.1
   cmark-gfm-js: ^1.1.7
-  concurrently: '>=8'
-  cookies-next: ^2.1.1
+  concurrently: ^10.0.5
+  cookies-next: ^6.1.1
   d3-selection: ^3.0.0
   d3-zoom: ^3.0.0
-  date-fns: ^3.6.0
+  date-fns: ^4.4.0
   deepmerge: ^4.3.1
-  diff: ^5.1.0
-  dotenv: ^16.3.1
-  easymde: '2'
-  eslint: ^8.57.0
-  eslint-config-next: ^14.2.3
-  eslint-config-turbo: ^2.0.9
-  eslint-plugin-react: ^7.34.1
-  eslint-plugin-react-hooks: ^4.6.2
-  eslint-plugin-storybook: ^0.8.0
-  eslint-plugin-unused-imports: ^3.2.0
+  diff: ^9.0.0
+  dotenv: ^17.4.2
+  easymde: ^2.21.0
+  esbuild: ^0.28.2
+  eslint: ^10.8.1
+  eslint-config-next: ^16.3.1
+  eslint-config-turbo: ^2.10.10
+  eslint-plugin-react: ^7.37.5
+  eslint-plugin-react-hooks: ^7.1.1
+  eslint-plugin-storybook: ^10.5.8
+  eslint-plugin-turbo: ^2.10.10
+  eslint-plugin-unused-imports: ^4.4.1
+  espree: ^11.2.0
   express: ^4.18.2
   fast-deep-equal: ^3.1.3
-  feed: ^4.2.2
-  framer-motion: ^11.11.11
+  feed: ^6.0.0
+  framer-motion: ^13.1.0
   gray-matter: ^4.0.3
-  jotai: ^2.0.3
-  jotai-scope: ^0.4.1
-  js-base64: ^3.7.5
-  jsdom: ^24.0.0
+  # 17.10+ are younger than minimumReleaseAge; pin the newest aged release.
+  globals: 17.11.0
+  isomorphic-dompurify: ^3.23.0
+  jotai: ^2.20.2
+  jotai-scope: ^0.12.2
+  js-base64: ^3.9.3
+  jsdom: ^30.0.1
   jsx-slack: ^6.1.1
   jszip: ^3.10.1
-  linkify-react: ^4.1.3
-  linkifyjs: ^4.1.3
-  lottie-web: ^5.11.0
-  markdown-it: ^14.1.0
-  metascraper: ^5.34.8
-  metascraper-audio: ^5.37.0
-  metascraper-author: ^5.33.7
-  metascraper-date: ^5.33.7
-  metascraper-description: ^5.34.10
-  metascraper-image: ^5.34.1
-  metascraper-lang: ^5.34.1
-  metascraper-logo: ^5.34.7
-  metascraper-logo-favicon: ^5.34.7
-  metascraper-publisher: ^5.33.7
-  metascraper-readability: ^5.34.1
-  metascraper-spotify: ^5.33.8
-  metascraper-title: ^5.34.1
-  metascraper-twitter: ^5.33.7
-  metascraper-url: ^5.33.7
-  metascraper-video: ^5.34.7
-  metascraper-youtube: ^5.34.7
+  linkify-react: ^4.3.3
+  linkifyjs: ^4.3.3
+  lottie-web: ^5.13.0
+  markdown-it: ^15.0.0
+  metascraper: ^5.55.2
+  metascraper-audio: ^5.55.2
+  metascraper-author: ^5.55.2
+  metascraper-date: ^5.55.2
+  metascraper-description: ^5.55.2
+  metascraper-image: ^5.55.2
+  metascraper-lang: ^5.55.2
+  metascraper-logo: ^5.55.2
+  metascraper-logo-favicon: ^5.55.2
+  metascraper-publisher: ^5.55.2
+  metascraper-readability: ^5.55.2
+  metascraper-spotify: ^5.55.2
+  metascraper-title: ^5.55.2
+  metascraper-twitter: ^5.45.6
+  metascraper-url: ^5.55.2
+  metascraper-video: ^5.55.2
+  metascraper-youtube: ^5.55.2
   morgan: ^1.10.0
-  next: ^14.2.5
-  next-mdx-remote: ^5.0.0
-  next-sanity: ^9.5.0
-  next-seo: ^6.0.0
-  next-themes: ^0.2.1
-  nextjs-cors: ^2.2.0
+  next: ^16.3.1
+  next-mdx-remote: ^6.0.0
+  next-sanity: ^13.3.3
+  next-seo: ^7.3.0
+  next-themes: ^0.4.6
+  nextjs-cors: ^2.2.1
   node-fetch: ^3.3.0
   onchange: ^7.1.0
   pluralize: ^8.0.0
-  postcss: ^8.4.29
-  postcss-import: ^15.1.0
-  prettier: ^3.2.5
-  prettier-plugin-packagejson: ^2.4.14
-  prettier-plugin-tailwindcss: ^0.6.8
-  pusher-js: ^8.3.0
-  react: ^18.2.0
-  react-aria: ^3.27.0
+  postcss: ^8.5.26
+  postcss-import: ^17.0.0
+  prettier: ^3.9.6
+  prettier-plugin-packagejson: ^3.0.2
+  prettier-plugin-tailwindcss: ^0.8.1
+  pusher-js: ^8.6.0
+  react: ^19.2.8
+  react-aria: ^3.51.0
   react-confetti: ^6.1.0
-  react-day-picker: ^8.10.1
+  react-day-picker: ^10.0.1
   react-device-detect: ^2.2.2
-  react-dom: ^18.2.0
-  react-dropzone: ^14.2.2
-  react-error-boundary: ^4.0.13
-  react-hook-form: ^7.46.1
-  react-hot-toast: ^2.4.0
-  react-hotkeys-hook: ^4.5.0
+  react-dom: ^19.2.8
+  react-dropzone: ^20.1.0
+  react-error-boundary: ^6.1.3
+  react-hook-form: ^7.85.0
+  react-hot-toast: ^2.6.0
+  react-hotkeys-hook: ^5.3.3
   react-image-file-resizer: ^0.4.8
-  react-inlinesvg: ^3.0.1
-  react-intersection-observer: ^9.8.1
-  react-lottie-player: ^1.5.4
-  react-markdown: ^8.0.5
-  react-qr-code: ^2.0.12
-  react-refractor: ^3.1.1
-  react-remove-scroll: ^2.5.10
-  react-select: ^5.7.0
-  react-textarea-autosize: ^8.5.3
-  react-timeago: ^7.2.0
-  react-tweet: ^3.1.1
-  react-use-measure: ^2.1.1
-  react-wrap-balancer: ^0.5.0
-  refractor: ^4.8.1
-  rehype-raw: ^6.1.1
-  remark-gfm: ^3.0.1
-  remeda: ^1.23.0
-  rfc6902: ^5.0.1
-  sanity: ^3.59.0
-  sanity-plugin-markdown: ^5.0.0
-  schema-dts: ^1.1.2
-  slugify: ^1.6.6
-  sonner: ^1.5.0
-  storybook: ^8.0.0-beta.3
+  react-inlinesvg: ^4.5.0
+  react-intersection-observer: ^11.0.0
+  react-lottie-player: ^2.1.0
+  react-markdown: ^10.1.0
+  react-qr-code: ^2.2.0
+  react-refractor: ^4.0.0
+  react-remove-scroll: ^2.7.2
+  react-select: ^5.10.2
+  react-textarea-autosize: ^8.5.9
+  react-timeago: ^8.3.0
+  react-tweet: ^3.3.1
+  react-use-measure: ^2.1.7
+  react-wrap-balancer: ^1.1.1
+  refractor: ^5.0.0
+  rehype-raw: ^7.0.0
+  remark-gfm: ^4.0.1
+  remeda: ^2.41.0
+  rfc6902: ^5.3.0
+  sanity: ^6.9.2
+  sanity-plugin-markdown: ^9.0.11
+  schema-dts: ^2.0.0
+  slugify: ^1.6.9
+  sonner: ^2.0.8
+  storybook: ^10.5.8
   supertest: ^6.3.3
-  swagger-typescript-api: ^12.0.4
-  tailwind-merge: ^2.3.0
-  tailwind-scrollbar-hide: ^1.1.7
-  tailwindcss: ^3.4.3
+  swagger-typescript-api: ^13.12.6
+  tailwind-merge: ^3.6.0
+  tailwind-scrollbar-hide: ^4.0.0
+  tailwindcss: ^4.3.3
   tailwindcss-animate: ^1.0.7
-  tailwindcss-safe-area: ^0.4.1
+  tailwindcss-safe-area: ^1.3.0
   tippy.js: ^6.3.7
-  tsup: ^8.0.2
-  typescript: ^5.4.3
-  turbo: ^2.1.2
-  use-debounce: ^9.0.4
-  use-sound: ^4.0.1
-  uuid: ^9.0.1
-  vaul: ^0.9.1
-  vitest: ^1.5.2
-  wait-on: ^7.0.1
-  yjs: ^13.6.8
-  zod: ^3.22.3
-  zustand: ^4.4.1
+  tsup: ^8.5.1
+  # typescript-eslint 8.x supports TypeScript <6.1; keep the compiler on the
+  # latest compatible line until its parser supports TypeScript 7.
+  typescript: 6.0.3
+  turbo: 2.10.10
+  use-debounce: ^10.1.1
+  use-sound: ^5.0.0
+  uuid: ^14.0.1
+  vaul: ^1.1.2
+  vite: 8.2.1
+  vitest: ^4.1.10
+  wait-on: ^9.1.0
+  yjs: ^13.6.32
+  zod: ^4.4.3
+  zustand: ^5.0.15
+# Require every resolved package version to have been public for at least seven
+# days. Explicit configuration enables strict verification for the committed
+# lockfile instead of pnpm's non-strict built-in one-day default.
+minimumReleaseAge: 10080
+minimumReleaseAgeStrict: true
+
+minimumReleaseAgeExclude:
+  # Security boundary for server/client rich-text rendering. Source, package
+  # origin, Node engines, and transitive DOMPurify/jsdom versions reviewed.
+  - 'isomorphic-dompurify@3.23.0'
+  # These patch releases were reviewed and locked before strict release-age
+  # enforcement. Remove these exceptions after 2026-08-28.
+  - '@next/bundle-analyzer@16.3.2'
+  - '@next/env@16.3.2'
+  - '@next/eslint-plugin-next@16.3.2'
+  - '@next/mdx@16.3.2'
+  - '@next/swc-darwin-arm64@16.3.2'
+  - '@next/swc-darwin-x64@16.3.2'
+  - '@next/swc-linux-arm64-gnu@16.3.2'
+  - '@next/swc-linux-arm64-musl@16.3.2'
+  - '@next/swc-linux-x64-gnu@16.3.2'
+  - '@next/swc-linux-x64-musl@16.3.2'
+  - '@next/swc-win32-arm64-msvc@16.3.2'
+  - '@next/swc-win32-x64-msvc@16.3.2'
+  - eslint-config-next@16.3.2
+  - next@16.3.2
+  - '@storybook/addon-docs@10.5.10'
+  - '@storybook/addon-links@10.5.10'
+  - '@storybook/builder-webpack5@10.5.10'
+  - '@storybook/core-webpack@10.5.10'
+  - '@storybook/csf-plugin@10.5.10'
+  - '@storybook/nextjs@10.5.10'
+  - '@storybook/preset-react-webpack@10.5.10'
+  - '@storybook/react-dom-shim@10.5.10'
+  - '@storybook/react@10.5.10'
+  - storybook@10.5.10
+  - '@sanity/diff@6.9.2'
+  - '@sanity/mutator@6.9.2'
+  - '@sanity/presentation-comlink@2.2.3'
+  - '@sanity/preview-url-secret@4.1.4'
+  - '@sanity/schema@6.9.2'
+  - '@sanity/types@6.9.2'
+  - '@sanity/util@6.9.2'
+  - '@sanity/vision@6.9.2'
+  - '@sanity/visual-editing-csm@3.0.15'
+  - '@sanity/visual-editing-types@2.0.14'
+  - '@sanity/visual-editing@6.0.1'
+  - groq@6.9.2
+  - next-sanity@13.3.2
+  - sanity-plugin-markdown@9.0.11
+  - sanity@6.9.2
+
+patchedDependencies:
+  webrtc-adapter@8.2.3: patches/webrtc-adapter@8.2.3.patch

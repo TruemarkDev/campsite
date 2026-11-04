@@ -2,6 +2,13 @@
 const { modelTypes, utils, config } = it;
 const { formatDescription, require, _, Ts } = utils;
 
+// Path-only routes retain positional arguments in keyed-procedure-call.ejs.
+// Newer generators also extract unused Params types for those routes.
+const allRoutes = [...(it.routes.outOfModule || []), ...(it.routes.combined || []).flatMap((group) => group.routes)];
+const positionalParams = new Set(allRoutes
+  .filter((route) => route.request.requestParams && !route.request.query)
+  .map((route) => utils.getInlineParseContent(route.request.requestParams)));
+
 
 const buildGenerics = (contract) => {
   if (!contract.genericArgs || !contract.genericArgs.length) return '';
@@ -33,7 +40,7 @@ const dataContractTemplates = {
 type <%~ config.Ts.CodeGenKeyword.UtilRequiredKeys %><T, K extends keyof T> = Omit<T, K> & Required<Pick<T, K>>
 <% } %>
 
-<% for (const contract of modelTypes) { %>
+<% for (const contract of modelTypes.filter((contract) => !positionalParams.has(contract.name))) { %>
   <%~ includeFile('@base/data-contract-jsdoc.ejs', { ...it, data: { ...contract, ...contract.typeData } }) %>
   <%~ contract.internal ? '' : 'export'%> <%~ (dataContractTemplates[contract.typeIdentifier] || dataContractTemplates.type)(contract) %>
 

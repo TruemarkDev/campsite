@@ -22,6 +22,9 @@ module Api
 
             assert_response :created
             assert_response_gen_schema
+            token = AccessToken.last!
+            assert_equal 1.hour.to_i, token.expires_in
+            assert_equal "read_organization", token.scopes.to_s
           end
 
           test "returns 403 for a random user" do

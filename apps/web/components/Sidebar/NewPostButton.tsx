@@ -34,7 +34,11 @@ export function NewPostButton() {
 
   return (
     <>
-      <LayeredHotkeys keys='c' callback={composerKeyboardToggle} options={{ preventDefault: true }} />
+      <LayeredHotkeys
+        keys='c'
+        callback={composerKeyboardToggle}
+        options={{ description: 'Create post', metadata: { category: 'Create' }, preventDefault: true }}
+      />
 
       <div className='relative isolate'>
         <Button

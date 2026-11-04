@@ -12,6 +12,6 @@ module LinearTestHelper
   end
 
   def add_webhook_timestamp(params)
-    params.merge!(webhookTimestamp: Time.current.to_i)
+    params.merge!("webhookTimestamp" => Time.current.to_i)
   end
 end

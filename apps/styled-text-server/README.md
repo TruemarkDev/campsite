@@ -17,3 +17,30 @@ This service uses bearer authentication. The consumer must provide the token sto
 ```
 Authorization: Bearer <token>
 ```
+
+## Deployment
+
+The production image is deployed with Kamal using one of the repository-level
+styled-text configurations:
+
+- `config/deploy.styled-text-server.yml` for `camp-styled-text.polo-apps.com`
+- `config/deploy.campsite-styled-text.yml` for `camp-styled-text.tokdio.com`
+
+Render a configuration before deploying:
+
+```sh
+mise exec -- kamal config -c config/deploy.campsite-styled-text.yml
+```
+
+To test the production image locally, run this command from the repository root:
+
+```sh
+docker build --tag campsite-styled-text-server \
+  --file apps/styled-text-server/Dockerfile .
+docker run --rm --publish 9000:9000 \
+  --env AUTHTOKEN=local-smoke-token \
+  --env NODE_ENV=production \
+  campsite-styled-text-server
+```
+
+The Kamal proxy checks `GET /up` on port 9000. A healthy server returns HTTP 200.

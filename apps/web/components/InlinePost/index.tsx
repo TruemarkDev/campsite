@@ -91,9 +91,9 @@ export function InlinePostGrid({ display, children }: { display: DisplayType; ch
   return (
     <div
       className={cn('grid-rows relative isolate grid', {
-        'grid-cols-[52px,minmax(0,1fr)] grid-rows-[minmax(20px,1fr),20px,max-content,max-content]': display === 'feed',
-        'grid-cols-[32px,minmax(0,1fr)] grid-rows-[24px,0,max-content,max-content]': display === 'page',
-        'grid-cols-[36px,minmax(0,1fr)] grid-rows-[minmax(28px,1fr),0,max-content,max-content]': display === 'preview'
+        'grid-cols-[52px_minmax(0,1fr)] grid-rows-[minmax(20px,1fr)_20px_max-content_max-content]': display === 'feed',
+        'grid-cols-[32px_minmax(0,1fr)] grid-rows-[24px_0_max-content_max-content]': display === 'page',
+        'grid-cols-[36px_minmax(0,1fr)] grid-rows-[minmax(28px,1fr)_0_max-content_max-content]': display === 'preview'
       })}
     >
       {children}

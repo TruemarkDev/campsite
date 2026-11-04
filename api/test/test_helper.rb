@@ -6,11 +6,29 @@ require_relative "support/assertions"
 require_relative "support/action_mailer_test_helper"
 
 require "rails/test_help"
+
+# Rails 8.1 loads routes lazily on the first request. Devise populates
+# `Devise.mappings` while drawing routes, but `sign_in` talks to Warden without
+# issuing a request, so tests that authenticate before making any request would
+# otherwise hit empty mappings ("Could not find a valid mapping for #<User ...>").
+# Load routes once here, before parallel workers fork, so every worker inherits them.
+Rails.application.reload_routes_unless_loaded
+
 require "mocha/minitest"
-require "sidekiq/testing"
 require "vcr"
 
-Sidekiq::Testing.fake!
+# `require "sidekiq/testing"` is deprecated (removed in Sidekiq 9). The new API is
+# `Sidekiq.testing!(:fake)`, which loads the same Sidekiq::Testing helpers used below.
+Sidekiq.testing!(:fake)
+
+# flipper/test_help (auto-loaded in test env) reconfigures the default Flipper
+# instance without an instrumenter, so it falls back to Noop and never emits the
+# `feature_operation.flipper` notifications our FlipperAuditLog subscriber needs.
+# Re-add the ActiveSupport::Notifications instrumenter; this persists across the
+# per-test `flipper_reset` since that only nils the memoized instance.
+Flipper.configure do |config|
+  config.default { Flipper.new(config.adapter, instrumenter: ActiveSupport::Notifications) }
+end
 
 VCR.configure do |config|
   config.cassette_library_dir = "fixtures/vcr_cassettes"
@@ -25,23 +43,6 @@ VCR.configure do |config|
   config.filter_sensitive_data("<OPENAI_API_KEY>") { Rails.application.credentials&.dig(:openai, :access_token) }
   config.filter_sensitive_data("<OPENAI_ORGANIZATION>") { Rails.application.credentials&.dig(:openai, :organization_id) }
   config.filter_sensitive_data("<TENOR_API_KEY>") { Rails.application.credentials&.dig(:tenor, :api_key) }
-  config.ignore_request do |request|
-    uri = URI(request.uri)
-    # ignore elasticsearch requests
-    uri.host == "localhost" && uri.port == 9200
-  end
-end
-
-def reindex_models
-  Post.reindex
-  Call.reindex
-  Note.reindex
-  Searchkick.disable_callbacks
-end
-
-# if were not running parallel tests, reindex immediately
-if ENV["PARALLEL_WORKERS"] == "1"
-  reindex_models
 end
 
 module ActiveSupport
@@ -51,14 +52,6 @@ module ActiveSupport
 
     # Run tests in parallel with specified workers
     parallelize(workers: :number_of_processors)
-
-    parallelize_setup do |worker|
-      # https://github.com/ankane/searchkick#parallel-tests
-      Searchkick.index_suffix = worker
-
-      # reindex models
-      reindex_models
-    end
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     # fixtures :all

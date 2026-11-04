@@ -108,6 +108,15 @@ module Api
 
             assert_response :forbidden
           end
+
+          test "denies access to a note presence channel for a user who cannot view the note" do
+            note = create(:note)
+
+            sign_in @user
+            post pusher_auths_path(channel_name: note.presence_channel_name, socket_id: "123.456")
+
+            assert_response :forbidden
+          end
         end
       end
     end

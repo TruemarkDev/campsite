@@ -2,7 +2,7 @@
 
 class HtmlTransform
   class Drop < Base
-    NODE_NAMES = ["script", "style", "link", "meta", "title", "head", "figure", "figcaption", "table", "tr", "td", "th"].freeze
+    NODE_NAMES = ["script", "style", "link", "meta", "title", "head", "figure", "figcaption"].freeze
 
     def plain_text
     end

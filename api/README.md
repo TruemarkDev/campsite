@@ -9,7 +9,7 @@ This is the API that powers https://app.campsite.com
 
 ### Running the app
 
-The API can be started with `script/server`. The API is accessible on http://api.campsite.test:3001 and the frontend on http://app.campsite.test:3000 (after you've run `vercel dev` in that repo).
+The API can be started with `script/server`. The API is accessible on http://api.campsite.test:3001 and the frontend on http://app.campsite.test:3000 after starting the web development server from the workspace root.
 
 ### Useful commands & shortcuts
 
@@ -45,24 +45,35 @@ click the link in the email :)
 
 ## Deploying
 
-### Steps
+The current deployment source of truth is
+[`docs/deployment/homelab-production.md`](../docs/deployment/homelab-production.md).
+Deployments and rollbacks are operator-run with the repository's Kamal
+configuration.
 
-1. Open a PR, get an approval, merge to `main`.
-2. Merge your approved PR to `main` and the [Deploy](https://github.com/campsite/campsite-api/actions/workflows/deploy.yml) action will deploy to production.
-3. Monitor Skylight for performance regressions and Sentry for exceptions.
+### Voice-note worker prerequisites
 
-### Rolling back
+Audio attachments are transcribed by the Sidekiq worker. The worker runtime SHALL
+provide all of the following (Verification: Inspection):
 
-1. Open a PR to revert the change, get an approval, merge to `main`.
-2. Merge your approved revert PR to `main` and the [Deploy](https://github.com/campsite/campsite-api/actions/workflows/deploy.yml) action will deploy to production.
+- `ffmpeg` (already present in `api/Dockerfile`);
+- the official `whisper-cli` binary from `ggml-org/whisper.cpp`;
+- a compatible GGML model file, with its absolute path supplied as
+  `WHISPER_CPP_MODEL_PATH` (the binary can be overridden with
+  `WHISPER_CPP_BINARY`); and
+- `edge-tts` for the default credential-free TTS provider (the executable can be
+  overridden with `EDGE_TTS_BINARY`). Edge TTS uses Microsoft's hosted Read
+  Aloud service and therefore requires outbound HTTPS; it is not offline TTS.
 
-### Manual deploys
-
-If we ever run into any issues that involve quickly deploying to production, the [manual deploy](https://github.com/campsite/campsite-api/actions/workflows/deploy.yml) workflow can be used to deploy to production.
-
-1. Navigate to [manual deploy](https://github.com/campsite/campsite-api/actions/workflows/production.yml) workflow
-2. Select `main` for the first input, enter the name of the branch you'd like to deploy for the second input.
-3. Run the workflow
+The model SHALL NOT be committed to this repository (Verification: Inspection).
+Before enabling worker custody, the operator SHALL demonstrate `whisper-cli --help`, an actual short WAV
+transcription with the configured model, and an `edge-tts` MP3 generation from
+inside the exact worker image (Verification: Demonstration). ❌ The current `api/Dockerfile` does not yet install
+`whisper-cli`, its model, Python, or `edge-tts`, and no Odin runtime verification
+has been recorded. Until those are added to the immutable image and proven, audio
+attachments remain usable but transcription/TTS jobs will fail with explicit
+errors. ElevenLabs is an opt-in alternative configured with
+`tts.provider: elevenlabs` and `elevenlabs.api_key`; callers must also supply or
+inherit a valid ElevenLabs voice id.
 
 ## Using ngrok for publicly accessible HTTPS development URLs
 
@@ -135,7 +146,8 @@ PlanetScale will not pick up changes made to your PR after opening it. If you ma
 We use [rack-mini-profiler](https://github.com/MiniProfiler/rack-mini-profiler) to profile staff user API requests in development and production. Add `?pp=flamegraph` to the end of a URL to view a flamegraph of a request. In development, you can also make an API request and then visit http://localhost:3001/rack-mini-profiler/requests for additional profiling data. (This page isn't accessible in production yet due to https://github.com/MiniProfiler/rack-mini-profiler/issues/462#issuecomment-909141515.)
 
 ## Creating comments to a post for notifications received from Signoz via webhooks
+
 1. First, create a custom integration named `Signoz` and generate its API key in the campsite.
 2. Add the post's public_id to env SIGNOZ_ALERT_POST_ID
-3. Add the route `:api_url/v2/signoz_notifications` to the webhook url for notifications in Signoz and use the API key 
-generated in the 1st step in the password field, keeping the username empty.
+3. Add the route `:api_url/v2/signoz_notifications` to the webhook url for notifications in Signoz and use the API key
+   generated in the 1st step in the password field, keeping the username empty.

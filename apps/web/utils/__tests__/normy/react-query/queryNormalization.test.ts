@@ -43,6 +43,16 @@ const createSampleProject = (partial: Partial<Project> = {}): Project => ({
   slack_channel: null,
   type_name: 'project',
   members_count: 1,
+  members_and_guests_count: 1,
+  message_thread_id: null,
+  viewer_subscription: 'none',
+  viewer_display_preferences: null,
+  display_preferences: {
+    display_reactions: true,
+    display_attachments: true,
+    display_comments: true,
+    display_resolved: true
+  },
   ...partial
 })
 

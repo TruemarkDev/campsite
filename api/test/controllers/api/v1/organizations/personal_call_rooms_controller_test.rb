@@ -17,7 +17,7 @@ module Api
         test "it returns a personal call room" do
           sign_in @member.user
 
-          assert_query_count 7 do
+          assert_query_count 6 do
             get organization_membership_personal_call_room_path(@organization.slug)
           end
 
@@ -34,7 +34,7 @@ module Api
 
           sign_in @member.user
 
-          assert_query_count 10 do
+          assert_query_count 9 do
             get organization_membership_personal_call_room_path(@organization.slug)
           end
 

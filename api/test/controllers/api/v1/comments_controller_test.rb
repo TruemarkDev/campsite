@@ -231,7 +231,8 @@ module Api
         test "query count" do
           sign_in @member.user
 
-          assert_query_count 15 do
+          # Includes transactional PostgreSQL search-document refresh.
+          assert_query_count 22 do
             put organization_comment_path(@organization.slug, @comment.public_id), params: { body_html: "<p>update my comment</p>" }, as: :json
           end
         end
@@ -349,7 +350,8 @@ module Api
 
           sign_in @member.user
 
-          assert_query_count 42 do
+          # Discarding the comment and its reply refreshes PostgreSQL search documents.
+          assert_query_count 56 do
             delete organization_comment_path(@organization.slug, @comment.public_id)
           end
         end

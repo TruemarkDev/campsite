@@ -1,5 +1,5 @@
 .prose {
-  @apply text-primary break-words leading-normal;
+  @apply text-primary leading-normal break-words;
   word-break: break-word;
   word-wrap: break-word;
 }
@@ -11,7 +11,7 @@
 .prose.editing :where(ol):not(:where([class~='not-prose'] *)),
 .prose.editing :where(ul):not(:where([class~='not-prose'] *)),
 .prose.editing :where(pre):not(:where([class~='not-prose'] *)) {
-  @apply mb-2.5 mt-0;
+  @apply mt-0 mb-2.5;
 }
 
 .prose :where(h1):not(:where([class~='not-prose'] *)),
@@ -31,6 +31,7 @@
 
 .prose pre {
   @apply bg-tertiary border-primary border dark:border-neutral-700 dark:bg-neutral-800;
+  border-style: solid;
 }
 
 .prose pre > code {
@@ -38,7 +39,8 @@
 }
 
 .prose code {
-  @apply text-primary bg-tertiary border-primary whitespace-pre-wrap rounded border px-1 py-px font-medium dark:border-neutral-700 dark:bg-neutral-800;
+  @apply text-primary bg-tertiary border-primary rounded border px-1 py-px font-medium whitespace-pre-wrap dark:border-neutral-700 dark:bg-neutral-800;
+  border-style: solid;
 
   &:before,
   &:after {
@@ -51,7 +53,7 @@
 }
 
 .prose blockquote {
-  @apply text-secondary border-primary mb-2.5 mt-0 inline-block border-l-2 font-normal italic;
+  @apply text-secondary border-primary mt-0 mb-2.5 inline-block border-l-2 font-normal italic;
 }
 
 .prose blockquote p:first-of-type {
@@ -82,7 +84,7 @@
 }
 
 .prose a {
-  @apply break-words font-normal no-underline;
+  @apply font-normal break-words no-underline;
   /* 
     Need these manually to prevent long links from breaking a container boundary
     Ref https://css-tricks.com/snippets/css/prevent-long-urls-from-breaking-out-of-container/
@@ -112,11 +114,14 @@
 }
 
 .prose li.task-item input[type='checkbox'] {
-  @apply bg-elevated dark:bg-quaternary border-primary mr-2 mt-0.5 h-5 w-5 max-w-xs cursor-pointer rounded border bg-clip-border align-top checked:border-blue-500 checked:bg-blue-500 focus:border-blue-500 dark:checked:bg-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-600/20;
+  @apply bg-elevated dark:bg-quaternary border-primary mt-0.5 mr-2 h-5 w-5 max-w-xs cursor-pointer rounded border bg-clip-border align-top checked:border-blue-500 checked:bg-blue-500 focus:border-blue-500 dark:checked:bg-blue-500 dark:focus:border-blue-400 dark:focus:ring-blue-600/20;
+  border-style: solid;
 }
 
 .task-list-disabled input[type='checkbox'] {
-  @apply focus:border-primary cursor-default outline-none;
+  @apply focus:border-primary cursor-default;
+  outline: 2px solid transparent;
+  outline-offset: 2px;
 }
 
 .prose li.task-item div:first-of-type {

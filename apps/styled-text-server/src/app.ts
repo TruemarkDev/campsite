@@ -6,6 +6,10 @@ import morgan from 'morgan'
 import { htmlToSlack } from './html'
 import { markdownToHtml } from './markdown'
 
+const authToken = process.env.AUTHTOKEN
+
+if (!authToken?.trim()) throw new Error('AUTHTOKEN must be configured')
+
 export const app: express.Express = express()
 
 if (process.env.NODE_ENV === 'production') {
@@ -17,16 +21,11 @@ if (process.env.NODE_ENV === 'production') {
   })
 }
 
-// The request handler must be the first middleware on the app
-app.use(Sentry.Handlers.requestHandler())
-
 app.use(morgan('combined'))
-app.use(bodyParser.text({ limit: '5mb' }))
-app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }))
 app.use((req, res, next) => {
   if (req.path === '/up') return next()
 
-  if (req.header('Authorization') != `Bearer ${process.env.AUTHTOKEN}`) {
+  if (req.header('Authorization') != `Bearer ${authToken}`) {
     return res.status(401).json({ message: 'invalid token' })
   }
 
@@ -37,12 +36,19 @@ app.get('/up', (req, res) => {
   res.send('OK')
 })
 
+app.use(bodyParser.text({ limit: '5mb' }))
+app.use(bodyParser.urlencoded({ limit: '5mb', extended: true }))
+
 app.post('/html_to_slack', bodyParser.json(), (req, res) => {
   if (!req.is('*/json')) {
     return res.status(415).json({ message: 'request must be application/json' })
   }
 
-  const { html } = req.body
+  const { html } = req.body ?? {}
+
+  if (typeof html !== 'string') {
+    return res.status(400).json({ message: 'html must be a string' })
+  }
 
   const blocks = htmlToSlack(html)
 
@@ -54,7 +60,7 @@ app.post('/markdown_to_html', bodyParser.json(), (req, res) => {
     return res.status(415).json({ message: 'request must be application/json' })
   }
 
-  const { markdown, editor } = req.body
+  const { markdown, editor } = req.body ?? {}
 
   if (!markdown) {
     return res.status(400).json({ message: 'markdown and editor are required' })
@@ -67,11 +73,9 @@ app.post('/markdown_to_html', bodyParser.json(), (req, res) => {
   res.json({ html: markdownToHtml(markdown, editor) })
 })
 
-// The error handler must be before any other error middleware and after all controllers
-app.use(
-  Sentry.Handlers.errorHandler({
-    shouldHandleError(error) {
-      return !error.status || parseInt(`${error.status}`) >= 400
-    }
-  })
-)
+// The error handler must be before any other error middleware and after all controllers.
+Sentry.setupExpressErrorHandler(app, {
+  shouldHandleError(error) {
+    return !error.status || parseInt(`${error.status}`) >= 400
+  }
+})

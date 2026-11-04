@@ -31,7 +31,8 @@ class Tag < ApplicationRecord
     uniqueness: { scope: :organization }
 
   scope :search_by, ->(query_string) do
-    where("tags.name LIKE ?", "%#{query_string}%")
+    operator = connection.adapter_name == "PostgreSQL" ? "ILIKE" : "LIKE"
+    where("tags.name #{operator} ?", "%#{query_string}%")
   end
 
   def url(organization = nil)

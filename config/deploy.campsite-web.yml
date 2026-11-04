@@ -1,0 +1,50 @@
+service: campsite-web-public-staging
+image: truemarkdev/campsite-web
+secrets_path: .kamal/campsite-secrets
+deploy_timeout: 60
+
+servers:
+  web:
+    - 192.168.10.32
+
+proxy:
+  ssl: false
+  host: camp.polo-apps.com
+  app_port: 3000
+  healthcheck:
+    path: /robots.txt
+    interval: 10
+
+registry:
+  server: builder.home:5555
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://prakash@builder.home
+  context: .
+  dockerfile: apps/web/Dockerfile
+  args:
+    NEXT_PUBLIC_WEB_URL: https://camp.polo-apps.com
+    NEXT_PUBLIC_SITE_URL: https://camp.polo-apps.com
+    NEXT_PUBLIC_SYNC_URL: wss://camp-sync.polo-apps.com
+    NEXT_PUBLIC_API_URL: https://camp-api.polo-apps.com
+    NEXT_PUBLIC_AUTH_URL: https://camp-auth.polo-apps.com
+    NEXT_PUBLIC_ADMIN_URL: https://camp-admin.polo-apps.com
+    NEXT_PUBLIC_CDN_URL: https://camp-cdn.polo-apps.com
+    NEXT_PUBLIC_IMGIX_URL: https://camp-cdn.polo-apps.com
+    NEXT_PUBLIC_OBJECT_STORAGE_URL: https://camp-objects.polo-apps.com
+    NEXT_PUBLIC_PUSHER_KEY: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_KEY") %>
+    NEXT_PUBLIC_PUSHER_CLUSTER: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_CLUSTER") %>
+    NEXT_PUBLIC_RELEASE_SHA: <%= `git rev-parse HEAD`.strip %>
+env:
+  clear:
+    NODE_ENV: production
+    PORT: '3000'
+  secret:
+    - REVALIDATE_STATIC_CACHE_TOKEN
+
+ssh:
+  user: prakash

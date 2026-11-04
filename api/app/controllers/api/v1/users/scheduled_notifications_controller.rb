@@ -6,6 +6,8 @@ module Api
       class ScheduledNotificationsController < V1::BaseController
         skip_before_action :require_authenticated_organization_membership, only: [:index, :create, :update, :destroy]
 
+        before_action :authorize_current_user
+
         extend Apigen::Controller
 
         response model: ScheduledNotificationSerializer, is_array: true, code: 200

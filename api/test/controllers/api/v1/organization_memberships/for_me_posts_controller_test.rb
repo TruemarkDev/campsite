@@ -124,7 +124,6 @@ module Api
             @subscribed_post.update!(title: "Needle in a haystack")
             @joined_private_project_post.update!(description_html: "<p>This description has a needle in it</p>")
 
-            Post.reindex
 
             sign_in @user
 

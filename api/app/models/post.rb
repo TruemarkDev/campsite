@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 class Post < ApplicationRecord
+  OPEN_GRAPH_IMAGE_SIGNED_ID_PURPOSE = :post_note_open_graph_image
   POST_FILE_LIMIT = 10 # This can be removed once we have migrated to attachments
   FILE_LIMIT = 10 # This is for attachments
   POST_TAG_LIMIT = 10
   DIGEST_LIMIT = 16
-  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:last_activity_at, :published_at]
+  PUBLIC_API_ALLOWED_ORDER_FIELDS = [:last_activity_at, :published_at].freeze
 
   include Discard::Model
   include PublicIdGenerator
@@ -16,7 +17,7 @@ class Post < ApplicationRecord
   include ActionView::Helpers::SanitizeHelper
   include TaskUpdatable
   include MediaUrlBuilder
-  include SearchConfigBuilder
+  include PostgresSearchable
   include Commentable
   include FollowUpable
   include Favoritable
@@ -209,21 +210,6 @@ class Post < ApplicationRecord
     end
   end
 
-  searchkick \
-    callbacks: Rails.env.test? ? :inline : :async,
-    text_start: [:title, :description, :comments_content, :user_name, :user_username, :project_name],
-    word_start: [:title, :description, :comments_content, :user_name, :user_username, :project_name],
-    highlight: [:title, :description, :comments_content],
-    filterable: [:organization_id, :project_id, :tag_ids, :user_id, :discarded_at],
-    merge_mappings: true,
-    mappings: {
-      properties: {
-        # created_at is used in the boost_by_recency option, thus in a function_score
-        # it must be mapped otherwise searches will crash on empty indices
-        created_at: { type: "date" },
-      },
-    }
-
   def search_data
     {
       id: id,
@@ -243,108 +229,12 @@ class Post < ApplicationRecord
     }
   end
 
-  scope :search_import, -> { includes(:project, :tags, member: OrganizationMembership::SERIALIZER_EAGER_LOAD).preload(:kept_comments) }
-
-  def self.scoped_search(
-    query:,
-    organization:,
-    limit: 250,
-    author_username: nil,
-    user_id: nil,
-    project_public_id: nil,
-    tag_name: nil,
-    sort_by_date: false,
-    per_page: nil,
-    page: nil
-  )
-    where = {
-      organization_id: organization.id,
-      discarded_at: nil,
-    }
-
-    where[:project_id] = organization.projects.find_by!(public_id: project_public_id).id if project_public_id.present?
-    where[:user_id] = user_id if user_id
-    where[:tag_ids] = organization.tags.find_by!(name: tag_name).id if tag_name.present?
-
-    if author_username.present?
-      where[:user_id] = organization.memberships.includes(:user).find_by!(user: { username: author_username }).user_id
-    elsif user_id
-      where[:user_id] = user_id
-    end
-
-    fields = [
-      # exact-match phrases get the highest boost
-      { title: :phrase, boost: 3 },
-      { description: :phrase, boost: 3 },
-      { comments_content: :phrase, boost: 3 },
-      { user_name: :phrase, boost: 3 },
-      { user_username: :phrase, boost: 3 },
-      { project_name: :phrase, boost: 3 },
-
-      # boost phrase partial matches
-      { title: :text_start, boost: 2 },
-      { description: :text_start, boost: 2 },
-      { comments_content: :text_start, boost: 2 },
-      { user_name: :text_start, boost: 2 },
-      { user_username: :text_start, boost: 2 },
-      { project_name: :text_start, boost: 2 },
-
-      # least restrictive: match any word in the query
-      { title: :word_start },
-      { description: :word_start },
-      { comments_content: :word_start },
-      { user_name: :word_start },
-      { user_username: :word_start },
-    ]
-
-    search(
-      query,
-      fields: fields,
-      operator: "or",
-      boost_by_recency: { created_at: { scale: "7d", offset: "2d", decay: 0.999 } },
-      misspellings: { below: 2 },
-      where: where,
-      page: page || 1,
-      per_page: per_page || limit,
-      order: sort_by_date ? { created_at: :desc } : nil,
-      load: false,
-      debug: false,
-      body_options: {
-        highlight: search_highlight_config(query, [:title, :description, :comments_content]),
-      },
-      boost_where: {
-        title: { factor: 2, should_match: 2 },
-      },
-    )
+  def self.scoped_search(**options)
+    SearchDocument.search_resource(self, **options)
   end
 
-  def self.scoped_title_search(
-    query:,
-    organization:,
-    limit: 250
-  )
-    where = {
-      organization_id: organization.id,
-      discarded_at: nil,
-    }
-
-    fields = [
-      { title: :phrase, boost: 3 },
-      { title: :text_start, boost: 2 },
-      { title: :word_start },
-    ]
-
-    search(
-      query,
-      fields: fields,
-      operator: "or",
-      boost_by_recency: { created_at: { scale: "7d", offset: "2d", decay: 0.999 } },
-      misspellings: { below: 2 },
-      where: where,
-      per_page: limit,
-      load: false,
-      debug: false,
-    )
+  def self.scoped_title_search(**options)
+    SearchDocument.search_resource(self, **options, title_only: true)
   end
 
   def self.create_post(params:, parent:, project:, member:, organization:, skip_notifications: false)
@@ -531,7 +421,8 @@ class Post < ApplicationRecord
   def note_open_graph_image_url
     return unless description_html
 
-    path = "/v1/post_note_open_graph_images/#{public_id}/#{contents_hash}"
+    post_token = signed_id(purpose: OPEN_GRAPH_IMAGE_SIGNED_ID_PURPOSE)
+    path = "/v1/post_note_open_graph_images/#{post_token}/#{contents_hash}"
 
     if Rails.env.production? || ENV["CAMPSITE_NGROK"] == "true"
       build_media_folder_url(path)
@@ -807,17 +698,16 @@ class Post < ApplicationRecord
   end
 
   def title_from_description
-    @title_from_descrition ||= begin
+    @title_from_description ||= begin
       first_child = parsed_description_html.children.first
-      return unless first_child
 
-      # return the text if the first child is a header tag
-      if first_child.name.in?(["h1", "h2", "h3", "h4", "h5", "h6"])
-        return first_child.text
-      end
-
-      # if the first child is a paragraph and has a strong or bold tag, return the text
-      if first_child.name == "p" && first_child.children.count == 1 && first_child.children[0].name.in?(["strong", "b"])
+      if first_child.nil?
+        nil
+      elsif first_child.name.in?(["h1", "h2", "h3", "h4", "h5", "h6"])
+        # the text if the first child is a header tag
+        first_child.text
+      elsif first_child.name == "p" && first_child.children.count == 1 && first_child.children[0].name.in?(["strong", "b"])
+        # if the first child is a paragraph and has a strong or bold tag, the text
         first_child.text
       end
     end
@@ -887,11 +777,17 @@ class Post < ApplicationRecord
   def self.viewer_voted_option_ids_by_poll_id_async(post_ids, membership)
     return AsyncPreloader.value({}) unless membership
 
+    option_id_aggregation = if connection.adapter_name == "PostgreSQL"
+      "string_agg(poll_options.id::text, ',')"
+    else
+      "GROUP_CONCAT(poll_options.id)"
+    end
+
     scope = PollVote
       .joins(poll_option: :poll)
       .where(polls: { post_id: post_ids }, organization_membership_id: membership.id)
       .group("polls.id")
-      .async_pluck("polls.id", Arel.sql("GROUP_CONCAT(poll_options.id)"))
+      .async_pluck("polls.id", Arel.sql(option_id_aggregation))
     AsyncPreloader.new(scope) do |scope|
       scope.to_h.transform_values { |option_ids| option_ids.split(",").map(&:to_i) }
     end
@@ -1002,7 +898,7 @@ class Post < ApplicationRecord
       .group(:subject_id)
 
     scope = Comment.where(id: subquery)
-      .serializer_preloads
+      .latest_comment_preloads
       .load_async
 
     AsyncPreloader.new(scope) do |scope|
@@ -1021,7 +917,7 @@ class Post < ApplicationRecord
 
   # attachments are fetched eagerly where order may not be preserved
   def sorted_attachments
-    attachments.sort_by(&:position)
+    attachments.sort_by { |attachment| [attachment.position, attachment.id] }
   end
 
   def ancestors
@@ -1181,7 +1077,7 @@ class Post < ApplicationRecord
 
     if kept_comments.any?
       template += "\nCOMMENTS:\n"
-      template += kept_comments.map.with_index do |comment, index|
+      template += kept_comments.sort_by { |comment| [comment.created_at, comment.id] }.map.with_index do |comment, index|
         comment.llm_formatted_body_and_replies(position: index + 1)
       end.join("\n")
     else

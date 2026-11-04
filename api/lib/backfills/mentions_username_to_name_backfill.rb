@@ -60,7 +60,7 @@ module Backfills
 
       nodes.each do |node|
         member = members[node["data-id"]]
-        next unless member && member.user # rubocop:disable Style/SafeNavigation
+        next unless member && member.user
 
         node["data-label"] = member.user.display_name
         node["data-username"] = member.user.username

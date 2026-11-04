@@ -78,7 +78,6 @@ module Api
             match_title = create(:call, :completed, :recorded, project: @open_project, title: "Needle in a haystack")
             match_summary = create(:call, :completed, :recorded, project: @open_project, summary: "This call has a needle in it")
 
-            Call.reindex
 
             sign_in @member.user
             get organization_project_calls_path(@organization.slug, @open_project.public_id), params: { q: "needle" }

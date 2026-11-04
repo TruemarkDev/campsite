@@ -7,6 +7,10 @@ class TimelineEventSerializer < ApiSerializer
 
   api_field :subject_updated_from_title, nullable: true
   api_field :subject_updated_to_title, nullable: true
+  api_field :note_suggestion_batch_id, nullable: true
+  api_field :note_suggestion_actor_name, nullable: true
+  api_field :note_suggestion_instruction, nullable: true
+  api_field :note_suggestion_resolution, nullable: true
 
   api_association :subject_updated_from_project, blueprint: MiniProjectSerializer, nullable: true do |timeline_event, options|
     next unless timeline_event.subject_updated_from_project_id

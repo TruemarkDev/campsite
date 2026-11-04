@@ -8,17 +8,26 @@ module Api
       after_action :verify_authorized
 
       response model: MessageThreadInboxSerializer, code: 200
+      request_params do
+        {
+          after: { type: :string, required: false },
+          limit: { type: :number, required: false },
+        }
+      end
       def index
         authorize(current_organization, :list_threads?)
 
-        threads = current_organization_membership
-          .non_project_message_threads
-          .serializer_includes
-          .order(last_message_at: :desc, id: :desc)
+        scope = current_organization_membership.non_project_message_threads
+        pagination = CursorPagination.new(
+          scope: scope,
+          after: params[:after],
+          limit: params[:limit],
+          order: { last_message_at: :desc, id: :desc },
+        ).run.hydrate!(scope.serializer_includes)
 
         render_json(
           MessageThreadInboxSerializer,
-          { threads: threads },
+          { threads: pagination.results, next_cursor: pagination.next_cursor },
         )
       end
 

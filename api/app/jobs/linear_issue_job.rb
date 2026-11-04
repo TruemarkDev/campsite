@@ -59,7 +59,7 @@ class LinearIssueJob < BaseJob
   LINEAR_LABEL_ID_MAP = {
     "bug" => "77d76482-0cb9-4adc-8053-a965e0b36212",
     "feature" => "ad879049-fa82-4d18-b4fb-9e0a7e411d9a",
-  }
+  }.freeze
 
   private
 

@@ -303,8 +303,7 @@ class Post
         assert_equal 1, post.feedback_requests.length
         assert_equal @feedback_request_member.id, post.feedback_requests.first.member.id
         assert_equal 2, post.subscriptions.length
-        assert_equal @member.user.id, post.subscriptions.first.user.id
-        assert_equal @feedback_request_member.user.id, post.subscriptions.second.user.id
+        assert_equal [@member.user.id, @feedback_request_member.user.id].sort, post.subscriptions.map(&:user_id).sort
       end
     end
   end

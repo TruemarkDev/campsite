@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "json"
-require "readline"
 
 namespace :dev do
   task change_plan: [:environment] do
@@ -24,11 +23,6 @@ namespace :dev do
     # Default credentials structure
     DEFAULT_CREDENTIALS = {
       aws: {
-        s3_bucket: "TODO",
-        access_key_id: "TODO",
-        secret_access_key: "TODO",
-      },
-      aws_ecs: {
         s3_bucket: "TODO",
         access_key_id: "TODO",
         secret_access_key: "TODO",
@@ -111,9 +105,6 @@ namespace :dev do
       userlist: {
         push_key: "TODO",
         push_id: "TODO",
-      },
-      vercel: {
-        revalidate_static_cache: "TODO",
       },
       webpush_vapid: {
         public_key: "TODO",

@@ -22,7 +22,7 @@ export function NotificationSoundPlayer() {
         const sound = new Audio('/sounds/call-peer-join.mp3')
 
         sound.volume = 0.5
-        
+
         sound.play().catch((error) => {
           // eslint-disable-next-line no-console
           console.error('Failed to play notification sound:', error)

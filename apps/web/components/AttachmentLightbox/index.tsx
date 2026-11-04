@@ -13,7 +13,7 @@ import { useGetAttachment } from '@/hooks/useGetAttachment'
 
 import { hoveredCanvasCommentAtom } from '../CanvasComments/CanvasComment'
 import { displayCanvasCommentsAtom, newCommentCoordinatesAtom } from '../CanvasComments/CanvasComments'
-import { zoomAtom } from '../ZoomPane/atom'
+import { zoomStateAtom } from '../ZoomPane/atom'
 import { FigmaTip } from './FigmaTip'
 import { FigmaToggleButton } from './FigmaToggleButton'
 import { FileMenu } from './FileDropdown'
@@ -132,9 +132,11 @@ function InnerAttachmentLightbox({
   const isPostAttachment = attachment.subject_type === 'Post' && attachment.subject_id === subject?.id
 
   return (
-    <ScopeProvider atoms={[zoomAtom, hoveredCanvasCommentAtom, displayCanvasCommentsAtom, newCommentCoordinatesAtom]}>
+    <ScopeProvider
+      atoms={[zoomStateAtom, hoveredCanvasCommentAtom, displayCanvasCommentsAtom, newCommentCoordinatesAtom]}
+    >
       <m.header
-        className={cn('drag flex h-14 flex-row items-center justify-between border-b pl-4 pr-3 text-sm', {
+        className={cn('drag flex h-14 flex-row items-center justify-between border-b pr-3 pl-4 text-sm', {
           'pl-22': isDesktopApp && isMacOs
         })}
       >

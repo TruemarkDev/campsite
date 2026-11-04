@@ -13,6 +13,31 @@ module Api
       end
 
       context "#index" do
+        test "paginates tied timestamps and empty threads without preloading overflow" do
+          timestamp = 1.day.ago
+          threads = Array.new(3) { create(:message_thread, owner: @member, organization_memberships: [@member], last_message_at: timestamp) }
+          empty_threads = Array.new(2) { create(:message_thread, owner: @member, organization_memberships: [@member]) }
+          hidden = create(:message_thread, :dm)
+          expected = threads.reverse + empty_threads.reverse
+          sign_in @member.user
+
+          returned = []
+          cursor = nil
+          3.times do |page|
+            MessageThreadSerializer.expects(:preload).with do |records, _options|
+              records.map(&:id).sort == expected.slice(page * 2, 2).map(&:id).sort
+            end.returns({})
+            get organization_threads_path(@organization.slug), params: { limit: 2, after: cursor }
+            assert_response :ok
+            assert_response_gen_schema
+            returned.concat(json_response["threads"].pluck("id"))
+            cursor = json_response["next_cursor"]
+          end
+          assert_equal expected.map(&:public_id), returned
+          assert_nil cursor
+          assert_not_includes returned, hidden.public_id
+        end
+
         test("it returns threads in recent order") do
           threads = [
             create(:message_thread, :group, owner: @member, last_message_at: 1.day.ago),
@@ -71,7 +96,7 @@ module Api
 
           sign_in @member.user
 
-          assert_query_count 10 do
+          assert_query_count 11 do
             get organization_threads_path(@organization.slug)
           end
         end

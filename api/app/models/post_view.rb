@@ -93,7 +93,11 @@ class PostView < ApplicationRecord
 
     return if upsert_data.empty?
 
-    PostView.upsert_all(upsert_data)
+    if connection.adapter_name == "PostgreSQL"
+      PostView.upsert_all(upsert_data, unique_by: %i[post_id organization_membership_id])
+    else
+      PostView.upsert_all(upsert_data)
+    end
 
     post_ids = posts.values.map(&:id)
     PostView.counter_culture_fix_counts(only: :post, where: { posts: { id: post_ids } })

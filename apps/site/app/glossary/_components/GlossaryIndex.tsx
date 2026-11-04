@@ -33,7 +33,7 @@ export function GlossaryIndex({ posts }: { posts: SanityDocument[] }) {
             <li
               key={post._id}
               className={cn(
-                'text-primary lg:px-4.5 lg:-mx-4.5 relative isolate flex w-full flex-1 cursor-pointer select-none scroll-m-1 items-center gap-3 rounded-lg outline-none ease-in-out will-change-[background,_color] lg:py-3.5 lg:hover:bg-black/5 lg:dark:hover:bg-white/10',
+                'text-primary relative isolate flex w-full flex-1 cursor-pointer scroll-m-1 items-center gap-3 rounded-lg ease-in-out will-change-[background,_color] outline-none select-none lg:-mx-4.5 lg:px-4.5 lg:py-3.5 lg:hover:bg-black/5 lg:dark:hover:bg-white/10',
                 {
                   'bg-transparent dark:bg-transparent': true
                 }
@@ -46,7 +46,7 @@ export function GlossaryIndex({ posts }: { posts: SanityDocument[] }) {
                   size='text-lg lg:text-xl'
                   primary
                   weight='font-medium'
-                  className='break-anywhere mr-2 line-clamp-2 flex-1 text-balance leading-snug'
+                  className='break-anywhere mr-2 line-clamp-2 flex-1 leading-snug text-balance'
                 >
                   {post.title}
                 </UIText>

@@ -3,6 +3,9 @@
 class UpdateMentionUsernamesJob < BaseJob
   sidekiq_options queue: "background"
 
+  MENTION_LABEL_ACTOR_ID = "system:mention-labels"
+  MENTION_LABEL_ACTOR_NAME = "Campsite"
+
   def perform(user_id)
     user = User.includes(organization_memberships: :organization).find(user_id)
 
@@ -41,8 +44,30 @@ class UpdateMentionUsernamesJob < BaseJob
     field = Note.arel_table[:description_html]
     notes = member.organization.notes.where(field.matches("%data-id=\"#{member.public_id}\"%"))
     notes.find_each do |note|
-      doc = Nokogiri::HTML.fragment(note.description_html)
-      note.update_columns(description_html: update_mentions(user, member, doc), description_state: nil)
+      grant, token = AgentSyncGrant.issue!(
+        note: note,
+        organization_membership: member,
+        actor_id: MENTION_LABEL_ACTOR_ID,
+        actor_name: MENTION_LABEL_ACTOR_NAME,
+        scopes: [AgentSyncGrant::WRITE_SCOPE, AgentSyncGrant::MENTION_LABELS_SCOPE],
+        expires_in: 5.minutes,
+      )
+
+      begin
+        AgentNoteEditor.new(token).edit(
+          note_id: note.public_id,
+          mode: :direct,
+          operation: {
+            type: :update_mentions,
+            membership_id: member.public_id,
+            display_name: user.display_name,
+            username: user.username,
+          },
+          schema_version: note.description_schema_version,
+        )
+      ensure
+        grant.revoke!
+      end
     end
   end
 

@@ -1,10 +1,13 @@
 import { Editor, Node } from '@tiptap/core'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 
 import * as E from '../../extensions'
 import { findNodeAndPos } from '../findNodeAndPos'
 
 describe('findNodeAndPos', () => {
+  let editor: Editor
+
+  afterEach(() => editor?.destroy())
   const TestNode = Node.create({
     name: 'testNode',
     group: 'block',
@@ -25,7 +28,7 @@ describe('findNodeAndPos', () => {
   })
 
   it('finds matching position and node', () => {
-    const editor = new Editor({
+    editor = new Editor({
       extensions: [E.Document, E.Text, E.Paragraph, TestNode],
       content:
         '<p>Foo bar</p><test-node identifier="foo"></test-node><p>Cat dog</p><test-node identifier="bar"></test-node>'

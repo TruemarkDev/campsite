@@ -10,6 +10,7 @@ module Api
       context "#show" do
         before do
           @post = create(:post, description_html: "<p>Test</p>")
+          @post_token = @post.signed_id(purpose: Post::OPEN_GRAPH_IMAGE_SIGNED_ID_PURPOSE)
         end
 
         test "it returns an Open Graph image for a post with a note" do
@@ -23,7 +24,7 @@ module Api
 
           HtmlToImage.any_instance.expects(:image).with(html: expected_html, width: 600, height: 315, device_scale_factor: 2)
 
-          get post_note_open_graph_image_path(@post.public_id, @post.contents_hash)
+          get post_note_open_graph_image_path(@post_token, @post.contents_hash)
 
           assert_response :ok
         end
@@ -31,7 +32,15 @@ module Api
         test "it returns a 404 if post ID is invalid" do
           HtmlToImage.any_instance.expects(:image).never
 
-          get post_note_open_graph_image_path("not-a-post-id", @post.contents_hash)
+          get post_note_open_graph_image_path("not-a-signed-post-id", @post.contents_hash)
+
+          assert_response :not_found
+        end
+
+        test "it returns a 404 if the contents hash is invalid" do
+          HtmlToImage.any_instance.expects(:image).never
+
+          get post_note_open_graph_image_path(@post_token, "invalid-hash")
 
           assert_response :not_found
         end

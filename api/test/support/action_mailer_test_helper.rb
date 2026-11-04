@@ -27,7 +27,7 @@ module ActionMailer
     def assert_enqueued_emails(number, &block)
       actual_count = if block_given?
         original_jobs = enqueued_email_jobs
-        block.call
+        yield
         new_jobs = enqueued_email_jobs
         (new_jobs - original_jobs).size
       else

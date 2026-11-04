@@ -13,6 +13,26 @@ module Api
       end
 
       context "#index" do
+        test "search pages authorized results in relevance order before serializer hydration" do
+          records = Array.new(3) { create(:note, member: @member) }
+          hidden = create(:note)
+          ranked = [records[2], hidden, records[0], records[1]]
+          Note.stubs(:scoped_search).returns(ranked.map { |record| { id: record.id } })
+          sign_in @member.user
+
+          get organization_notes_path(@organization.slug), params: { q: "needle", limit: 2 }
+          assert_response :ok
+          assert_response_gen_schema
+          assert_equal [records[2], records[0]].map(&:public_id), json_response["data"].pluck("id")
+          cursor = json_response["next_cursor"]
+          assert_equal records[0].public_id, cursor
+
+          get organization_notes_path(@organization.slug), params: { q: "needle", limit: 2, after: cursor }
+          assert_response :ok
+          assert_equal [records[1].public_id], json_response["data"].pluck("id")
+          assert_nil json_response["next_cursor"]
+        end
+
         context "#contents" do
           before do
             @note = create(:note, member: @member)
@@ -215,7 +235,7 @@ module Api
 
           test "query count" do
             sign_in @member.user
-            assert_query_count 9 do
+            assert_query_count 10 do
               get organization_notes_path(@organization.slug), params: { filter: "mine" }
             end
 
@@ -242,7 +262,6 @@ module Api
 
           note_other_private = create(:note, member: other_member, title: "Needle")
 
-          Note.reindex
 
           sign_in @member.user
 
@@ -309,7 +328,8 @@ module Api
         test "query count" do
           sign_in @member.user
 
-          assert_query_count 22 do
+          # Includes transactional creation of the PostgreSQL search document.
+          assert_query_count 27 do
             post organization_notes_path(@organization.slug),
               params: {
                 title: "My new note",
@@ -572,7 +592,7 @@ module Api
 
         test "query count" do
           sign_in @author_member.user
-          assert_query_count 10 do
+          assert_query_count 11 do
             get organization_note_path(@organization.slug, @note.public_id)
           end
 

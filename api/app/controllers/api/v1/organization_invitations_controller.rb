@@ -5,6 +5,7 @@ module Api
     class OrganizationInvitationsController < BaseController
       skip_before_action :require_authenticated_organization_membership, only: [:accept, :destroy, :show]
       skip_before_action :require_org_two_factor_authentication, only: [:accept, :destroy, :show]
+      before_action :skip_authorization, only: :show
 
       rescue_from Role::RoleNotFoundError, with: :render_unprocessable_entity
 

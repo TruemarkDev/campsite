@@ -3,6 +3,16 @@
 require "test_helper"
 
 class MessageThreadTest < ActiveSupport::TestCase
+  test "unread membership comparison preserves null-safe sender inequality" do
+    sql = MessageThreadMembership.unread.to_sql
+
+    if MessageThreadMembership.connection.adapter_name == "PostgreSQL"
+      assert_includes sql, "IS DISTINCT FROM"
+    else
+      assert_includes sql, "<=>"
+    end
+  end
+
   context "#other_members" do
     test "it returns the other members" do
       thread = create(:message_thread, :group, title: "hello")

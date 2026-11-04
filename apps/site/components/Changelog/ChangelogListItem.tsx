@@ -33,7 +33,7 @@ export default function ChangelogListItem(props: Props) {
             src={changelog.data.feature_image}
             width={1200}
             height={600}
-            className='flex aspect-[2/1] w-full rounded-lg object-cover ring-1 ring-black ring-opacity-5 dark:ring-white/10'
+            className='flex aspect-[2/1] w-full rounded-lg object-cover ring-1 ring-black/5 dark:ring-white/10'
           />
         </Link>
       )}
@@ -44,7 +44,7 @@ export default function ChangelogListItem(props: Props) {
             <Link href={`/changelog/${changelog.data.slug}`}>{changelog.data.title}</Link>
           </h2>
         ) : (
-          <h1 className='mb-1 text-[clamp(2rem,_4vw,_2.8rem)] font-bold leading-[1.12]'>{changelog.data.title}</h1>
+          <h1 className='mb-1 text-[clamp(2rem,_4vw,_2.8rem)] leading-[1.12] font-bold'>{changelog.data.title}</h1>
         )}
 
         <Link
@@ -59,13 +59,11 @@ export default function ChangelogListItem(props: Props) {
       </div>
 
       {changelog.content && (
-        <ReactMarkdown
-          className='prose prose-lg prose-changelog w-full max-w-full'
-          rehypePlugins={[rehypeRaw]}
-          remarkPlugins={[remarkGfm]}
-        >
-          {changelog.content}
-        </ReactMarkdown>
+        <div className='prose prose-lg prose-changelog w-full max-w-full'>
+          <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>
+            {changelog.content}
+          </ReactMarkdown>
+        </div>
       )}
     </li>
   )

@@ -1,0 +1,138 @@
+service: campsite-api-staging
+image: truemarkdev/campsite-api
+secrets_path: .kamal/campsite-secrets
+deploy_timeout: 300
+
+servers:
+  web:
+    hosts:
+      - 192.168.10.32
+    cmd: "sh -c 'bin/rails db:migrate && exec bundle exec puma'"
+
+proxy:
+  ssl: false
+  hosts:
+    - api.camp.home
+    - auth.camp.home
+    - admin.camp.home
+    - cdn.camp.home
+  app_port: 8080
+  healthcheck:
+    path: /up
+    interval: 10
+
+registry:
+  server: builder.home:5555
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://prakash@builder.home
+  context: api
+  dockerfile: api/Dockerfile
+  args:
+    BUNDLER_VERSION: '4.0.15'
+    RUBY_VERSION: '4.0.6'
+
+env:
+  clear:
+    RAILS_ENV: production
+    RAILS_SERVE_STATIC_FILES: 'true'
+    RAILS_LOG_TO_STDOUT: 'true'
+    # No homelab SigNoz yet; export to the Netcup collector (plain OTLP/HTTP)
+    # and tag spans so homelab traffic is filterable from real production.
+    OTEL_EXPORTER_OTLP_ENDPOINT: http://signoz.polo-apps.com:4318
+    OTEL_EXPORTER_OTLP_PROTOCOL: http/protobuf
+    OTEL_RESOURCE_ATTRIBUTES: deployment.environment=homelab,service.namespace=campsite
+    PORT: '8080'
+    SESSION_COOKIE_SECURE: 'true'
+    APP_URL: https://camp.home
+    MARKETING_SITE_URL: https://camp.home
+    STYLED_TEXT_API_URL: http://styled-text.camp.home
+    HTML_TO_IMAGE_URL: http://html-to-image.camp.home
+    SYNC_SERVER_URL: http://sync.camp.home
+    MEDIA_PROVIDER: cloudflare
+    MEDIA_CDN_URL: https://cdn.camp.home
+    API_SUBDOMAIN: api
+    AUTH_SUBDOMAIN: auth
+    AUTH_SUBDOMAINS: auth,camp-auth
+    ADMIN_SUBDOMAIN: admin
+    ADMIN_SUBDOMAINS: admin,camp-admin
+    MAILER_HOST: auth.camp.home
+    MAILER_PROTOCOL: https
+    MAILER_FROM: Campsite <campsite@agents.home>
+    SMTP_ADDRESS: smtp.home
+    SMTP_PORT: '25'
+    SMTP_DOMAIN: agents.home
+    SMTP_AUTHENTICATION: none
+    SMTP_STARTTLS: 'false'
+    SMTP_OPEN_TIMEOUT: '15'
+    SMTP_READ_TIMEOUT: '25'
+    ALLOWED_HOSTS: api.camp.home,auth.camp.home,admin.camp.home,cdn.camp.home
+    REDIS_URL: redis://192.168.10.33:6379/0
+    REDIS_SIDEKIQ_URL: redis://192.168.10.33:6379/1
+    RACK_ATTACK_REDIS_URL: redis://192.168.10.33:6379/2
+    SIDEKIQ_SCHEDULER_ENABLED: 'false'
+    S3_REGION: us-east-1
+    S3_ENDPOINT: https://s3.camp.home
+    AWS_CA_BUNDLE: /etc/ssl/certs/caddy-home.crt
+    S3_BUCKET: campsite-media
+    DATA_EXPORT_S3_BUCKET: campsite-exports
+    S3_FORCE_PATH_STYLE: 'true'
+  secret:
+    - RAILS_MASTER_KEY
+    - SECRET_KEY_BASE
+    - DATABASE_URL
+    - REVALIDATE_STATIC_CACHE_TOKEN
+    - S3_ACCESS_KEY_ID
+    - S3_SECRET_ACCESS_KEY
+
+volumes:
+  - /usr/local/share/ca-certificates/caddy-home.crt:/etc/ssl/certs/caddy-home.crt:ro
+
+accessories:
+  mysql:
+    service: campsite-api-staging-mysql
+    image: mysql:8.4@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
+    host: 192.168.10.33
+    env:
+      clear:
+        MYSQL_DATABASE: campsite_production
+        MYSQL_USER: campsite
+      secret:
+        - MYSQL_ROOT_PASSWORD
+        - MYSQL_PASSWORD
+    volumes:
+      # This is the new Groot target volume. Migrate and verify it before
+      # switching Rails writers; retain the untouched Odin source volume.
+      - /srv/campsite-data/mysql:/var/lib/mysql
+    options:
+      restart: unless-stopped
+      memory: 1g
+      health-cmd: mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 20
+      health-start-period: 30s
+
+  redis:
+    service: campsite-api-staging-redis
+    image: redis:8.2-alpine@sha256:30abb90e62f14b737010746def3ba99cc79fe19dcdb3d37b41f21fc62e7da19d
+    host: 192.168.10.33
+    cmd: redis-server --appendonly yes --appendfsync everysec --maxmemory 256mb --maxmemory-policy noeviction
+    volumes:
+      # This is the new Groot target volume. Copy AOF only during the bounded
+      # writer pause; retain the untouched Odin source volume.
+      - /srv/campsite-data/redis:/data
+    options:
+      restart: unless-stopped
+      memory: 384m
+      health-cmd: redis-cli ping
+      health-interval: 10s
+      health-timeout: 5s
+      health-retries: 12
+
+ssh:
+  user: prakash

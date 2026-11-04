@@ -99,7 +99,7 @@ function ShortcutsTable() {
                           return (
                             <kbd
                               key={part}
-                              className='bg-quaternary rounded-md border px-1 py-0.5 font-mono text-base font-medium [font-size:100%!important]'
+                              className='bg-quaternary rounded-md border px-1 py-0.5 font-mono text-base [font-size:100%!important] font-medium'
                             >
                               {part}
                             </kbd>

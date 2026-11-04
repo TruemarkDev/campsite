@@ -291,7 +291,7 @@ module Api
               assert_equal "<p>this is my comment</p>", post_comment_json["body_html"]
               assert_equal 1, post_comment_json["attachments"].length
               assert_equal "image/png", post_comment_json["attachments"][0]["file_type"]
-              assert_equal "http://campsite-test.imgix.net/path/to/image.png", post_comment_json["attachments"][0]["url"]
+              assert_equal "https://camp-cdn.polo-apps.test/cdn/path/to/image.png", post_comment_json["attachments"][0]["url"]
             end
           end
 
@@ -310,7 +310,7 @@ module Api
               assert_equal "", post_comment_json["body_html"]
               assert_equal 1, post_comment_json["attachments"].length
               assert_equal "image/png", post_comment_json["attachments"][0]["file_type"]
-              assert_equal "http://campsite-test.imgix.net/path/to/image.png", post_comment_json["attachments"][0]["url"]
+              assert_equal "https://camp-cdn.polo-apps.test/cdn/path/to/image.png", post_comment_json["attachments"][0]["url"]
             end
           end
 

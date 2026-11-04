@@ -7,6 +7,7 @@ import {
   CheckSquareIcon,
   CodeIcon,
   FaceSmileIcon,
+  GridIcon,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
@@ -16,6 +17,7 @@ import {
   PlayIcon,
   PostIcon,
   QuoteIcon,
+  SparklesIcon,
   TextAlignLeftIcon,
   UIText,
   UnorderedListIcon,
@@ -28,7 +30,7 @@ import { useUploadNoteAttachments } from './Attachments/useUploadAttachments'
 
 export const ADD_ATTACHMENT_SHORTCUT = 'mod+shift+u'
 
-interface CommandItemProps {
+export interface CommandItemProps {
   title: string
   searchTerms?: string[]
   icon: ReactNode
@@ -41,7 +43,7 @@ interface CommandProps {
   range: Range
 }
 
-const COMMANDS: CommandItemProps[] = [
+export const COMMANDS: CommandItemProps[] = [
   {
     title: 'Add a file',
     searchTerms: [
@@ -146,6 +148,14 @@ const COMMANDS: CommandItemProps[] = [
     kbd: '---'
   },
   {
+    title: 'Table',
+    searchTerms: ['grid', 'spreadsheet', 'columns', 'rows'],
+    icon: <GridIcon />,
+    command: ({ editor, range }: CommandProps) => {
+      editor.chain().focus().deleteRange(range).insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()
+    }
+  },
+  {
     title: 'Toggle section',
     searchTerms: ['toggle', 'section', 'collapse', 'expand', 'details'],
     icon: <PlayIcon />,
@@ -154,6 +164,8 @@ const COMMANDS: CommandItemProps[] = [
 
       // open the toggle section after creating it
       setTimeout(() => {
+        if (editor.isDestroyed) return
+
         // range.from will point to the summary element. get its parent, then find the button, then click it.
         const summaryEl = editor.view.nodeDOM(range.from) as HTMLElement | null
         const parentEl = summaryEl?.closest('[data-type="details"]')
@@ -188,14 +200,32 @@ const COMMANDS: CommandItemProps[] = [
 
 type Props = Pick<ComponentPropsWithoutRef<typeof SuggestionRoot>, 'editor'> & {
   upload: ReturnType<typeof useUploadNoteAttachments>
+  onAiEdit?: (range: Range) => void
 }
 
 const pluginKey = new PluginKey('slashCommand')
 
-export function SlashCommand({ editor, upload }: Props) {
+export function SlashCommand({ editor, upload, onAiEdit }: Props) {
+  const commands: CommandItemProps[] = [
+    ...(onAiEdit
+      ? [
+          {
+            title: 'Edit with AI',
+            searchTerms: ['ai', 'rewrite', 'draft'],
+            icon: <SparklesIcon />,
+            command: ({ editor, range }: CommandProps) => {
+              editor.chain().focus().deleteRange(range).run()
+              onAiEdit({ from: range.from, to: range.from })
+            }
+          }
+        ]
+      : []),
+    ...COMMANDS
+  ]
+
   return (
     <SuggestionRoot editor={editor} char='/' pluginKey={pluginKey}>
-      {COMMANDS.map((item) => {
+      {commands.map((item) => {
         return (
           <SuggestionItem
             editor={editor}

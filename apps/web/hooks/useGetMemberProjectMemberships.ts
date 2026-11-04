@@ -5,7 +5,7 @@ import { apiClient } from '@/utils/queryClient'
 
 const query = apiClient.organizations.getMembersProjectMemberships()
 
-type Options = {
+interface Options {
   memberUsername: string
   enabled?: boolean
 }

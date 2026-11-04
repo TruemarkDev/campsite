@@ -1,0 +1,56 @@
+service: campsite-web-home-staging
+image: truemarkdev/campsite-web-home
+secrets_path: .kamal/campsite-secrets
+deploy_timeout: 60
+
+servers:
+  web:
+    - 192.168.10.32
+
+proxy:
+  ssl: false
+  host: camp.home
+  app_port: 3000
+  healthcheck:
+    path: /robots.txt
+    interval: 10
+
+registry:
+  server: builder.home:5555
+  username: KAMAL_REGISTRY_USER_NAME
+  password:
+    - KAMAL_REGISTRY_PASSWORD
+
+builder:
+  arch: amd64
+  remote: ssh://prakash@builder.home
+  context: .
+  dockerfile: apps/web/Dockerfile
+  args:
+    NEXT_PUBLIC_WEB_URL: https://camp.home
+    NEXT_PUBLIC_SITE_URL: https://camp.home
+    NEXT_PUBLIC_SYNC_URL: wss://sync.camp.home
+    NEXT_PUBLIC_API_URL: https://api.camp.home
+    NEXT_PUBLIC_SAME_ORIGIN_API: 'true'
+    NEXT_PUBLIC_AUTH_URL: https://auth.camp.home
+    NEXT_PUBLIC_ADMIN_URL: https://admin.camp.home
+    NEXT_PUBLIC_CDN_URL: https://cdn.camp.home
+    NEXT_PUBLIC_IMGIX_URL: https://cdn.camp.home
+    NEXT_PUBLIC_OBJECT_STORAGE_URL: https://s3.camp.home
+    NEXT_PUBLIC_PUSHER_KEY: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_KEY") %>
+    NEXT_PUBLIC_PUSHER_CLUSTER: <%= ENV.fetch("NEXT_PUBLIC_PUSHER_CLUSTER") %>
+    NEXT_PUBLIC_RELEASE_SHA: <%= `git rev-parse HEAD`.strip %>
+
+env:
+  clear:
+    NODE_ENV: production
+    PORT: '3000'
+    NODE_EXTRA_CA_CERTS: /etc/ssl/certs/caddy-home.crt
+  secret:
+    - REVALIDATE_STATIC_CACHE_TOKEN
+
+volumes:
+  - /usr/local/share/ca-certificates/caddy-home.crt:/etc/ssl/certs/caddy-home.crt:ro
+
+ssh:
+  user: prakash

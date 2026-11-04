@@ -9,6 +9,7 @@ import { useBindCurrentUserEventOnceInDesktopApp } from '@/hooks/useBindCurrentU
 import { useCreateDesktopOrBrowserNotification } from '@/hooks/useCreateDesktopOrBrowserNotification'
 import { useGetCurrentUser } from '@/hooks/useGetCurrentUser'
 import { useQueryNormalizer } from '@/utils/normy/QueryNormalizerProvider'
+import { updateThreadInInbox } from '@/utils/prependThreadToInbox'
 import { apiClient, setTypedInfiniteQueriesData, setTypedQueriesData } from '@/utils/queryClient'
 import { setNormalizedData } from '@/utils/queryNormalization'
 
@@ -38,8 +39,17 @@ export const useChatSubscriptions = () => {
 
       if (isNewMessageInFocusedThread) {
         message_thread.unread_count = 0
+        if (type === 'new-message') {
+          updateThreadInInbox(
+            queryClient,
+            getThreads.requestKey({ orgSlug: message_thread.organization_slug }),
+            message_thread
+          )
+        }
       } else {
-        queryClient.invalidateQueries({ queryKey: getThreads.requestKey(message_thread.organization_slug) })
+        queryClient.invalidateQueries({
+          queryKey: getThreads.requestKey({ orgSlug: message_thread.organization_slug })
+        })
 
         if (message_thread.project_id && type === 'new-message') {
           setNormalizedData({
@@ -152,7 +162,7 @@ export const useChatSubscriptions = () => {
 
   const hardInvalidateThreadQueries = useCallback(
     ({ message_thread_id, organization_slug }: { message_thread_id: string; organization_slug: string }) => {
-      queryClient.invalidateQueries({ queryKey: getThreads.requestKey(organization_slug) })
+      queryClient.invalidateQueries({ queryKey: getThreads.requestKey({ orgSlug: organization_slug }) })
       queryClient.invalidateQueries({ queryKey: getFavorites.requestKey(organization_slug) })
       queryClient.invalidateQueries({ queryKey: getThreadsById.requestKey(organization_slug, message_thread_id) })
       queryClient.invalidateQueries({
@@ -223,7 +233,7 @@ export const useChatSubscriptions = () => {
 
   const removeThreadQueries = useCallback(
     ({ message_thread_id, organization_slug }: { message_thread_id: string; organization_slug: string }) => {
-      queryClient.invalidateQueries({ queryKey: getThreads.requestKey(organization_slug) })
+      queryClient.invalidateQueries({ queryKey: getThreads.requestKey({ orgSlug: organization_slug }) })
       queryClient.invalidateQueries({ queryKey: getFavorites.requestKey(organization_slug) })
       queryClient.removeQueries({ queryKey: getThreadsById.requestKey(organization_slug, message_thread_id) })
       queryClient.removeQueries({

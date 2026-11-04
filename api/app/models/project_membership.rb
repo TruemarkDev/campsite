@@ -28,7 +28,7 @@ class ProjectMembership < ApplicationRecord
   delegate :organization, :url, to: :project
   delegate :mrkdwn_link, to: SlackBlockKit
 
-  SERIALIZER_INCLUDES = { project: Project::SERIALIZER_INCLUDES }
+  SERIALIZER_INCLUDES = { project: Project::SERIALIZER_INCLUDES }.freeze
   scope :serializer_includes, -> { eager_load(SERIALIZER_INCLUDES) }
 
   scope :member, -> { joins(:organization_membership).merge(OrganizationMembership.non_guest) }

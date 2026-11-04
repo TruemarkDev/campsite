@@ -31,7 +31,7 @@ export function SwitchSlackButton({
 function OptionalTip() {
   return (
     <svg
-      className='-right-22 absolute -top-5 hidden rotate-[7deg] opacity-50 lg:flex'
+      className='absolute -top-5 -right-22 hidden rotate-[7deg] opacity-50 lg:flex'
       width='99'
       height='47'
       viewBox='0 0 99 47'

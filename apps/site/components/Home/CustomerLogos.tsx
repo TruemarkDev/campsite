@@ -57,8 +57,8 @@ interface Logo {
 
 export function CustomerLogos() {
   return (
-    <div className='flex flex-col items-center justify-center gap-2 pb-4 pt-8'>
-      <p className='text-quaternary text-xs font-semibold uppercase tracking-wider'>Loved by teams at</p>
+    <div className='flex flex-col items-center justify-center gap-2 pt-8 pb-4'>
+      <p className='text-quaternary text-xs font-semibold tracking-wider uppercase'>Loved by teams at</p>
       <div className='flex flex-wrap items-center justify-center gap-x-4'>
         {logos.map((logo) => (
           <Logo logo={logo} key={logo.url} />

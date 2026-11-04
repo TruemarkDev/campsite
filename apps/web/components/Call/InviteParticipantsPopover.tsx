@@ -50,7 +50,7 @@ export function InviteParticipantsPopover() {
           align='start'
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <div className='flex max-h-[--radix-popper-available-height] flex-col gap-4 p-3'>
+          <div className='flex max-h-[var(--radix-popper-available-height)] flex-col gap-4 p-3'>
             <InviteMembersForm onSuccess={() => setOpen(false)} />
             <div>
               <CopyLinkButton />
@@ -78,7 +78,7 @@ function CopyLinkButton({ iconOnly = false }: { iconOnly?: boolean }) {
         tooltip='Copy link'
         accessibilityLabel='Copy link'
         className={cn({
-          '!border-transparent !bg-green-500 !text-white !shadow-none !outline-none !ring-0': isCopied
+          '!border-transparent !bg-green-500 !text-white !shadow-none !ring-0 !outline-none': isCopied
         })}
         tooltipShortcut={'mod+shift+c'}
         round
@@ -93,7 +93,7 @@ function CopyLinkButton({ iconOnly = false }: { iconOnly?: boolean }) {
       onClick={onCopy}
       leftSlot={isCopied ? <CheckIcon /> : <LinkIcon />}
       className={cn({
-        '!border-transparent !bg-green-500 !text-white !shadow-none !outline-none !ring-0': isCopied
+        '!border-transparent !bg-green-500 !text-white !shadow-none !ring-0 !outline-none': isCopied
       })}
       tooltipShortcut={'mod+shift+c'}
     >

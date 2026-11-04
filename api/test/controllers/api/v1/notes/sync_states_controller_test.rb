@@ -16,6 +16,22 @@ module Api
         end
 
         context "#show" do
+          test "HEAD authorizes without a document payload and rejects revoked access" do
+            viewer = create(:organization_membership, :member, organization: @org)
+            permission = create(:permission, user: viewer.user, subject: @note, action: :view)
+            sign_in(viewer.user)
+
+            head organization_note_sync_state_path(@org.slug, @note.public_id)
+            assert_response :ok
+            assert_empty response.body
+
+            permission.discard!
+
+            head organization_note_sync_state_path(@org.slug, @note.public_id)
+            assert_response :forbidden
+            assert_empty response.body
+          end
+
           test "author can get description" do
             sign_in(@member.user)
             get organization_note_sync_state_path(@org.slug, @note.public_id)
@@ -126,7 +142,43 @@ module Api
             assert_equal "9876_cat_dog_5432", @note.reload.description_state
             assert_equal "<p>cat dog</p>", @note.description_html
             assert_equal 2, @note.description_schema_version
+            assert_equal "9876_cat_dog_5432", json_response["description_state"]
             assert_equal @member.user.display_name, @note.events.last.metadata.dig("actor_display_name")
+          end
+
+          test "initializes an absent Yjs state only once" do
+            @note.update!(description_state: nil)
+            initial_updated_at = @note.updated_at
+            initial_events_count = @note.events.count
+            sign_in(@member.user)
+
+            put organization_note_sync_state_path(@org.slug, @note.public_id),
+              params: {
+                description_html: "<p>first</p>",
+                description_state: "first-lineage",
+                description_schema_version: 2,
+                initialize: true,
+              },
+              as: :json
+
+            assert_response :ok
+            assert_equal "first-lineage", json_response["description_state"]
+
+            put organization_note_sync_state_path(@org.slug, @note.public_id),
+              params: {
+                description_html: "<p>second</p>",
+                description_state: "second-lineage",
+                description_schema_version: 2,
+                initialize: true,
+              },
+              as: :json
+
+            assert_response :ok
+            assert_equal "first-lineage", json_response["description_state"]
+            assert_equal "first-lineage", @note.reload.description_state
+            assert_equal "<p>first</p>", @note.description_html
+            assert_equal initial_updated_at, @note.updated_at
+            assert_equal initial_events_count, @note.events.count
           end
 
           test "cannot update with older schema" do

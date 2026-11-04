@@ -6,7 +6,7 @@ import { ReactionPicker } from './ReactionPicker'
 interface ComposerReactionPickerProps {
   open?: boolean
   onOpenChange?: (value: boolean) => void
-  editorRef: React.RefObject<MarkdownEditorRef>
+  editorRef: React.RefObject<MarkdownEditorRef | null>
   disabled?: boolean
 }
 

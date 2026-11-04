@@ -44,16 +44,6 @@ export function SecurityMeasuresTable() {
 
 const subprocessors = [
   {
-    processor: 'Fly.io',
-    description: 'Application hosting',
-    location: 'United States'
-  },
-  {
-    processor: 'Vercel Inc.',
-    location: 'United States',
-    description: 'Application hosting'
-  },
-  {
     processor: 'PlanetScale, Inc.',
     description: 'Data services',
     location: 'United States'

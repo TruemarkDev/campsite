@@ -24,11 +24,11 @@ FactoryBot.define do
       summary { Faker::Lorem.paragraph }
     end
 
-    # NOTE: This should be the last trait in the list so `reindex` is called
+    # NOTE: This should be the last trait in the list so `refresh_search_document` is called
     # after all the other callbacks complete.
-    trait :reindex do
+    trait :search_document do
       after(:create) do |call|
-        call.reindex(refresh: true)
+        call.refresh_search_document
       end
     end
   end

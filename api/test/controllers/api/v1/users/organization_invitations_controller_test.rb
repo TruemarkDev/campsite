@@ -13,29 +13,40 @@ module Api
         end
 
         context "#index" do
-          before do
-            create(:organization_invitation, email: @user.email)
-            create(:organization_invitation, email: @user.email)
-          end
+        test "matches invitations when the signed-in email differs in casing" do
+          invitation = create(:organization_invitation, email: "member@example.com")
+          user = create(:user, email: "MEMBER@EXAMPLE.COM")
+          sign_in user
 
-          test "returns paginated orgs for a user" do
-            sign_in @user
-            get current_user_organization_invitations_path
+          get current_user_organization_invitations_path
 
-            assert_response :ok
-            assert_response_gen_schema
-
-            assert_equal 2, json_response.length
-            expected_ids = OrganizationInvitation.where(email: @user.email).pluck(:public_id).sort
-            assert_equal expected_ids, json_response.pluck("id").sort
-            assert_not_empty json_response.pluck("token")
-          end
-
-          test "return 401 for an unauthenticated user" do
-            get current_user_organization_invitations_path
-            assert_response :unauthorized
-          end
+          assert_response :ok
+          assert_includes json_response.pluck("id"), invitation.public_id
         end
+
+        before do
+          create(:organization_invitation, email: @user.email)
+          create(:organization_invitation, email: @user.email)
+        end
+
+        test "returns paginated orgs for a user" do
+          sign_in @user
+          get current_user_organization_invitations_path
+
+          assert_response :ok
+          assert_response_gen_schema
+
+          assert_equal 2, json_response.length
+          expected_ids = OrganizationInvitation.where(email: @user.email).pluck(:public_id).sort
+          assert_equal expected_ids, json_response.pluck("id").sort
+          assert_not_empty json_response.pluck("token")
+        end
+
+        test "return 401 for an unauthenticated user" do
+          get current_user_organization_invitations_path
+          assert_response :unauthorized
+        end
+      end
       end
     end
   end

@@ -141,7 +141,7 @@ export function Bubble({ message, thread, position }: Props) {
             {!message.discarded_at && message.unfurled_link && !message.attachments.length && (
               <div
                 className={cn(
-                  'relative flex w-full ring-2 ring-[--bg-primary] sm:max-w-md',
+                  'relative flex w-full ring-2 ring-[var(--bg-primary)] sm:max-w-md',
                   {
                     'justify-start': !message.viewer_is_sender,
                     'justify-end': message.viewer_is_sender
@@ -220,7 +220,7 @@ function TextBubble({
       label={longTimestamp(message.created_at, { month: 'short' })}
     >
       <div
-        className={cn('chat-prose relative select-text whitespace-pre-wrap break-words', className, {
+        className={cn('chat-prose relative break-words whitespace-pre-wrap select-text', className, {
           'bg-quaternary text-primary': !message.viewer_is_sender && !hasReactionsOnly,
           'bg-blue-500 text-white': message.viewer_is_sender && !message.discarded_at && !hasReactionsOnly,
           'bg-quaternary text-tertiary': message.discarded_at && !hasReactionsOnly,
@@ -229,7 +229,7 @@ function TextBubble({
             position === 'only' && hasReactionsOnly && !message.viewer_is_sender && isGroupOrIntegrationDm(thread),
           'pt-1':
             position === 'first' && hasReactionsOnly && !message.viewer_is_sender && isGroupOrIntegrationDm(thread),
-          'ring-2 ring-[--bg-primary]': message.reply && !hasReactionsOnly,
+          'ring-2 ring-[var(--bg-primary)]': message.reply && !hasReactionsOnly,
           'mt-1': hasReactionsOnly && message.reply,
           'rounded-tr': message.viewer_is_sender && message.reply,
           'rounded-tl': !message.viewer_is_sender && message.reply,

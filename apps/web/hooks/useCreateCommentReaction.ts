@@ -14,7 +14,7 @@ import { createPendingReaction, pendingReactionMutations } from '@/utils/reactio
 
 const postCommentsReactions = apiClient.organizations.postCommentsReactions()
 
-type Props = {
+interface Props {
   reaction: StandardReaction | SyncCustomReaction
 }
 
@@ -58,7 +58,11 @@ export function useCreateCommentReaction(commentId: string) {
 
       return { ...optimisticUpdate, client_id }
     },
-    onSuccess(newReaction, _, { client_id }) {
+    onSuccess(newReaction, _, onMutateResult) {
+      const { client_id } = onMutateResult ?? {}
+
+      if (!client_id) return
+
       setNormalizedData({
         queryNormalizer,
         type: 'comment',

@@ -103,6 +103,10 @@ class User
       nil
     end
 
+    def voice_id
+      nil
+    end
+
     def export_json
       nil
     end

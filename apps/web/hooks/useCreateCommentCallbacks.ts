@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import { InfiniteData, useQueryClient } from '@tanstack/react-query'
 import { CookieValueTypes } from 'cookies-next'
 import { atom, useSetAtom } from 'jotai'
@@ -195,6 +196,8 @@ async function optimisticUpdate({
       size: null,
       comments_count: 0,
       type_name: 'attachment',
+      transcript: null,
+      transcription_job_status: null,
       gallery_id: null
     }
   })

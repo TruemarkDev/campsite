@@ -3,6 +3,13 @@
 require "test_helper"
 
 class OrganizationInvitationTest < ActiveSupport::TestCase
+  test "search_by matches invitation email text" do
+    invitation = create(:organization_invitation, email: "invitee@example.com")
+
+    assert_includes OrganizationInvitation.search_by("invitee"), invitation
+    assert_empty OrganizationInvitation.search_by("not-present")
+  end
+
   context "invite_token" do
     test "generates a unique invite token on create" do
       org = create(:organization)
@@ -35,6 +42,12 @@ class OrganizationInvitationTest < ActiveSupport::TestCase
       assert_predicate membership, :valid?
       assert_nil OrganizationInvitation.find_by(id: @invitation.id)
       assert_includes @invitation.organization.members, membership.user
+    end
+
+    test "accepts a matching invitation when email casing differs" do
+      @invitation.update_column(:email, @invitation.email.upcase)
+
+      assert_predicate @invitation.accept!(@invitation.recipient), :valid?
     end
 
     test "raises an error if the invite email does not match the current user email" do
