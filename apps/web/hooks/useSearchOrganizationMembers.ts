@@ -14,6 +14,7 @@ interface Options {
   enabled?: boolean
   scope?: string
   order?: OrganizationMembersGetRequest['order']
+  staleTime?: number
 }
 
 export function useSearchOrganizationMembers(opts?: Options) {
@@ -22,7 +23,8 @@ export function useSearchOrganizationMembers(opts?: Options) {
     status,
     roles,
     enabled = true,
-    order = { by: 'last_seen_at', direction: 'desc' }
+    order = { by: 'last_seen_at', direction: 'desc' },
+    staleTime
   } = opts || {}
   const { scope } = useScope()
   const queryClient = useQueryClient()
@@ -55,6 +57,7 @@ export function useSearchOrganizationMembers(opts?: Options) {
     getNextPageParam: (lastPage) => lastPage.next_cursor,
     getPreviousPageParam: (firstPage) => firstPage.prev_cursor,
     placeholderData: query ? keepPreviousData : undefined,
+    staleTime,
     enabled: !!scope && enabled
   })
 

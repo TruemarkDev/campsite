@@ -86,7 +86,7 @@ export function HomeSidebar() {
 
 function MembersLists({ query }: { query: string }) {
   const { data: currentUser } = useGetCurrentUser()
-  const { data: searchMembers, isLoading } = useSearchOrganizationMembers({ query })
+  const { data: searchMembers, isLoading } = useSearchOrganizationMembers({ query, staleTime: query ? 0 : 30_000 })
   const syncMembers = useSyncedMembers()
   const members = useMemo(() => flattenInfiniteData(searchMembers) || [], [searchMembers])
   const [startRef, startInView] = useInView()
@@ -118,7 +118,12 @@ function MembersLists({ query }: { query: string }) {
   const hasAnyMembers = onlineMembers.length > 0 || offlineMembers.length > 0 || guests.length > 0
   const showUpsell = syncMembers && syncMembers.members.length === 1
 
-  if (isLoading) return <LazyLoadingSpinner delay={1000} />
+  if (isLoading)
+    return (
+      <div className='flex flex-1 items-center justify-center'>
+        <LazyLoadingSpinner delay={1000} />
+      </div>
+    )
   if (!hasAnyMembers) return <SearchNoResults />
 
   return (
