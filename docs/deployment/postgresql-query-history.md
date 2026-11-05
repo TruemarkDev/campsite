@@ -145,8 +145,11 @@ Seventeen focused Python tests passed, including comparison, local transport,
 standby rejection/skip, private files, daily idempotence, atomic publication,
 retention, failed receipts and fresh baselines. The installed program SHA-256 is
 `51f217725bf7d720e3ae5e881fe282069394b219d8998db3fcdd14bbd2256702`.
-This is a working-tree deployment based on `4a44098`, with exact installed file
-hashes recorded in `/opt/campsite-postgresql-metrics/manifest.json`.
+The initial working-tree installation was based on `4a44098`. Source/configuration
+was subsequently published to GitHub as
+`87e9c4ecc85724fc5ad04b6b52aeb259b2318ed3`. Installed program, SQL and cron hashes
+were reverified on both members, and their
+`/opt/campsite-postgresql-metrics/manifest.json` records that published revision.
 
 ✅ Native cron executed the matching commands on both hosts at 2026-11-05 08:35
 Nepal time. pg-a produced a baseline (captured 02:50:01 UTC); pg-b recorded

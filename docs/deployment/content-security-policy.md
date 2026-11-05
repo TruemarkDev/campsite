@@ -45,7 +45,8 @@ controls remain responsible for overall request-volume limits.
 
 ## Compatibility and enforcement boundary
 
-🟡 The candidate is **observational**, not enforced or deployed by this change.
+🟡 The candidate is **observational**, not enforced. It was deployed to the
+homelab web service on 2026-11-05 as recorded below.
 The app has static pages (including public notes) and server-rendered pages.
 Existing static HTML contains inline Next.js hydration scripts, so inline reports
 are expected. A request nonce cannot safely be invented at build time or reused.
@@ -99,8 +100,49 @@ own temporary build directory. It needs no Rails database or authenticated sessi
 Published implementation: GitHub `TruemarkDev/campsite` commit `d0a08d1`;
 the remote main revision was independently verified after a normal push.
 
-🟡 No live deployment was performed. Authenticated calls/desktop compatibility and
-enforcement remain unverified, tracked as `campsite-ajx2`.
+## Homelab release — 2026-11-05
+
+✅ User-authorized cron publication and report-only deployment. Published and
+deployed GitHub revision: `87e9c4ecc85724fc5ad04b6b52aeb259b2318ed3` from a clean
+detached checkout, preserving GitHub's existing squash history and documentation.
+Only `campsite-web-home-staging` on Quill `192.168.10.32` was promoted, as operator
+`prakash`, through `script/campsite-deploy` and
+`config/deploy.campsite-web-home.yml`. The three-name runtime secret preflight
+passed. Kamal `deploy --skip-push --version=87e9c4ecc85724fc5ad04b6b52aeb259b2318ed3`
+completed in 17.5 seconds. No API/sync/worker or database service deployment was
+part of this web release.
+
+Registry manifest and independently inspected pulled image digest match:
+`sha256:8a5a693e78595733b888574bb8689e40a972747cf732403bae4cbcaa90fcbd96`.
+The container was running with zero restarts and `/api/build-id` returned the
+exact deployed revision. The static `/new` route returned HTTPS 200 with both
+policies: the candidate excludes both script exceptions, while enforcement keeps
+the compatibility policy. `Reporting-Endpoints` points to the canonical
+`https://camp.home/api/security/csp-report` route.
+
+Both live report formats returned 204; GET returned 405 and an oversized report
+returned 413. Structured diagnostics contained only the fixed policy/directive/kind
+fields; the synthetic document URL/sample marker was absent. These synthetic
+transport probes do not prove that an SDK requires eval or establish compatibility
+of calls. API and sync `/up` checks also returned 200.
+
+A fresh isolated eight-case Chromium suite passed in 2.1 minutes, without retries
+or skips, including real fixture sign-in, canonical persistence, disconnected
+edits/reconnect, independent-member permissions and connected-viewer revocation.
+The earlier 404-test workspace, type/lint, production build and CSP browser
+checks remain the source gates; remote CI was not run for this GitHub revision.
+
+🟡 Authenticated live editor/workspace/call checks are waiting for human sign-in
+in the authorized, dedicated minimized Brave window (`campsite-th9`). No Campsite
+desktop bundle was found in the standard application locations or Spotlight, so
+native desktop acceptance is unavailable on this operator Mac. Core compatibility
+observations and any enforcement decision remain tracked as `campsite-ajx2`.
+Do not infer successful native desktop/call acceptance from the isolated suite.
+
+Rollback: use the same deployment wrapper and configuration with
+`kamal rollback 03ce7bab8c030b4ee3803e30c710ebc2d9e122f6`. Its registry manifest
+was verified available before promotion:
+`sha256:f5544c01a0c4fb136e6998e64ee5fd7844cda8055dca3abe569a73cebed5f26e`.
 
 References: [Next.js Pages Router CSP](https://nextjs.org/docs/pages/guides/content-security-policy),
 [MDN CSP rollout](https://developer.mozilla.org/en-US/docs/Web/Security/Practical_implementation_guides/CSP),
