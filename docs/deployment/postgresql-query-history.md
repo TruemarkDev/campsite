@@ -1,6 +1,7 @@
 # Campsite PostgreSQL query history
 
-As built on 2026-11-04. Tracking: `campsite-dbz`.
+Instrumentation as built on 2026-11-04 (`campsite-dbz`); native daily cron added
+on 2026-11-05 (`campsite-a08w`).
 
 ## Installed state
 
@@ -13,8 +14,8 @@ No image/package upgrade, memory/pool tuning or vacuum changes were made.
 
 The source template records the default for future bootstraps. Current members
 use the DCS setting; their pinned image remains unchanged. PostgreSQL maintains
-aggregate history natively and saves it across clean restarts. No custom polling
-daemon or scheduler was installed.
+aggregate history natively and saves it across clean restarts. No custom polling daemon was installed. Daily exports now use the hosts' existing
+Debian cron services as described below.
 
 The module is server-wide and retains its internal normalized statement text.
 The collector filters to `campsite_production` and application role
@@ -78,9 +79,89 @@ workload. A low-frequency slow statement and a cheap high-frequency statement
 need different remedies.
 
 No new collector daemon is needed: PostgreSQL already accumulates statistics.
-Manual snapshots are sufficient for this first window. Any later scheduling can
-use the existing operational scheduler after its target and retention are chosen;
-this plan installs no scheduler or system service.
+Daily snapshots are now scheduled on the existing host cron services. Manual
+snapshots remain useful after a particularly busy session; use separate output
+filenames so the scheduled daily files remain idempotent.
+
+## Scheduled collection — 2026-11-05
+
+Daily collection is installed on both PostgreSQL members:
+
+| Member | Host                  | Schedule     |
+| ------ | --------------------- | ------------ |
+| pg-a   | Groot `192.168.10.33` | `15 7 * * *` |
+| pg-b   | `192.168.10.35`       | `15 7 * * *` |
+
+Both hosts use `Asia/Kathmandu`; Debian cron schedules against that host timezone.
+The command also sets `TZ=Asia/Kathmandu` for daily filenames. Both cron services
+were active and enabled at installation. Scheduling needs no new daemon, package,
+LLM job, operator SSH key distribution or PostgreSQL restart. Debian's existing
+`cron` package is `3.0pl1-197`, matching the configured repository candidate;
+Python is `/usr/bin/python3` (3.13.5). `flock`, `timeout` and `systemd-cat` are
+existing OS tools. OS package updates remain owned by normal host maintenance.
+
+Source entries: `config/cron/postgresql-metrics-pg-a` and
+`config/cron/postgresql-metrics-pg-b`. On each host:
+
+- `/etc/cron.d/campsite-postgresql-metrics`: root-owned, mode 0644.
+- `/opt/campsite-postgresql-metrics/`: root-owned program, SQL and SHA-256 manifest.
+- `/var/lib/campsite-postgresql-metrics/`: owned by `prakash`, mode 0700.
+- Dated JSON snapshots and `latest.json`: mode 0600, atomic publication.
+
+The job runs as the existing `prakash` operator and accesses only the fixed local
+PostgreSQL container through Docker. Manual SSH collection remains supported.
+A standby records `skipped_standby` without exporting a raw snapshot; the primary
+collects once per local calendar day. Running on both hosts follows a primary
+change without copying SSH credentials or exporting standby counters.
+
+The native `flock` command prevents overlap. Native `timeout` limits the command
+to 60 seconds with a five-second kill grace; the existing SQL and subprocess
+timeouts remain in place. Output goes to the system journal under
+`campsite-postgresql-metrics`; stderr has error priority. Cron email is disabled.
+There is no automatic email/chat alert configured by this change.
+
+Dated snapshots retain the most recent 30 local dates per member. Pruning only
+matches the collector's own canonical snapshot filenames. First collection makes
+a baseline. Later comparable days include interval deltas; resets, restarts,
+evictions or an invalid previous baseline produce `baseline_reset` while preserving
+new raw counters. They do not manufacture a comparison across incompatible stats.
+`already_collected` means the same-day file was validated and retained, not that a
+fresh database probe ran. A failed run records its exception type in `latest.json`
+and exits nonzero. These are metrics snapshots, not application backups.
+
+Read status without exposing SQL or credentials:
+
+```sh
+cat /var/lib/campsite-postgresql-metrics/latest.json
+sudo -n journalctl -t campsite-postgresql-metrics --since '2 days ago' --no-pager
+```
+
+An old receipt indicates the need to inspect cron and the journal; these files do
+not constitute an external alerting service. Raw files live separately on each
+member. Retrieve the applicable files through existing operator SSH access for a
+weekly comparison; keep intervals separate when statistics are incompatible.
+
+Seventeen focused Python tests passed, including comparison, local transport,
+standby rejection/skip, private files, daily idempotence, atomic publication,
+retention, failed receipts and fresh baselines. The installed program SHA-256 is
+`51f217725bf7d720e3ae5e881fe282069394b219d8998db3fcdd14bbd2256702`.
+This is a working-tree deployment based on `4a44098`, with exact installed file
+hashes recorded in `/opt/campsite-postgresql-metrics/manifest.json`.
+
+✅ Native cron executed the matching commands on both hosts at 2026-11-05 08:35
+Nepal time. pg-a produced a baseline (captured 02:50:01 UTC); pg-b recorded
+`skipped_standby`. Primary JSON was 238,724 bytes, with no statement SQL-text
+fields exported. Snapshot/receipt modes were verified 0600 and directories 0700.
+The journal independently recorded both runs. Temporary validation cron entries
+were removed; the permanent entries remain active. The next daily run is
+2026-11-06 at 07:15 Nepal time. A future 07:15 execution is not yet observed.
+
+Rollback/pause: remove only `/etc/cron.d/campsite-postgresql-metrics` on each
+member with `sudo -n rm -f /etc/cron.d/campsite-postgresql-metrics`. Cron detects
+that automatically; do not restart the database or remove its extension.
+Retain `/var/lib/campsite-postgresql-metrics` for analysis unless its deletion is
+explicitly requested. Reinstallation uses native `install` for the program/SQL and
+the matching member's checked-in cron file; preserve ownership and modes above.
 
 ## Rollout evidence and rollback
 

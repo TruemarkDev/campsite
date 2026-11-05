@@ -1,0 +1,6 @@
+# Campsite-only read-only statistics. Host timezone: Asia/Kathmandu.
+SHELL=/bin/sh
+PATH=/usr/bin:/bin
+TZ=Asia/Kathmandu
+MAILTO=""
+15 7 * * * prakash /usr/bin/systemd-cat -t campsite-postgresql-metrics --stderr-priority=err /usr/bin/flock -n -E 75 /var/lib/campsite-postgresql-metrics/.lock /usr/bin/timeout --verbose --kill-after=5s 60s /usr/bin/python3 -B /opt/campsite-postgresql-metrics/postgresql-metrics.py --member pg-a --local --daily-directory /var/lib/campsite-postgresql-metrics --retention-days 30
