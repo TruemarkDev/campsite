@@ -306,8 +306,6 @@ GEM
       bigdecimal (>= 3.1, < 5)
     multipart-post (2.4.1)
     mutex_m (0.3.0)
-    mysql2 (0.5.7)
-      bigdecimal
     nanoid (2.0.0)
     net-http (0.9.1)
       uri (>= 0.11.1)
@@ -833,7 +831,6 @@ DEPENDENCIES
   minitest-spec-rails (~> 7.1)
   minitest-stub-const
   mocha (~> 3.1)
-  mysql2 (~> 0.5.7)
   nanoid
   omniauth
   omniauth-google-oauth2

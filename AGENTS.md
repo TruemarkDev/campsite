@@ -67,7 +67,7 @@ Cal.com/Zapier, OpenAI.
 
 Deployment: **Kamal to the homelab** — Quill `192.168.10.32` (apps), Groot
 `192.168.10.33` and pg-b `192.168.10.35` (Patroni PostgreSQL), Groot (Redis),
-PostgreSQL search (source migration implemented; live cutover pending); the private `*.camp.home` routes are
+PostgreSQL search (live cutover complete); the private `*.camp.home` routes are
 active. Full state and limits are in `docs/deployment/homelab-production.md`.
 Worker deploys separately from API by design (writer custody). Use
 `script/campsite-deploy` with the ignored `mise.deploy.toml` profile for

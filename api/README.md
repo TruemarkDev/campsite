@@ -122,7 +122,7 @@ Make the changes:
 
 1. Make your database change in the `api` folder with `bin/rails g migration add_field_to_table field:integer`
 2. Run the migration against your local database `bin/rails db:migrate`
-3. Create a pull request with the migrations and the changes to the `db/schema.rb`
+3. Create a pull request with the migrations and the changes to `db/schema.postgresql.rb`
 4. Your pull request will automatically get blocked with `Migrations pending`
 
 Deploy the changes to the database:

@@ -469,7 +469,7 @@ module EventProcessors
         Timecop.freeze do
           post.events.created_action.first!.process!
 
-          # Account for precision differences between ruby and mysql datetime
+          # Account for precision differences between Ruby and database timestamps
           assert_in_delta initial_last_activity_at, project.last_activity_at, 0.001.seconds
         end
       end

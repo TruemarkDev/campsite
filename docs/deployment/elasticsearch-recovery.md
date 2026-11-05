@@ -76,7 +76,7 @@ or abrupt-power-loss guarantee is established by this test.
    cold data directory separately. Never delete individual Lucene state files
    or carry out filesystem repair on a mounted filesystem.
 3. Follow the authoritative rebuild procedure in
-   [homelab-production.md](homelab-production.md#elasticsearch-95-migration--deployed-2026-08-28).
+   [homelab-production.md](../reviews/homelab-platform-history.md#elasticsearch-95-migration--deployed-2026-08-28).
    Pause the staging worker during the bounded rebuild and resume it afterward.
    Preserve the old storage while initializing fresh search storage.
 4. Apply `config/elasticsearch/staging-index-template.json` before reindexing.

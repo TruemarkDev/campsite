@@ -10,7 +10,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 # The upstream image's uid/gid 999 collides with host service accounts (on Groot
-# it is node_exporter, and the MySQL and Redis containers' data owner). Host
+# it is node_exporter and the Redis container's data owner). Host
 # data directories and the pgBackRest NFS repository are owned by this
 # dedicated id instead. Change it only together with a chown of every member's
 # data directory and the repository.

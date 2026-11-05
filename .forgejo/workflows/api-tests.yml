@@ -99,7 +99,7 @@ jobs:
           set -euo pipefail
           apt-get update
           apt-get install -y --no-install-recommends \
-            build-essential default-libmysqlclient-dev libpq-dev pkg-config git curl ffmpeg xz-utils python3 zip unzip
+            build-essential libpq-dev pkg-config git curl ffmpeg xz-utils python3 zip unzip
           # The official pinned binary avoids NodeSource's certificate-package
           # postinstall rewriting the runner's bind-mounted system CA bundle.
           node_archive=node-v24.19.0-linux-x64.tar.xz

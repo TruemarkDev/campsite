@@ -8,7 +8,7 @@ This fork is actively developed for a private homelab. The GitHub fork is
 [homelab deployment](docs/deployment/homelab-production.md) for the current
 service state and acceptance gaps. Application search uses PostgreSQL; see
 [search operations](docs/deployment/postgresql-search.md). The former
-Elasticsearch server and volume have not been verified as retired.
+Elasticsearch VM and its disks are removed from Xen. The old MySQL runtime and live data are also removed; the verified final migration archive remains on the NAS.
 
 ## Local dev setup
 

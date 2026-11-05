@@ -64,7 +64,7 @@ else
   echo "\nPlease make sure to have all dependencies and rbenv installed"
   echo "\nOn Ubuntu 20.04, you can use the instructions at:\n"
   echo "\nhttps://www.digitalocean.com/community/tutorials/how-to-install-ruby-on-rails-with-rbenv-on-ubuntu-20-04"
-  echo "\nYou also need to make sure to install automake, gmp, libffi, libtool, mysql, openssl & pkg-config"
+  echo "\nYou also need to make sure to install automake, gmp, libffi, libtool, openssl & pkg-config"
 fi
 
 echo "\nInstalling Ruby $RUBY_VERSION...\n============================================================"
@@ -78,7 +78,6 @@ fi
 
 echo "\nInstalling bundler and gems...\n============================================================"
 gem install bundler --no-document
-bundle config build.mysql2 --with-opt-dir=$(brew --prefix zstd)
 bundle install --local
 echo "\033[1;32mDone installing gems!\033[0m"
 

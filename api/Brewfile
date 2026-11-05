@@ -3,7 +3,6 @@
 brew "chruby"
 brew "redis"
 brew "ruby-install"
-brew "mysql@8.0"
 brew "mailhog"
 brew "openssl"
 brew "coreutils"

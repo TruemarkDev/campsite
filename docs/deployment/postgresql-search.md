@@ -111,10 +111,9 @@ not the references alone, establish this application's behavior.
 At the initial source-verification checkpoint, no production migration, live
 backfill, deployment, external server retirement, commit or push had been
 performed. The 2026-11-04 live release above supersedes that deployment status.
-The PostgreSQL-only application revision cannot
-be deployed against a MySQL database. Legacy MySQL client gems remain because
-existing import/rollback tooling still uses them; application search no longer
-uses them or Elasticsearch.
+The application uses PostgreSQL for canonical data and search. The one-time MySQL import and parity tools are no longer part of the active
+source tree. The final migration archive remains on Vyas; the running MySQL
+container and data directory are removed.
 
 Optimization follow-up: the full 2026-11-04 suite subsequently passed 4,287 tests
 and 14,041 assertions, with zero failures/errors/skips. The earlier failed-count

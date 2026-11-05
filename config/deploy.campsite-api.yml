@@ -93,30 +93,6 @@ volumes:
   - /usr/local/share/ca-certificates/caddy-home.crt:/etc/ssl/certs/caddy-home.crt:ro
 
 accessories:
-  mysql:
-    service: campsite-api-staging-mysql
-    image: mysql:8.4@sha256:b3b90af2a6552ae30c266fdb7d5dd55f3afb72404bb78d37fe8a23eb857fd3fb
-    host: 192.168.10.33
-    env:
-      clear:
-        MYSQL_DATABASE: campsite_production
-        MYSQL_USER: campsite
-      secret:
-        - MYSQL_ROOT_PASSWORD
-        - MYSQL_PASSWORD
-    volumes:
-      # This is the new Groot target volume. Migrate and verify it before
-      # switching Rails writers; retain the untouched Odin source volume.
-      - /srv/campsite-data/mysql:/var/lib/mysql
-    options:
-      restart: unless-stopped
-      memory: 1g
-      health-cmd: mysqladmin ping -h 127.0.0.1 -uroot -p$MYSQL_ROOT_PASSWORD
-      health-interval: 10s
-      health-timeout: 5s
-      health-retries: 20
-      health-start-period: 30s
-
   redis:
     service: campsite-api-staging-redis
     image: redis:8.2-alpine@sha256:30abb90e62f14b737010746def3ba99cc79fe19dcdb3d37b41f21fc62e7da19d
